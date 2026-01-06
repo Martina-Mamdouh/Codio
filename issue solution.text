@@ -1,0 +1,67 @@
+Responsive Design Fix Plan
+
+Problem Analysis:
+The inconsistency in elements across different screen sizes is primarily caused by:
+1. Fixed Dimensions in Cards: Both `DealCard` and `CompanyCard` widgets have hardcoded widths (e.g., `180.w`) and fixed height constraints. This prevents them from resizing fluidly to fit different grid column widths.
+2. Rigid Grid Layouts: Multiple views (`CategoryDealsView`, `ViewAllDealsScreen`, `SearchView`, `CompaniesView`) use `mainAxisExtent` which forces a fixed height for grid items. Combined with the fixed width of the cards, this causes layout gaps or overflows on screens that don't match the design reference exactly.
+3. Manual Breakpoints: The logic `width < 360` to switch column counts is too specific and doesn't account for the wide variety of device widths.
+
+Solution Plan:
+
+1. Refactor `DealCard` (lib/app/views/widgets/deal_card.dart):
+   - Remove `width: 180.w` from the root Container.
+   - Remove `BoxConstraints(minHeight: 220.h, maxHeight: 250.h)`.
+   - Allow the widget to fill the constraints provided by its parent.
+   - Ensure the image takes up available width (`double.infinity`) and a proportional height or fixed height that works within the aspect ratio.
+
+2. Refactor `CompanyCard` (lib/app/views/widgets/company_card.dart):
+   - Remove `width: 180.w` from the root Container.
+   - Remove `BoxConstraints(minHeight: 220.h, maxHeight: 245.h)`.
+   - Allow the widget to fill the constraints provided by its parent.
+
+3. Update Grid Views:
+   - `CategoryDealsView` (lib/app/views/category_deals_view.dart)
+   - `ViewAllDealsScreen` (lib/app/views/view_all_deals_screen.dart)
+   - `SearchView` (lib/app/views/search_view.dart)
+   - `CompaniesView` (lib/app/views/companies_view.dart)
+
+   For each of these views:
+   - Remove the `LayoutBuilder` logic that manually toggles column count based on 360px width, unless strictly necessary for very small devices.
+   - Instead of `mainAxisExtent`, use `childAspectRatio`.
+     - Target Aspect Ratio for Deals: ~0.72 (based on 180/250).
+     - Target Aspect Ratio for Companies: ~0.73 (based on 180/245).
+   - This ensures that as the screen gets wider (and thus columns get wider), the cards grow in height proportionally, maintaining their design integrity.
+
+4. Verify `DealSection` (lib/app/views/widgets/deal_section.dart):
+   - The `DealSection` uses a horizontal ListView. It currently wraps `DealCard` in a `SizedBox(width: 230.w)`.
+   - Since `DealCard` will be refactored to be flexible, this `SizedBox` will correctly control the width in the horizontal list. No changes needed here, but verify after `DealCard` changes.
+
+Implementation Steps:
+
+Step 1: Modify `lib/app/views/widgets/deal_card.dart`
+- Remove `width` and `constraints` properties from the Container.
+
+Step 2: Modify `lib/app/views/widgets/company_card.dart`
+- Remove `width` and `constraints` properties from the Container.
+
+Step 3: Modify `lib/app/views/category_deals_view.dart`
+- Update `SliverGridDelegateWithFixedCrossAxisCount`:
+  - Remove `mainAxisExtent`.
+  - Add `childAspectRatio: 0.7`.
+
+Step 4: Modify `lib/app/views/view_all_deals_screen.dart`
+- Update `SliverGridDelegateWithFixedCrossAxisCount`:
+  - Remove `mainAxisExtent`.
+  - Add `childAspectRatio: 0.7`.
+
+Step 5: Modify `lib/app/views/search_view.dart`
+- Update `SliverGridDelegateWithFixedCrossAxisCount`:
+  - Remove `mainAxisExtent`.
+  - Add `childAspectRatio: 0.7`.
+
+Step 6: Modify `lib/app/views/companies_view.dart`
+- Update `SliverGridDelegateWithFixedCrossAxisCount`:
+  - Remove `mainAxisExtent`.
+  - Add `childAspectRatio: 0.7`.
+
+This approach ensures that the UI scales proportionally on all devices, providing a consistent experience.

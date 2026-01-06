@@ -1,0 +1,56 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+plugins {
+    id("com.android.application")
+    id("com.google.gms.google-services")
+    id("kotlin-android")
+    id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Google Maps API key
+val mapsApiKey: String = System.getenv("MAPS_API_KEY")
+    ?: (project.findProperty("MAPS_API_KEY") as? String)
+    ?: "AIzaSyDutlG1pC0N-UqTnndAdRu0qVQf7iwV7xk"
+
+android {
+    namespace = "com.example.codio_app"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = "29.0.14206865"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    defaultConfig {
+        applicationId = "com.example.codio_app"
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+
+        manifestPlaceholders += mapOf(
+            "MAPS_API_KEY" to mapsApiKey,
+        )
+    }
+
+    buildTypes {
+        getByName("release") {
+            // أوقفنا ربط التوقيع هنا لحل مشكلة الـ null
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}

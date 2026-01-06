@@ -1,0 +1,13 @@
+[build]
+  # الحساب البرمجي المستخدم لبناء لوحة التحكم من مشروع فلاتر
+  command = "if [ ! -d \"flutter\" ]; then git clone https://github.com/flutter/flutter.git --depth 1 -b stable; fi && ./flutter/bin/flutter build web -t lib/main_admin.dart --release"
+  publish = "build/web"
+
+[build.environment]
+  FLUTTER_VERSION = "stable"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false

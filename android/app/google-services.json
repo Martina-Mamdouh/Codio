@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "75334850507",
+    "project_id": "kodio-app-bdf6a",
+    "storage_bucket": "kodio-app-bdf6a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75334850507:android:38927ff6b44c7922e6c84e",
+        "android_client_info": {
+          "package_name": "com.example.codio_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "75334850507-8395nk69sf5sr6bfomvs5v1obnal5fa4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.codio_app",
+            "certificate_hash": "832289ccdc18d7371d93041b7e67bd2faafa2d8b"
+          }
+        },
+        {
+          "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSSQ7x1Og5sBYjKOenRKaUjtXMwm9GgpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "75334850507-3853qa1bm20pgefd8nfnsoahcemtqo1l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kodioApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75334850507:android:32cb359e05678574e6c84e",
+        "android_client_info": {
+          "package_name": "com.example.kodio_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSSQ7x1Og5sBYjKOenRKaUjtXMwm9GgpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "75334850507-3853qa1bm20pgefd8nfnsoahcemtqo1l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kodioApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,102 @@
+name: kodio_app
+description: "Kodio - Your Discount & Offers App"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI Essentials
+  cupertino_icons: ^1.0.8
+  flutter_screenutil: ^5.9.0
+  google_fonts: ^6.1.0
+
+  # Backend & Database
+  supabase_flutter: ^2.10.3
+  google_sign_in: ^6.2.1
+  firebase_core: ^4.2.1
+  firebase_performance: ^0.11.1+2
+
+  # State Management
+  provider: ^6.1.5+1
+  shared_preferences: ^2.2.2
+
+  # Notifications
+  onesignal_flutter: ^5.3.4
+
+  # UI Components
+  carousel_slider: ^5.0.0
+  cached_network_image: ^3.4.1
+
+  # Maps & Location
+  google_maps_flutter: ^2.9.0
+  geolocator: ^13.0.2
+
+  # App Info & Updates
+  package_info_plus: ^8.0.0
+  in_app_update: ^4.2.2
+
+  # Utilities
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.2
+  intl: ^0.20.2
+  http: ^1.5.0
+  timeago: ^3.7.1
+  flutter_dotenv: ^6.0.0
+  device_preview: ^1.1.0
+
+
+  # File Handling (للـ Admin Panel)
+  file_picker: ^10.3.3
+  flutter_dropzone: ^4.2.1
+  font_awesome_flutter: ^10.12.0
+  responsive_builder: ^0.7.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_driver:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.3.10
+  flutter_launcher_icons: ^0.13.1
+  change_app_package_name: ^1.5.0
+
+flutter:
+  uses-material-design: true
+
+  # Assets
+  assets:
+    - assets/images/
+    - assets/images/slogan.png
+
+# ========================================
+# Splash Screen Configuration
+# ========================================
+flutter_native_splash:
+  color: "#1A1A1A"
+  android_12:
+    color: "#1A1A1A"
+  android: true
+  ios: true
+  web: true
+
+# ========================================
+# App Icon Configuration
+# ========================================
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/slogan.png"
+  adaptive_icon_background: "#1A1A1A"  # لون الخلفية
+  adaptive_icon_foreground: "assets/images/slogan.png"
+  min_sdk_android: 21

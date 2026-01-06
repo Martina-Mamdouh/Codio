@@ -80,13 +80,17 @@ class DashboardHomeView extends StatelessWidget {
             _buildTopDealsTable(context, dashboardVM),
             const SizedBox(height: 32),
 
-            _buildLiveAnalytics(context, dashboardVM),
+            _buildSocialBreakdown(context, dashboardVM),
             const SizedBox(height: 32),
 
             _buildCompanyPerformanceTable(context, dashboardVM),
             const SizedBox(height: 32),
 
             _buildBannerManagementTable(context, dashboardVM),
+            const SizedBox(height: 32),
+
+            // Recent Deals
+            _buildRecentDeals(context, dealsVM),
           ],
         ),
       ),
@@ -204,23 +208,27 @@ class DashboardHomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildLiveAnalytics(BuildContext context, DashboardViewModel vm) {
+  Widget _buildSocialBreakdown(BuildContext context, DashboardViewModel vm) {
+    // Ensure all platforms exist in the display list, even with 0 clicks
+    final platforms = ['whatsapp', 'facebook', 'instagram'];
+    final Map<String, int> counts = {for (var p in platforms) p: 0};
+    
+    for (var item in vm.socialBreakdown) {
+      final p = item['platform']?.toString().toLowerCase();
+      if (p != null && counts.containsKey(p)) {
+        counts[p] = (item['click_count'] as num? ?? 0).toInt();
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 32),
-
-        // Social Media Breakdown (Simplified Bar Chart style)
         Row(
           children: [
-            const Icon(
-              Icons.pie_chart_rounded,
-              color: AppTheme.kElectricLime,
-              size: 24,
-            ),
+            const Icon(Icons.pie_chart_rounded, color: AppTheme.kElectricLime, size: 28),
             const SizedBox(width: 8),
             Text(
-              'توزيع منصات التواصل',
+              'توزيع منصات التواصل الاجتماعي',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: AppTheme.kLightText,
                 fontWeight: FontWeight.bold,
@@ -231,108 +239,48 @@ class DashboardHomeView extends StatelessWidget {
         const SizedBox(height: 16),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             color: AppTheme.kLightBackground,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppTheme.kSubtleText.withAlpha(26)),
           ),
-          child: vm.socialBreakdown.isEmpty
-              ? const Center(child: Text('لا توجد بيانات منصات حالياً', style: TextStyle(color: Colors.grey)))
-              : Column(
-                  children: vm.socialBreakdown.map((platform) {
-                    final name = platform['platform'] ?? 'غير معروف';
-                    final count = platform['click_count'] ?? 0;
-                    final total = vm.totalClicks > 0 ? vm.totalClicks : 1;
-                    final percentage = (count / total);
-                    
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(name, style: TextStyle(color: Colors.white70)),
-                              Text('$count نقرة', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                            value: percentage,
-                            backgroundColor: Colors.white12,
-                            color: AppTheme.kElectricLime,
-                            minHeight: 8,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-        ),
-        const SizedBox(height: 32),
-
-        // Banner Performance
-        Row(
-          children: [
-            const Icon(
-              Icons.view_carousel_rounded,
-              color: AppTheme.kElectricLime,
-              size: 24,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'أداء البانرات الإعلانية',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: AppTheme.kLightText,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppTheme.kLightBackground,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.kSubtleText.withAlpha(26)),
-          ),
-          child: vm.bannerPerformance.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.all(48.0),
-                  child: Center(child: Text('لا توجد بيانات بانرات حالياً', style: TextStyle(color: Colors.grey))),
-                )
-              : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text('رقم البانر', style: TextStyle(color: AppTheme.kElectricLime))),
-                      DataColumn(label: Text('الظهور', style: TextStyle(color: AppTheme.kElectricLime))),
-                      DataColumn(label: Text('النقرات', style: TextStyle(color: AppTheme.kElectricLime))),
-                      DataColumn(label: Text('CTR %', style: TextStyle(color: AppTheme.kElectricLime))),
-                    ],
-                    rows: vm.bannerPerformance.map((b) => DataRow(
-                      cells: [
-                        DataCell(Text('#${b['banner_id']}', style: TextStyle(color: Colors.white))),
-                        DataCell(Text(b['impressions'].toString(), style: TextStyle(color: Colors.white70))),
-                        DataCell(Text(b['clicks'].toString(), style: TextStyle(color: Colors.white70))),
-                        DataCell(
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppTheme.kElectricLime.withAlpha(40),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text('${b['ctr_percentage']}%', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
+          child: Column(
+            children: platforms.map((p) {
+              String name = p;
+              if (p == 'whatsapp') name = 'واتساب';
+              if (p == 'facebook') name = 'فيسبوك';
+              if (p == 'instagram') name = 'انستجرام';
+              
+              final count = counts[p] ?? 0;
+              final total = vm.totalClicks > 0 ? vm.totalClicks : 1;
+              final percentage = (count / total);
+              
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                        Text('$count نقرة', style: const TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold)),
                       ],
-                    )).toList(),
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: percentage,
+                      backgroundColor: Colors.white.withAlpha(26),
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.kElectricLime),
+                      minHeight: 12,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ],
                 ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
@@ -581,6 +529,118 @@ class DashboardHomeView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRecentDeals(BuildContext context, DealsManagementViewModel vm) {
+    final recentDeals = vm.deals.take(10).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.access_time_rounded,
+              color: AppTheme.kElectricLime,
+              size: 24,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'أحدث العروض المضافة (الكل)',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppTheme.kLightText,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.kLightBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.kSubtleText.withAlpha(26)),
+          ),
+          child: vm.isLoading
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48.0),
+                    child: CircularProgressIndicator(
+                      color: AppTheme.kElectricLime,
+                    ),
+                  ),
+                )
+              : recentDeals.isEmpty
+              ? _buildEmptyState('لا توجد عروض حالياً')
+              : ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: recentDeals.length,
+                  separatorBuilder: (context, index) => Divider(
+                    height: 1,
+                    color: AppTheme.kSubtleText.withAlpha(26),
+                  ),
+                  itemBuilder: (context, index) {
+                    final deal = recentDeals[index];
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.kElectricLime.withAlpha(26),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.local_offer_rounded,
+                          color: AppTheme.kElectricLime,
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        deal.title,
+                        style: const TextStyle(
+                          color: AppTheme.kLightText,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          deal.companyName ?? 'غير معروف',
+                          style: TextStyle(
+                            color: AppTheme.kSubtleText,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.kElectricLime.withAlpha(26),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          deal.dealType,
+                          style: const TextStyle(
+                            color: AppTheme.kElectricLime,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 }

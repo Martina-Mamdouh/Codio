@@ -96,15 +96,38 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ResetPasswordOTPScreen(email: _emailController.text.trim()),
         ),
       );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      setState(() => _isLoading = false);
+      
+      debugPrint('❌ Supabase Auth Error: ${e.message}, Code: ${e.statusCode}');
+      
+      String message = 'حدث خطأ في إرسال الرمز';
+      if (e.statusCode == '429') {
+        message = 'كثير من المحاولات. برجاء الانتظار قليلاً';
+      } else if (e.message.contains('network')) {
+        message = 'تأكد من اتصالك بالإنترنت';
+      } else {
+        message = e.message;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
       setState(() => _isLoading = false);
+      debugPrint('❌ Unexpected Reset Password Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('حدث خطأ: ${e.toString()}'),
+          content: Text('حدث خطأ غير متوقع. حاول مرة أخرى'),
           backgroundColor: Colors.red,
         ),
       );
@@ -114,7 +137,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFC3F217), // Exact Lime
+      backgroundColor: const Color(0xFFE5FF17), // Theme Lime
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -131,26 +154,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             padding: EdgeInsets.only(
               right: 16.w,
               left: 16.w,
-              top: 20.h,
-              bottom: 24.h,
+              top: 10.h,
+              bottom: 16.h,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'نسيت\nكلمة المرور',
+                  'نسيت كلمة المرور',
                   style: TextStyle(
-                    fontSize: 40.sp,
+                    fontSize: 32.sp,
                     fontWeight: FontWeight.w900,
                     color: Colors.black,
                     height: 1.1,
                   ),
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
                 Text(
                   'أدخل بريدك الإلكتروني وسنرسل لك رمز التحقق',
                   style: TextStyle(
-                    fontSize: 15.sp,
+                    fontSize: 14.sp,
                     color: Colors.black87,
                     fontWeight: FontWeight.w500,
                   ),
@@ -228,12 +251,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     Text(
                                       'إرسال رمز التحقق',
                                       style: TextStyle(
-                                        fontSize: 18.sp,
+                                        fontSize: 17.sp,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Container(
-                                      padding: EdgeInsets.all(16.w),
+                                      padding: EdgeInsets.all(12.w),
                                       decoration: const BoxDecoration(
                                         color: Colors.black,
                                         shape: BoxShape.circle,
@@ -241,7 +264,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       child: Icon(
                                         Icons.arrow_forward,
                                         color: Colors.white,
-                                        size: 24.sp,
+                                        size: 20.sp,
                                       ),
                                     ),
                                   ],

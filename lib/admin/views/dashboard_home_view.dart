@@ -331,11 +331,18 @@ class DashboardHomeView extends StatelessWidget {
                           DataColumn(label: Text('المشاهدات', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
                           DataColumn(label: Text('النسخ', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
                           DataColumn(label: Text('الروابط', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('نسبة النجاح', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('الرضا', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
+                          DataColumn(label: Text('شغّال', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
+                          DataColumn(label: Text('تقييم المستخدمين', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
                         ],
                         rows: vm.topDeals.map((deal) {
                           final successRate = (deal['success_rate'] as num? ?? 0).toDouble();
+                          
+                          // Extract emoji feedback data if available
+                          final happyCount = deal['emoji_happy_count'] as int? ?? 0;
+                          final neutralCount = deal['emoji_neutral_count'] as int? ?? 0;
+                          final sadCount = deal['emoji_sad_count'] as int? ?? 0;
+                          final totalEmoji = happyCount + neutralCount + sadCount;
+                          
                           return DataRow(cells: [
                             DataCell(Text(deal['title'] ?? '', style: const TextStyle(color: AppTheme.kLightText, fontWeight: FontWeight.bold))),
                             DataCell(Text(deal['company_name'] ?? '', style: const TextStyle(color: AppTheme.kSubtleText))),
@@ -343,7 +350,7 @@ class DashboardHomeView extends StatelessWidget {
                             DataCell(Text(deal['code_copies']?.toString() ?? '0', style: const TextStyle(color: Colors.orangeAccent))),
                             DataCell(Text(deal['link_opens']?.toString() ?? '0', style: const TextStyle(color: Colors.tealAccent))),
                             DataCell(_buildSuccessBadge(successRate)),
-                            DataCell(_buildSentimentIcon(successRate)),
+                            DataCell(_buildEmojiBreakdown(happyCount, neutralCount, sadCount, totalEmoji)),
                           ]);
                         }).toList(),
                       ),
@@ -513,6 +520,38 @@ class DashboardHomeView extends StatelessWidget {
         Icon(icon, size: 16, color: color),
         const SizedBox(width: 4),
         Text(label, style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 12)),
+      ],
+    );
+  }
+
+  Widget _buildEmojiBreakdown(int happyCount, int neutralCount, int sadCount, int total) {
+    if (total == 0) {
+      return const Text(
+        'لا توجد تقييمات',
+        style: TextStyle(color: AppTheme.kSubtleText, fontSize: 12, fontStyle: FontStyle.italic),
+      );
+    }
+
+    final happyPct = (happyCount / total * 100).toInt();
+    final neutralPct = (neutralCount / total * 100).toInt();
+    final sadPct = (sadCount / total * 100).toInt();
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (happyCount > 0) ...[
+          Text('😊 $happyPct%', style: const TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+          const SizedBox(width: 8),
+        ],
+        if (neutralCount > 0) ...[
+          Text('😐 $neutralPct%', style: const TextStyle(color: Colors.orangeAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+          const SizedBox(width: 8),
+        ],
+        if (sadCount > 0) ...[
+          Text('😞 $sadPct%', style: const TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+        ],
+        const SizedBox(width: 8),
+        Text('($total)', style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 11)),
       ],
     );
   }

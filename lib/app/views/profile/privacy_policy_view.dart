@@ -24,6 +24,17 @@ class PrivacyPolicyView extends StatelessWidget {
       body: ListView(
         padding: EdgeInsets.all(24.w),
         children: [
+          // Logo
+          Center(
+            child: Image.asset(
+              'assets/images/logo.jpg',
+              width: 120.w,
+              height: 120.w,
+              fit: BoxFit.contain,
+            ),
+          ),
+          SizedBox(height: 24.h),
+          
           Text(
             'هذه سياسة خصوصية مبسّطة ومبدئية لتطبيق كوديو، وتحتاج إلى مراجعة قانونية قبل اعتمادها بشكل نهائي.',
             style: TextStyle(color: Colors.white70, fontSize: 14.sp),

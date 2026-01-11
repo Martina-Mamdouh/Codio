@@ -24,7 +24,7 @@ class HomeBannerSlider extends StatelessWidget {
     return CarouselSlider.builder(
       itemCount: banners.length,
       options: CarouselOptions(
-        height: 160.0.h,
+        height: MediaQuery.of(context).orientation == Orientation.portrait ? 160.0.h : 140,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 5),
         enlargeCenterPage: true,
@@ -32,7 +32,7 @@ class HomeBannerSlider extends StatelessWidget {
         viewportFraction: 0.9,
         onPageChanged: (index, reason) {
           // Track banner impression
-          if (index < banners.length) {
+          if (index < banners.length && banners[index].id != null) {
             context.read<AnalyticsService>().trackBannerImpression(
               banners[index].id!,
               position: index,
@@ -42,18 +42,23 @@ class HomeBannerSlider extends StatelessWidget {
       ),
       itemBuilder: (context, index, realIndex) {
         final banner = banners[index];
+        print('📸 Banner Image URL: [${banner.imageUrl}]');
         return GestureDetector(
           onTap: () async {
             debugPrint('🖱️ Banner tapped: ${banner.id}');
-            try {
-              // Track banner click (safe-guarded)
-              context.read<AnalyticsService>().trackBannerClick(
-                banner.id!,
-                position: index,
-              );
-            } catch (e) {
-              debugPrint('⚠️ Analytics Error in Banner: $e');
+            if (banner.id != null) {
+              try {
+                // Track banner click (safe-guarded)
+                context.read<AnalyticsService>().trackBannerClick(
+                  banner.id!,
+                  position: index,
+                );
+              } catch (e) {
+                debugPrint('⚠️ Analytics Error in Banner: $e');
+              }
             }
+            
+            if (banner.dealId == null) return;
 
             final DealModel? deal = await SupabaseService().getDealById(
               banner.dealId!,
@@ -95,13 +100,16 @@ class HomeBannerSlider extends StatelessWidget {
                     ),
                   ),
                 ),
-                errorWidget: (context, url, error) => Container(
-                  color: AppTheme.kLightBackground,
-                  child: const Icon(
-                    Icons.broken_image,
-                    color: Colors.white,
-                  ),
-                ),
+                errorWidget: (context, url, error) {
+                  print('❌ Banner Image Error: $error for URL: [$url]');
+                  return Container(
+                    color: AppTheme.kLightBackground,
+                    child: const Icon(
+                      Icons.broken_image,
+                      color: Colors.white,
+                    ),
+                  );
+                },
               ),
             ),
           ),

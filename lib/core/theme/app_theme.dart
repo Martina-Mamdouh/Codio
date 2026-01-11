@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   static const Color kDarkBackground = Color(0xFF1A1A1A);
   static const Color kLightBackground = Color(0xFF2C2C2C);
-  static const Color kElectricLime = Color(0xFFDFFF00);
+  static const Color kElectricLime = Color(0xFFE5FF17);
   static const Color kLightText = Color(0xFFFAFAFA);
   static const Color kSubtleText = Color(0xFF9E9E9E);
 

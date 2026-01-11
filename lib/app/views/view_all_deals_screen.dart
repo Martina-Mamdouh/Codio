@@ -62,63 +62,38 @@ class ViewAllDealsScreen extends StatelessWidget {
               )
             : Consumer<UserProfileViewModel>(
                 builder: (context, profileVm, _) {
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Force exact column count
-                      int crossAxisCount;
-                      final screenWidth = constraints.maxWidth;
+                  return ListView.separated(
+                    padding: EdgeInsets.all(16.w),
+                    itemCount: deals.length,
+                    separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                    itemBuilder: (context, index) {
+                      final deal = deals[index];
+                      final isFav = profileVm.isDealFavorite(deal.id);
 
-                      if (screenWidth < 360) {
-                        crossAxisCount =
-                            1; // Single column for very small screens
-                      } else {
-                        crossAxisCount =
-                            2; // Always 2 columns for larger screens
-                      }
-
-                      return GridView.builder(
-                        padding: EdgeInsets.symmetric(
-                          vertical: 16.h,
-                          horizontal: 16.w,
-                        ),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: 12.w,
-                          mainAxisSpacing: 16.h,
-                          childAspectRatio: 0.72,
-                        ),
-                        itemCount: deals.length,
-                        itemBuilder: (context, index) {
-                          final deal = deals[index];
-                          final isFav = profileVm.isDealFavorite(deal.id);
-
-                          return DealCard(
-                            deal: deal,
-                            isFavorite: isFav,
-                            onTap: () {
-                              debugPrint('Pressed on deal: ${deal.title}');
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      DealDetailsView(deal: deal),
-                                ),
-                              );
-                            },
-                            onFavoriteToggle: () async {
-                              final success = await profileVm
-                                  .toggleFavoriteForDeal(deal.id);
-                              if (!success && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'تعذّر تحديث المفضّلة، حاول مرة أخرى',
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
+                      return DealCard(
+                        deal: deal,
+                        isFavorite: isFav,
+                        showCategory: true,
+                        onTap: () {
+                          debugPrint('Pressed on deal: ${deal.title}');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DealDetailsView(deal: deal),
+                            ),
                           );
+                        },
+                        onFavoriteToggle: () async {
+                          final success = await profileVm
+                              .toggleFavoriteForDeal(deal.id);
+                          if (!success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'تعذّر تحديث المفضّلة، حاول مرة أخرى'),
+                              ),
+                            );
+                          }
                         },
                       );
                     },

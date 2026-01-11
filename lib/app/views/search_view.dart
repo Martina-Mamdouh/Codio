@@ -356,33 +356,16 @@ class _SearchViewState extends State<SearchView> {
         Expanded(
           child: Consumer<UserProfileViewModel>(
             builder: (context, profileVm, _) {
-              return LayoutBuilder(
-                builder: (context, constraints) {
-                  // Force exact column count
-                  int crossAxisCount;
-                  final width = constraints.maxWidth;
-
-                  if (width < 360) {
-                    crossAxisCount = 1; // Single column for small screens
-                  } else {
-                    crossAxisCount = 2; // Always 2 columns
-                  }
-
                   return RefreshIndicator(
                     onRefresh: () => _performSearch(_searchController.text),
                     color: AppTheme.kElectricLime,
-                    child: GridView.builder(
+                    child: ListView.separated(
                       padding: EdgeInsets.symmetric(
                         vertical: 16.h,
                         horizontal: 16.w,
                       ),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 12.w,
-                        mainAxisSpacing: 16.h,
-                        childAspectRatio: 0.72,
-                      ),
                       itemCount: _searchResults.length,
+                      separatorBuilder: (context, index) => SizedBox(height: 16.h),
                       itemBuilder: (context, index) {
                         final deal = _searchResults[index];
                         final isFav = profileVm.isDealFavorite(deal.id);
@@ -390,6 +373,7 @@ class _SearchViewState extends State<SearchView> {
                         return DealCard(
                           deal: deal,
                           isFavorite: isFav,
+                          showCategory: true,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -416,8 +400,6 @@ class _SearchViewState extends State<SearchView> {
                       },
                     ),
                   );
-                },
-              );
             },
           ),
         ),

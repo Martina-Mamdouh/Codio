@@ -64,9 +64,9 @@ class DealSection extends StatelessWidget {
           ),
         ),
 
-        // Horizontal ListView
+        // Horizontal ListView (Orientation-aware height)
         Container(
-          constraints: BoxConstraints(minHeight: 230.h, maxHeight: 240.h),
+          height: MediaQuery.of(context).orientation == Orientation.portrait ? 300.h : 360, 
           child: Consumer<UserProfileViewModel>(
             builder: (context, profileVm, child) {
               return ListView.separated(
@@ -80,7 +80,7 @@ class DealSection extends StatelessWidget {
                   final isFav = profileVm.isDealFavorite(deal.id);
 
                   return SizedBox(
-                    width: 230.w,
+                    width: MediaQuery.of(context).orientation == Orientation.portrait ? 230.w : 220,
                     child: DealCard(
                       deal: deal,
                       isFavorite: isFav,

@@ -23,6 +23,9 @@ class SupabaseService {
             '*, companies(name, logo_url, cover_image_url), categories(name)',
           )
           .order('created_at', ascending: false);
+
+      print('📊 Raw Deals Data Sample: ${data.isNotEmpty ? data.first : "Empty"}');
+      
       // Use compute to parse JSON in background isolate
       final deals = await compute(parseDeals, data);
       return deals;
@@ -69,16 +72,14 @@ class SupabaseService {
 
   Future<List<CompanyModel>> getCompanies() async {
     try {
-      // 1. Fetch companies (without joining categories to avoid FK issues)
+      // 1. Fetch companies with deals count (Keep this as it was working)
       final companiesData = await _client
           .from('companies')
           .select('*, deals(count)')
           .order('created_at', ascending: false);
 
-      // 2. Fetch all categories to map names manually (Safest approach)
-      final categoriesData = await _client
-          .from('categories')
-          .select('id, name');
+      // 2. Fetch all categories to map names manually (Safest approach due to DB FK issues)
+      final categoriesData = await _client.from('categories').select('id, name');
 
       final categoryMap = {
         for (var item in categoriesData as List)
@@ -90,23 +91,17 @@ class SupabaseService {
       final companies = rawList.map((item) {
         final Map<String, dynamic> json = Map<String, dynamic>.from(item);
 
-        // Map Supabase count response to flat deal_count
+        // Map Deal Count
         if (json['deals'] != null && json['deals'] is List) {
           final dealsList = json['deals'] as List;
-          if (dealsList.isNotEmpty && dealsList.first is Map) {
-            json['deal_count'] = dealsList.first['count'];
-          } else {
-            json['deal_count'] = 0;
-          }
+          json['deal_count'] =
+              dealsList.isNotEmpty ? dealsList.first['count'] : 0;
         }
 
-        // 3. Resolve Primary Category Name
+        // 3. Resolve Primary Category Name manually
         final primaryId = json['primary_category_id'] as int?;
         if (primaryId != null && categoryMap.containsKey(primaryId)) {
           json['category_name'] = categoryMap[primaryId];
-        } else {
-          // Optional: fallback logic or leave null
-          json['category_name'] = null;
         }
 
         return CompanyModel.fromJson(json);
@@ -115,7 +110,7 @@ class SupabaseService {
       return companies;
     } catch (e) {
       if (kDebugMode) {
-        print('Error getting companies: $e');
+        print('❌ Error getting companies: $e');
       }
       return [];
     }
@@ -423,9 +418,10 @@ class SupabaseService {
 
   Future<CompanyModel?> getCompanyById(int companyId) async {
     try {
+      // ✅ optimized: single query with join
       final data = await _client
           .from('companies')
-          .select('*')
+          .select('*, deals(count), categories(name)')
           .eq('id', companyId)
           .maybeSingle();
 
@@ -437,15 +433,21 @@ class SupabaseService {
       }
 
       final json = Map<String, dynamic>.from(data);
-      if (json['categories'] != null && json['categories'] is Map) {
-        json['category_name'] = json['categories']['name'];
+      
+      // ✅ Map Deal Count from join
+      if (json['deals'] != null && json['deals'] is List) {
+        final dealsList = json['deals'] as List;
+        json['deal_count'] = dealsList.isNotEmpty ? dealsList.first['count'] : 0;
       }
-
-      final dealsData = await _client
-          .from('deals')
-          .select('id')
-          .eq('company_id', companyId);
-      json['deal_count'] = (dealsData as List).length;
+      
+      // ✅ Map Category Name from join
+      if (json['categories'] != null) {
+        if (json['categories'] is List && (json['categories'] as List).isNotEmpty) {
+           json['category_name'] = (json['categories'] as List).first['name'];
+        } else if (json['categories'] is Map) {
+           json['category_name'] = json['categories']['name'];
+        }
+      }
 
       return CompanyModel.fromJson(json);
     } catch (e) {
@@ -465,6 +467,8 @@ class SupabaseService {
           .from('categories')
           .select()
           .order('name', ascending: true);
+
+      print('📊 Raw Categories Data: $data');
 
       final categories = data
           .map((item) => CategoryModel.fromJson(item))

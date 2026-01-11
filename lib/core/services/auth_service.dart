@@ -5,10 +5,9 @@ import '../models/user_model.dart';
 
 class AuthService {
   final _supabase = Supabase.instance.client;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    serverClientId:
-        '75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com',
-  );
+  // Remove serverClientId to use default configuration from google-services.json
+  // This avoids SHA-1 fingerprint mismatch issues
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   User? get currentUser => _supabase.auth.currentUser;
   bool get isAuthenticated => currentUser != null;
@@ -102,6 +101,19 @@ class AuthService {
       return AuthResult(success: true, user: profile);
     } catch (e) {
       debugPrint('❌ Login error: $e');
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('captcha')) {
+        return AuthResult(
+          success: false,
+          message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.',
+        );
+      }
+      if (errorStr.contains('timeout') || errorStr.contains('socket')) {
+        return AuthResult(
+          success: false,
+          message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.',
+        );
+      }
       return AuthResult(
         success: false,
         message: 'تحقق من البريد الإلكتروني وكلمة المرور',
@@ -157,6 +169,19 @@ class AuthService {
       );
     } catch (e) {
       debugPrint('❌ Register error: $e');
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('captcha')) {
+        return AuthResult(
+          success: false,
+          message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.',
+        );
+      }
+      if (errorStr.contains('timeout') || errorStr.contains('socket')) {
+        return AuthResult(
+          success: false,
+          message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.',
+        );
+      }
       return AuthResult(success: false, message: 'حدث خطأ في إنشاء الحساب');
     }
   }
@@ -213,11 +238,8 @@ class AuthService {
         'full_name': fullName,
         'profession': profession,
         'avatar_url': null,
-        // Only set created_at if it's a new record to avoid overwriting
-        // But upsert with minimal data handles this usually.
-        // For safety, we keep it simple as before:
         'created_at': DateTime.now().toIso8601String(),
-      });
+      }, onConflict: 'id');
 
       final profile = await _getUserProfile(user.id);
       return AuthResult(
@@ -300,7 +322,13 @@ class AuthService {
     
     // Ensure profile exists if we have a valid session
     if (userEmail != null) {
-      return _getOrCreateUserProfile(userId: userId!, email: userEmail!);
+      // Pass existing meta data if available to avoid empty profession on first load
+      final metaProfession = currentUser?.userMetadata?['profession'] as String?;
+      return _getOrCreateUserProfile(
+        userId: userId!, 
+        email: userEmail!,
+        initialProfession: metaProfession,
+      );
     }
     
     return _getUserProfile(userId!);
@@ -377,10 +405,10 @@ class AuthService {
     }
   }
 
-  // Private: Get or create user profile
   Future<UserModel?> _getOrCreateUserProfile({
     required String userId,
     required String email,
+    String? initialProfession,
   }) async {
     var profile = await _getUserProfile(userId);
 
@@ -391,7 +419,7 @@ class AuthService {
           'id': userId,
           'email': email,
           'full_name': email.split('@')[0],
-          'profession': '',
+          'profession': initialProfession ?? '',
           'avatar_url': null,
           'created_at': DateTime.now().toIso8601String(),
         });
@@ -404,7 +432,7 @@ class AuthService {
             'id': userId,
             'email': email,
             'full_name': email.split('@')[0],
-            // 'profession': '', // Omitted in retry
+            // 'profession': initialProfession ?? '', // Omitted in retry
             'avatar_url': null,
             'created_at': DateTime.now().toIso8601String(),
           });
@@ -413,6 +441,10 @@ class AuthService {
           debugPrint('❌ Retry create profile error: $retryError');
         }
       }
+    } else if (profile.profession.isEmpty && initialProfession != null && initialProfession.isNotEmpty) {
+      // Update profession if profile exists but profession is empty and we have it in metadata
+      await updateProfile(profession: initialProfession);
+      profile = profile.copyWith(profession: initialProfession);
     }
 
     return profile;

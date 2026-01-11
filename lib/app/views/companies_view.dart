@@ -235,7 +235,7 @@ class _CompaniesViewState extends State<CompaniesView> {
                                 crossAxisCount: crossAxisCount,
                                 mainAxisSpacing: 16,
                                 crossAxisSpacing: 16,
-                                childAspectRatio: 0.73,
+                                childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.65 : 0.9,
                               ),
                               itemBuilder: (context, index) {
                                 final company = filteredCompanies[index];

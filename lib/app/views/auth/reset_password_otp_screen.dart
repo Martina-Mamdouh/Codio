@@ -62,23 +62,28 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
           );
         }
       }
-    } catch (e) {
+    } on AuthException catch (e) {
       if (!mounted) return;
-
-      // FIX #5: Improved error handling with specific messages
+      debugPrint('❌ Supabase OTP Verify Error: ${e.message}, Code: ${e.statusCode}');
+      
       String errorMessage = 'رمز التحقق غير صحيح أو منتهي الصلاحية';
-
-      final errorString = e.toString().toLowerCase();
-      if (errorString.contains('expired') ||
-          errorString.contains('invalid_token')) {
+      if (e.statusCode == '429') {
+        errorMessage = 'كثير من المحاولات. برجاء الانتظار قليلاً';
+      } else if (e.message.contains('expired')) {
         errorMessage = 'رمز التحقق منتهي الصلاحية. الرجاء طلب رمز جديد';
-      } else if (errorString.contains('invalid') ||
-          errorString.contains('otp')) {
-        errorMessage = 'رمز التحقق غير صحيح';
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('❌ Unexpected OTP Verify Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('حدث خطأ غير متوقع. حاول مرة أخرى'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) {
@@ -117,11 +122,26 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
           ),
         );
       }
+    } on AuthException catch (e) {
+      if (mounted) {
+        debugPrint('❌ Supabase OTP Resend Error: ${e.message}, Code: ${e.statusCode}');
+        String message = 'حدث خطأ في إعادة الإرسال';
+        if (e.statusCode == '429') {
+          message = 'برجاء الانتظار قليلاً قبل إعادة المحاولة';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
+        debugPrint('❌ Unexpected OTP Resend Error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('حدث خطأ في إعادة الإرسال'),
+            content: Text('حدث خطأ غير متوقع'),
             backgroundColor: Colors.red,
           ),
         );
@@ -132,7 +152,7 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFC3F217), // Exact Lime
+      backgroundColor: const Color(0xFFE5FF17), // Theme Lime
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -149,8 +169,8 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
             padding: EdgeInsets.only(
               right: 16.w,
               left: 16.w,
-              top: 20.h,
-              bottom: 24.h,
+              top: 10.h,
+              bottom: 16.h,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,17 +178,17 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
                 Text(
                   'أدخل رمز التحقق',
                   style: TextStyle(
-                    fontSize: 40.sp,
+                    fontSize: 32.sp,
                     fontWeight: FontWeight.w900,
                     color: Colors.black,
                     height: 1.1,
                   ),
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
                 Text(
                   'تم إرسال رمز التحقق إلى',
                   style: TextStyle(
-                    fontSize: 15.sp,
+                    fontSize: 14.sp,
                     color: Colors.black87,
                     fontWeight: FontWeight.w500,
                   ),
@@ -177,7 +197,7 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
                 Text(
                   widget.email,
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
@@ -253,12 +273,12 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
                                     Text(
                                       'التالي',
                                       style: TextStyle(
-                                        fontSize: 18.sp,
+                                        fontSize: 17.sp,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     Container(
-                                      padding: EdgeInsets.all(16.w),
+                                      padding: EdgeInsets.all(12.w),
                                       decoration: const BoxDecoration(
                                         color: Colors.black,
                                         shape: BoxShape.circle,
@@ -266,7 +286,7 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
                                       child: Icon(
                                         Icons.arrow_forward,
                                         color: Colors.white,
-                                        size: 24.sp,
+                                        size: 20.sp,
                                       ),
                                     ),
                                   ],

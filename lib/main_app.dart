@@ -18,6 +18,8 @@ import 'app/views/splach_screen.dart';
 import 'core/services/onesignal_service.dart';
 import 'core/services/version_service.dart';
 import 'core/theme/app_theme.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // Global navigator key for deep-linking from OneSignal notifications
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -45,6 +47,16 @@ Future<void> main() async {
 
   timeago.setLocaleMessages('ar', timeago.ArMessages());
   await VersionService.init();
+
+  // Initialize Firebase for Google Sign In
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint('🔥 Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('❌ Firebase initialization error: $e');
+  }
 
   runApp(const CodioApp());
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../utils/url_utils.dart';
 
 class CompanyModel {
   final int id;
@@ -56,9 +57,9 @@ class CompanyModel {
       return CompanyModel(
         id: json['company_id'] ?? json['id'],
         name: json['company_name'] ?? json['name'] ?? 'No Name',
-        logoUrl: json['company_logo_url'] ?? json['logo_url'],
-        coverImageUrl:
-            json['company_cover_image_url'] ?? json['cover_image_url'],
+        logoUrl: UrlUtils.constructFullUrl(json['company_logo_url'] ?? json['logo_url']),
+        coverImageUrl: UrlUtils.constructFullUrl(
+            json['company_cover_image_url'] ?? json['cover_image_url']),
         lat: (json['company_lat'] ?? json['lat'] as num?)?.toDouble() ?? 0.0,
         lng: (json['company_lng'] ?? json['lng'] as num?)?.toDouble() ?? 0.0,
         description: json['company_description'] ?? json['description'],
@@ -81,14 +82,19 @@ class CompanyModel {
             : null,
         dealCount: (json['deal_count'] as num?)?.toInt(),
         categoryId: json['category_id'] as int?,
-        categoryName:
-            json['category_name'] as String? ??
-            json['categories']?['name'] as String?,
+        categoryName: json['category_name'] as String? ??
+            (json['categories'] != null
+                ? (json['categories'] is List
+                    ? (json['categories'] as List).isNotEmpty 
+                        ? (json['categories'] as List).first['name'] 
+                        : null
+                    : json['categories']['name'])
+                : null),
         socialLinks: json['social_links'],
         categoryIds: (json['category_ids'] as List<dynamic>?)
             ?.map((e) => e as int)
             .toList(), // ✅ New Field
-        primaryCategoryId: json['primary_category_id'] as int?, // ✅ New Field
+        primaryCategoryId: (json['primary_category_id'] as num?)?.toInt(), // ✅ New Field
         instagramUrl: json['instagram_url'], // ✅ New Field
       );
     } catch (e) {

@@ -41,7 +41,8 @@ android {
 
     buildTypes {
         getByName("release") {
-            // أوقفنا ربط التوقيع هنا لحل مشكلة الـ null
+            // استخدام توقيع الديباج مؤقتاً للسماح بتثبيت النسخة على الموبايل للتجربة
+            signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = false
             isShrinkResources = false
         }

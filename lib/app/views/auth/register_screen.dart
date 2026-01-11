@@ -1,5 +1,6 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -119,8 +120,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               padding: EdgeInsets.only(
                 right: 16.w,
                 left: 16.w,
-                top: 85.h,
-                bottom: 16.h,
+                top: 60.h,
+                bottom: 12.h,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +155,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 color: const Color(0xFF000000), // Pure Black
                 borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
               ),
-              padding: EdgeInsets.fromLTRB(16.w, 32.h, 16.w, 24.w),
+              padding: EdgeInsets.fromLTRB(16.w, 28.h, 16.w, 20.w),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -178,7 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 12.h),
 
                     // Password
                     AuthTextField(
@@ -200,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
 
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 12.h),
 
                     // Profession Dropdown
                     Container(
@@ -289,7 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 20.h),
 
                     // Register Button
                     Consumer<AuthViewModel>(
@@ -357,7 +358,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 16.h),
 
                     // Disclaimer Text (Privacy Policy)
                     RichText(
@@ -381,7 +382,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 16.h),
 
                     // Divider
                     Row(
@@ -398,7 +399,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ],
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 16.h),
 
                     // Social Buttons
                     Padding(
@@ -410,26 +411,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             icon: FontAwesomeIcons.google,
                             onPressed: _handleGoogleLogin,
                           ),
-                          SizedBox(width: 16.w),
-                          SocialLoginButton(
-                            text: 'أبل',
-                            icon: FontAwesomeIcons.apple,
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('تسجيل الدخول عبر أبل قريباً'),
-                                ),
-                              );
-                            },
-                          ),
+                          if (Platform.isAndroid) ...[
+                            SizedBox(width: 16.w),
+                            SocialLoginButton(
+                              text: 'أندرويد',
+                              icon: FontAwesomeIcons.android,
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('تسجيل الدخول عبر أندرويد متاح قريباً'),
+                                  ),
+                                );
+                              },
+                            ),
+                          ] else if (Platform.isIOS) ...[
+                            SizedBox(width: 16.w),
+                            SocialLoginButton(
+                              text: 'أبل',
+                              icon: FontAwesomeIcons.apple,
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('تسجيل الدخول عبر أبل متاح قريباً'),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         ],
                       ),
                     ),
 
-                    SizedBox(height: 32.h),
+                    SizedBox(height: 16.h),
 
                     // Login Link
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 12.h),
                     Center(
                       child: GestureDetector(
                         onTap: () {
@@ -463,7 +479,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 12.h),
                   ],
                 ),
               ),

@@ -83,51 +83,48 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
             );
           }
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-               return RefreshIndicator(
-                onRefresh: profileVm.loadFavoriteDeals,
-                color: AppTheme.kElectricLime,
-                child: GridView.builder(
-                  padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16.h,
-                    crossAxisSpacing: 12.w,
-                    childAspectRatio: 0.7, // Adjusted for DealCard height
-                  ),
-                  itemCount: profileVm.favoriteDeals.length,
-                  itemBuilder: (context, index) {
-                    final deal = profileVm.favoriteDeals[index];
+          return RefreshIndicator(
+            onRefresh: profileVm.loadFavoriteDeals,
+            color: AppTheme.kElectricLime,
+            child: GridView.builder(
+              padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+              itemCount: profileVm.favoriteDeals.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.62 : 0.85,
+                crossAxisSpacing: 12.w,
+                mainAxisSpacing: 12.h,
+              ),
+              itemBuilder: (context, index) {
+                final deal = profileVm.favoriteDeals[index];
 
-                    return DealCard(
-                      deal: deal,
-                      isFavorite: true,
-                      onFavoriteToggle: () async {
-                        final success = await profileVm.toggleFavoriteForDeal(
-                          deal.id,
-                        );
-                        if (!success && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('تعذر تحديث المفضّلة، حاول مرة أخرى'),
-                            ),
-                          );
-                        }
-                      },
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DealDetailsView(deal: deal),
-                          ),
-                        );
-                      },
+                return DealCard(
+                  deal: deal,
+                  isFavorite: true,
+                  showCategory: true,
+                  onFavoriteToggle: () async {
+                    final success = await profileVm.toggleFavoriteForDeal(
+                      deal.id,
+                    );
+                    if (!success && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('تعذر تحديث المفضّلة، حاول مرة أخرى'),
+                        ),
+                      );
+                    }
+                  },
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DealDetailsView(deal: deal),
+                      ),
                     );
                   },
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),

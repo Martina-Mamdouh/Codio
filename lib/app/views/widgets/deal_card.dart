@@ -16,6 +16,7 @@ class DealCard extends StatelessWidget {
   // ⭐ New fields
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
+  final bool showCategory;
 
   const DealCard({
     super.key,
@@ -23,23 +24,24 @@ class DealCard extends StatelessWidget {
     this.onTap,
     this.isFavorite = false,
     this.onFavoriteToggle,
+    this.showCategory = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final formattedDate = DateFormat('dd/MM/yyyy').format(deal.expiresAt);
     final AuthService authService = AuthService();
+    print('📸 DealCard Image URL: [${deal.imageUrl}]');
 
     return GestureDetector(
       onTap: () {
         debugPrint('🖱️ DealCard tapped: ${deal.id}');
         try {
-          // Track card click (safe-guarded)
           context.read<AnalyticsService>().trackDealCardClick(deal.id);
         } catch (e) {
           debugPrint('⚠️ Analytics Error in DealCard: $e');
         }
-        
+
         if (onTap != null) {
           debugPrint('➡️ Triggering navigation for: ${deal.title}');
           onTap!();
@@ -49,35 +51,53 @@ class DealCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.kLightBackground,
           borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // -------------------- IMAGE SECTION --------------------
             Stack(
               children: [
-                // -------------------- IMAGE --------------------
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(12.r),
+                AspectRatio(
+                  aspectRatio: 1.4, // Consistent ratio for Grid
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12.r),
+                    ),
+                    child: deal.imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: deal.imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: AppTheme.kDarkBackground.withOpacity(0.5),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppTheme.kElectricLime,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) {
+                              print('❌ DealCard Image Error: $error for URL: [$url]');
+                              return Container(
+                                color: AppTheme.kDarkBackground,
+                                child: const Icon(Icons.broken_image, color: Colors.white24),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: Colors.grey[900],
+                            child: const Icon(Icons.image_not_supported, color: Colors.white24),
+                          ),
                   ),
-                  child: deal.imageUrl.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: deal.imageUrl,
-                          height: 120.h,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 500,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                        )
-                      : Container(
-                          height: 120.h,
-                          width: double.infinity,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported),
-                        ),
                 ),
                 // -------------------- DISCOUNT BADGE --------------------
                 if (deal.discountValue.isNotEmpty)
@@ -86,11 +106,11 @@ class DealCard extends StatelessWidget {
                     left: 8.w,
                     child: Container(
                       padding: EdgeInsets.symmetric(
-                        horizontal: 8.w,
-                        vertical: 4.h,
+                        horizontal: 6.w,
+                        vertical: 3.h,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.red,
+                        color: Colors.redAccent,
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
@@ -98,7 +118,7 @@ class DealCard extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 12.sp,
+                          fontSize: 10.sp,
                         ),
                       ),
                     ),
@@ -110,80 +130,9 @@ class DealCard extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () {
                       if (authService.currentUser == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  color: Colors.white,
-                                  size: 24.w,
-                                ),
-                                SizedBox(width: 8.w),
-                                Expanded(
-                                  child: Text(
-                                    'يجب تسجيل الدخول لإضافة المفضلات',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 12.sp,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.kElectricLime,
-                                    foregroundColor: Colors.black,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 12.w,
-                                      vertical: 8.h,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8.r),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const LoginScreen(),
-                                      ),
-                                    );
-                                    ScaffoldMessenger.of(
-                                      context,
-                                    ).removeCurrentSnackBar();
-                                  },
-                                  child: Text(
-                                    'تسجيل الدخول',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 12.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            backgroundColor: AppTheme.kDarkBackground,
-                            elevation: 6,
-                            duration: const Duration(seconds: 3),
-                            behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.all(16.w),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r),
-                              side: BorderSide(
-                                color: AppTheme.kElectricLime.withValues(
-                                  alpha: 0.3,
-                                ),
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                        );
+                        _showLoginSnackBar(context);
                         return;
                       }
-                      // Toggle favorite status
                       if (onFavoriteToggle != null) {
                         onFavoriteToggle!();
                       }
@@ -191,70 +140,117 @@ class DealCard extends StatelessWidget {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
+                        color: Colors.black.withOpacity(0.4),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite ? Colors.redAccent : Colors.white,
-                        size: 20.w,
+                        size: 18.w,
                       ),
                     ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 8.h),
             // -------------------- INFO SECTION --------------------
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const NeverScrollableScrollPhysics(),
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: 8.0.w,
-                    left: 8.0.w,
-                    top: 8.0.h,
-                    bottom: 16.0.h,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        deal.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+            Padding(
+              padding: EdgeInsets.all(10.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   // Company Name (Natural state)
+                  if (deal.companyName != null)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 2.h),
+                      child: Text(
+                        deal.companyName!,
                         style: TextStyle(
-                          color: AppTheme.kLightText,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14.sp,
+                          color: Colors.white70,
+                          fontSize: 10.sp,
+                          fontFamily: 'Cairo',
                         ),
                       ),
-                      SizedBox(height: 8.h),
-                      Row(
-                        children: [
-                          Icon(Icons.timer, size: 14.w, color: Colors.redAccent),
-                          SizedBox(width: 4.w),
-                          Expanded(
-                            child: Text(
-                              'ينتهي في: $formattedDate',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.redAccent,
-                                fontSize: 11.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                    ),
+                   // Title (2 lines)
+                  Text(
+                    deal.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppTheme.kLightText,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  // Expiry
+                  Row(
+                    children: [
+                      Icon(Icons.access_time, size: 12.w, color: Colors.redAccent),
+                      SizedBox(width: 4.w),
+                      Expanded(
+                        child: Text(
+                          formattedDate,
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
-                ),
+                  
+                  if (showCategory && deal.categoryName != null && deal.categoryName!.isNotEmpty) ...[
+                    SizedBox(height: 6.h),
+                    Text(
+                      deal.categoryName!,
+                      style: TextStyle(
+                        color: AppTheme.kElectricLime,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showLoginSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.white, size: 24.w),
+            SizedBox(width: 8.w),
+            const Expanded(
+              child: Text(
+                'يجب تسجيل الدخول لإضافة المفضلات',
+                style: TextStyle(fontFamily: 'Cairo', color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'تسجيل الدخول',
+          textColor: AppTheme.kElectricLime,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            );
+          },
+        ),
+        backgroundColor: AppTheme.kDarkBackground.withOpacity(0.9),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.all(16.w),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       ),
     );
   }

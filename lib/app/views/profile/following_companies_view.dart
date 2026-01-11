@@ -120,7 +120,7 @@ class _FollowingCompaniesViewState extends State<FollowingCompaniesView> {
                       crossAxisCount: crossAxisCount,
                       mainAxisSpacing: 12.h,
                       crossAxisSpacing: 16.w,
-                      childAspectRatio: 0.73,
+                      childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.65 : 0.9,
                     ),
                     itemBuilder: (context, index) {
                       final company = profileVm.followedCompanies[index];

@@ -28,15 +28,11 @@ class CompaniesViewModel extends ChangeNotifier {
     }
 
     try {
+      // Reverting to sequential loading to avoid saturating network on low-end devices
       companies = await _supabaseService.getCompanies();
-
-      // تحميل حالة المتابعة لكل الشركات
-      final userId = Supabase.instance.client.auth.currentUser?.id;
-      if (userId != null) {
-        await _loadFollowingStatus(userId);
-      }
-
-      // اشترك في Realtime بعد التحميل
+      await _getInitialFollowStatus();
+      
+      // Subscribe to Realtime after loading
       _subscribeToCompanies();
       _subscribeToFollowing();
     } catch (e) {
@@ -47,6 +43,13 @@ class CompaniesViewModel extends ChangeNotifier {
       if (hasListeners) {
         notifyListeners();
       }
+    }
+  }
+
+  Future<void> _getInitialFollowStatus() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId != null) {
+      await _loadFollowingStatus(userId);
     }
   }
 

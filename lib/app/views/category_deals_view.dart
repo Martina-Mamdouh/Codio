@@ -66,67 +66,49 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
             )
           : Consumer<UserProfileViewModel>(
               builder: (context, profileVm, _) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Force exact column count
-                    int crossAxisCount;
-                    final width = constraints.maxWidth;
+                return RefreshIndicator(
+                  onRefresh: _loadDeals,
+                  color: AppTheme.kElectricLime,
+                  child: ListView.separated(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 16.h,
+                      horizontal: 16.w,
+                    ),
+                    itemCount: _deals.length,
+                    separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                    itemBuilder: (context, index) {
+                      final deal = _deals[index];
+                      final isFav = profileVm.isDealFavorite(deal.id);
 
-                    if (width < 360) {
-                      crossAxisCount = 1; // Single column for small screens
-                    } else {
-                      crossAxisCount = 2; // Always 2 columns
-                    }
-
-                    return RefreshIndicator(
-                      onRefresh: _loadDeals,
-                      color: AppTheme.kElectricLime,
-                      child: GridView.builder(
-                        padding: EdgeInsets.symmetric(
-                          vertical: 16.h,
-                          horizontal: 16.w,
-                        ),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: 12.w,
-                          mainAxisSpacing: 16.h,
-                          childAspectRatio: 0.72,
-                        ),
-                        itemCount: _deals.length,
-                        itemBuilder: (context, index) {
-                          final deal = _deals[index];
-                          final isFav = profileVm.isDealFavorite(deal.id);
-
-                          return DealCard(
-                            deal: deal,
-                            isFavorite: isFav,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      DealDetailsView(deal: deal),
-                                ),
-                              );
-                            },
-                            onFavoriteToggle: () async {
-                              final success = await profileVm
-                                  .toggleFavoriteForDeal(deal.id);
-                              if (!success && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'تعذّر تحديث المفضّلة، حاول مرة أخرى',
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
+                      return DealCard(
+                        deal: deal,
+                        isFavorite: isFav,
+                        showCategory: true,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DealDetailsView(deal: deal),
+                            ),
                           );
                         },
-                      ),
-                    );
-                  },
+                        onFavoriteToggle: () async {
+                          final success = await profileVm
+                              .toggleFavoriteForDeal(deal.id);
+                          if (!success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'تعذّر تحديث المفضّلة، حاول مرة أخرى',
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
                 );
               },
             ),

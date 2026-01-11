@@ -59,42 +59,40 @@ class CompanyProfileViewModel extends ChangeNotifier {
   Future<void> loadCompanyData() async {
     isLoading = true;
     errorMessage = null;
+    // Notify only if not currently loading to avoid excessive rebuilds
     if (hasListeners) {
       notifyListeners();
     }
 
     try {
-      // بيانات الشركة (من الـ Service اللي بيرجع category_name و deal_count)
+      // ✅ Fetch company, deal count, and category name in one optimized call
       company = await _supabaseService.getCompanyById(companyId);
-      if (kDebugMode) {
-        print('loadCompanyData: company loaded: ${company?.name ?? 'null'} for id $companyId');
-      }
-
-      // ✅ جلب كل التصنيفات عشان نعرض ال tags
+      
+      // Fetch all categories for tags
       allCategories = await _supabaseService.getCategories();
 
       if (company == null) {
         errorMessage = 'لم يتم العثور على هذه الشركة';
-        isLoading = false;
-        if (hasListeners) {
-          notifyListeners();
-        }
         return;
       }
 
-      // عروض الشركة
-      deals = await _supabaseService.getCompanyDeals(companyId);
-      if (kDebugMode) {
-        print('loadCompanyData: loaded ${deals.length} deals for company ${company!.name}');
+      // Fetch deals and check follow status concurrently
+      final results = await Future.wait([
+        _supabaseService.getCompanyDeals(companyId),
+        _supabaseService.isCompanyFollowed(companyId),
+      ]);
+
+      deals = results[0] as List<DealModel>;
+      isFollowed = results[1] as bool;
+
+      // Update local click counts without extra notify
+      final stats = await _analyticsService.getCompanyAnalytics(companyId);
+      if (stats != null) {
+        companyPageViews = stats['page_view_count'] ?? 0;
+        socialClicks = stats['social_click_count'] ?? 0;
+        mapClicks = stats['map_click_count'] ?? 0;
       }
 
-      // حالة المتابعة
-      isFollowed = await _supabaseService.isCompanyFollowed(companyId);
-
-      // تحميل الإحصائيات الحقيقية
-      await loadCompanyStats();
-
-      // اشترك في Realtime بعد التحميل
       _subscribeToCompany();
     } catch (e) {
       if (kDebugMode) {

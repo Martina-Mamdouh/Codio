@@ -1,5 +1,6 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -94,8 +95,8 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: EdgeInsets.only(
               right: 16.w,
               left: 16.w,
-              top: 120.h,
-              bottom: 24.h,
+              top: 80.h,
+              bottom: 20.h,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
               ),
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(16.w, 40.h, 16.w, 24.w),
+                padding: EdgeInsets.fromLTRB(16.w, 28.h, 16.w, 16.w),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -155,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 12.h),
 
                       // Password
                       AuthTextField(
@@ -178,10 +179,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
 
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 12.h),
                       // Forgot Password
                       Padding(
-                        padding: EdgeInsets.only(top: 12.h, bottom: 24.h),
+                        padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: GestureDetector(
@@ -198,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               'نسيت كلمة المرور؟',
                               style: TextStyle(
                                 color: Colors.white54,
-                                fontSize: 14.sp,
+                                fontSize: 13.sp,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -246,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         ),
                                         Container(
-                                          padding: EdgeInsets.all(16.w),
+                                          padding: EdgeInsets.all(12.w),
                                           decoration: const BoxDecoration(
                                             color: Colors.black,
                                             shape: BoxShape.circle,
@@ -254,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           child: Icon(
                                             Icons.arrow_forward,
                                             color: Colors.white,
-                                            size: 24.sp,
+                                            size: 20.sp,
                                           ),
                                         ),
                                       ],
@@ -264,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
 
-                      SizedBox(height: 32.h),
+                      SizedBox(height: 16.h),
 
                       Row(
                         children: [
@@ -280,7 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
 
-                      SizedBox(height: 32.h),
+                      SizedBox(height: 16.h),
 
                       // Social Buttons
                       Padding(
@@ -292,25 +293,38 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: FontAwesomeIcons.google,
                               onPressed: _handleGoogleLogin,
                             ),
-                            SizedBox(width: 16.w),
-                            SocialLoginButton(
-                              text: 'أبل',
-                              icon: FontAwesomeIcons.apple,
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'تسجيل الدخول عبر أبل قريباً',
+                            if (Platform.isAndroid) ...[
+                              SizedBox(width: 16.w),
+                              SocialLoginButton(
+                                text: 'أندرويد',
+                                icon: FontAwesomeIcons.android,
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('تسجيل الدخول عبر أندرويد متاح قريباً'),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
+                                  );
+                                },
+                              ),
+                            ] else if (Platform.isIOS) ...[
+                              SizedBox(width: 16.w),
+                              SocialLoginButton(
+                                text: 'أبل',
+                                icon: FontAwesomeIcons.apple,
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('تسجيل الدخول عبر أبل متاح قريباً'),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ],
                         ),
                       ),
 
-                      SizedBox(height: 40.h),
+                      SizedBox(height: 20.h),
 
                       // Sign Up Footer
                       Row(
@@ -344,7 +358,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 16.h),
                     ],
                   ),
                 ),

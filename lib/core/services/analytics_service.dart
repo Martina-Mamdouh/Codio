@@ -132,6 +132,121 @@ class AnalyticsService {
     );
   }
 
+  /// Track emoji feedback (user satisfaction rating)
+  Future<bool> trackEmojiFeedback(int dealId, {required String emojiType}) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      
+      if (userId == null) {
+        if (kDebugMode) {
+          print('❌ Cannot track emoji feedback: User not logged in');
+        }
+        return false;
+      }
+
+      // Validate emoji type
+      if (!['happy', 'neutral', 'sad'].contains(emojiType)) {
+        if (kDebugMode) {
+          print('❌ Invalid emoji type: $emojiType');
+        }
+        return false;
+      }
+
+      // Upsert to ensure one feedback per user per deal
+      await _supabase.from('deal_emoji_feedback').upsert({
+        'deal_id': dealId,
+        'user_id': userId,
+        'emoji_type': emojiType,
+        'created_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'deal_id,user_id');
+
+      if (kDebugMode) {
+        print('😊 Emoji feedback tracked: $emojiType for deal #$dealId');
+      }
+      
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error tracking emoji feedback: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Get emoji feedback statistics for a specific deal
+  Future<Map<String, dynamic>?> getEmojiFeedbackStats(int dealId) async {
+    try {
+      final response = await _supabase
+          .rpc('get_deal_emoji_stats', params: {'p_deal_id': dealId});
+      
+      if (response != null && response is Map) {
+        return Map<String, dynamic>.from(response);
+      }
+      
+      // Fallback: manual aggregation if RPC doesn't exist
+      final feedbacks = await _supabase
+          .from('deal_emoji_feedback')
+          .select('emoji_type')
+          .eq('deal_id', dealId);
+      
+      if (feedbacks.isEmpty) {
+        return {
+          'happy_count': 0,
+          'neutral_count': 0,
+          'sad_count': 0,
+          'total_count': 0,
+          'happy_percentage': 0.0,
+          'neutral_percentage': 0.0,
+          'sad_percentage': 0.0,
+        };
+      }
+      
+      final happyCount = feedbacks.where((f) => f['emoji_type'] == 'happy').length;
+      final neutralCount = feedbacks.where((f) => f['emoji_type'] == 'neutral').length;
+      final sadCount = feedbacks.where((f) => f['emoji_type'] == 'sad').length;
+      final total = feedbacks.length;
+      
+      return {
+        'happy_count': happyCount,
+        'neutral_count': neutralCount,
+        'sad_count': sadCount,
+        'total_count': total,
+        'happy_percentage': total > 0 ? (happyCount / total * 100) : 0.0,
+        'neutral_percentage': total > 0 ? (neutralCount / total * 100) : 0.0,
+        'sad_percentage': total > 0 ? (sadCount / total * 100) : 0.0,
+      };
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error fetching emoji feedback stats: $e');
+      }
+      return null;
+    }
+  }
+
+  /// Get user's emoji feedback for a specific deal (to show which one they selected)
+  Future<String?> getUserEmojiFeedback(int dealId) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      
+      if (userId == null) return null;
+
+      final response = await _supabase
+          .from('deal_emoji_feedback')
+          .select('emoji_type')
+          .eq('deal_id', dealId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      
+      return response?['emoji_type'] as String?;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error fetching user emoji feedback: $e');
+      }
+      return null;
+    }
+  }
+
+
   // ==================== COMPANY TRACKING ====================
   
   /// Track company page view

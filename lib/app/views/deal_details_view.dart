@@ -193,91 +193,180 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                             ),
                             SizedBox(height: 8.h),
 
-                            // مؤشر نجاح العرض وتقييم التفاعل
+                            // عداد الزيارات وتقييم النجاح
                             Consumer<DealDetailsViewModel>(
                               builder: (context, viewModel, _) {
-                                return Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.check_circle,
-                                          color: Colors.green,
-                                          size: 16.w,
-                                        ),
-                                        SizedBox(width: 6.w),
-                                        Text(
-                                          'شغّال (${viewModel.calculatedSuccessRate.toStringAsFixed(0)}%)',
-                                          style: TextStyle(
-                                            color: Colors.green,
-                                            fontSize: 14.sp,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                                return Container(
+                                  padding: EdgeInsets.all(16.w),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppTheme.kElectricLime.withValues(alpha: 0.1),
+                                        AppTheme.kElectricLime.withValues(alpha: 0.05),
                                       ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                     ),
-                                    SizedBox(height: 12.h),
-
-                                    // تقييم سريع
-                                    Container(
-                                      padding: EdgeInsets.all(12.w),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF2A2A2A),
-                                        borderRadius: BorderRadius.circular(12.r),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'تقييم سريع للعرض:',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16.sp,
-                                              fontWeight: FontWeight.bold,
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    border: Border.all(
+                                      color: AppTheme.kElectricLime.withValues(alpha: 0.3),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Visit count
+                                      Expanded(
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              Icons.visibility_rounded,
+                                              color: AppTheme.kElectricLime,
+                                              size: 32.w,
                                             ),
-                                          ),
-                                          SizedBox(height: 8.h),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                            children: [
-                                              _buildFeedbackEmoji('😊', '${viewModel.emotionalHappy.toStringAsFixed(0)}%', Colors.green),
-                                              _buildFeedbackEmoji('😐', '${viewModel.emotionalNeutral.toStringAsFixed(0)}%', Colors.yellow),
-                                              _buildFeedbackEmoji('😞', '${viewModel.emotionalSad.toStringAsFixed(0)}%', Colors.red),
-                                            ],
-                                          ),
-                                        ],
+                                            SizedBox(height: 8.h),
+                                            Text(
+                                              '${viewModel.dealViews}',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 24.sp,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(height: 4.h),
+                                            Text(
+                                              'زيارة',
+                                              style: TextStyle(
+                                                color: Colors.grey[400],
+                                                fontSize: 12.sp,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                      
+                                      Container(
+                                        width: 1,
+                                        height: 60.h,
+                                        color: Colors.white10,
+                                      ),
+                                      
+                                      // Success rate
+                                      Expanded(
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              Icons.check_circle_rounded,
+                                              color: Colors.green,
+                                              size: 32.w,
+                                            ),
+                                            SizedBox(height: 8.h),
+                                            Text(
+                                              '${viewModel.calculatedSuccessRate.toStringAsFixed(0)}%',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 24.sp,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(height: 4.h),
+                                            Text(
+                                              'شغّال',
+                                              style: TextStyle(
+                                                color: Colors.grey[400],
+                                                fontSize: 12.sp,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 );
                               },
                             ),
                             SizedBox(height: 16.h),
 
-                            // تتبع التفاعل
-                            Container(
-                              padding: EdgeInsets.all(12.w),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2A2A2A),
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'تتبع التفاعل:',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                            // تقييم سريع بالإيموجي - تفاعلي
+                            Consumer<DealDetailsViewModel>(
+                              builder: (context, viewModel, _) {
+                                return Container(
+                                  padding: EdgeInsets.all(16.w),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2A2A2A),
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    border: Border.all(color: Colors.white10),
                                   ),
-                                  SizedBox(height: 8.h),
-                                  _buildInteractionStats(viewModel),
-                                ],
-                              ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'قيّم تجربتك مع العرض:',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 12.h),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          _buildInteractiveEmoji(
+                                            context,
+                                            viewModel,
+                                            widget.deal.id,
+                                            '😊',
+                                            'happy',
+                                            'ممتاز',
+                                            Colors.green,
+                                            viewModel.totalEmojiCount > 0 
+                                                ? '${viewModel.emotionalHappy.toStringAsFixed(0)}%'
+                                                : '-',
+                                          ),
+                                          _buildInteractiveEmoji(
+                                            context,
+                                            viewModel,
+                                            widget.deal.id,
+                                            '😐',
+                                            'neutral',
+                                            'عادي',
+                                            Colors.orange,
+                                            viewModel.totalEmojiCount > 0 
+                                                ? '${viewModel.emotionalNeutral.toStringAsFixed(0)}%'
+                                                : '-',
+                                          ),
+                                          _buildInteractiveEmoji(
+                                            context,
+                                            viewModel,
+                                            widget.deal.id,
+                                            '😞',
+                                            'sad',
+                                            'سيء',
+                                            Colors.red,
+                                            viewModel.totalEmojiCount > 0 
+                                                ? '${viewModel.emotionalSad.toStringAsFixed(0)}%'
+                                                : '-',
+                                          ),
+                                        ],
+                                      ),
+                                      if (viewModel.totalEmojiCount > 0) ...[
+                                        SizedBox(height: 12.h),
+                                        Center(
+                                          child: Text(
+                                            '${viewModel.totalEmojiCount} تقييم',
+                                            style: TextStyle(
+                                              color: Colors.grey[500],
+                                              fontSize: 11.sp,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
-
                             SizedBox(height: 16.h),
 
                             Row(
@@ -554,78 +643,6 @@ class _DealDetailsViewState extends State<DealDetailsView> {
 
                             SizedBox(height: 32.h),
 
-                            // --- FEEDBACK & SOCIAL PROOF SECTION ---
-                            Container(
-                              padding: EdgeInsets.all(20.w),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1C1C1E),
-                                borderRadius: BorderRadius.circular(16.r),
-                                border: Border.all(color: Colors.white10),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        'إحصائيات النجاح',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16.sp,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.kElectricLime.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(20.r),
-                                        ),
-                                        child: Text(
-                                          '${viewModel.calculatedSuccessRate.toInt()}% نجاح',
-                                          style: TextStyle(
-                                            color: AppTheme.kElectricLime,
-                                            fontSize: 12.sp,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 20.h),
-                                  // Success Bar
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10.r),
-                                    child: LinearProgressIndicator(
-                                      value: viewModel.calculatedSuccessRate / 100,
-                                      backgroundColor: Colors.white12,
-                                      color: AppTheme.kElectricLime,
-                                      minHeight: 10.h,
-                                    ),
-                                  ),
-                                  SizedBox(height: 24.h),
-                                  // Emojis Group
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                    children: [
-                                      _buildFeedbackEmoji('😊', '${viewModel.emotionalHappy.toInt()}%', Colors.greenAccent),
-                                      _buildFeedbackEmoji('😐', '${viewModel.emotionalNeutral.toInt()}%', Colors.orangeAccent),
-                                      _buildFeedbackEmoji('😞', '${viewModel.emotionalSad.toInt()}%', Colors.redAccent),
-                                    ],
-                                  ),
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 20),
-                                    child: Divider(color: Colors.white10, height: 1),
-                                  ),
-                                  // Detailed Stats
-                                  _buildInteractionStats(viewModel),
-                                ],
-                              ),
-                            ),
-
-                            SizedBox(height: 32.h),
-
                             if (widget.deal.termsConditions.isNotEmpty) ...[
                               Text(
                                 'الشروط والاحكام',
@@ -681,23 +698,79 @@ class _DealDetailsViewState extends State<DealDetailsView> {
     );
   }
 
-  Widget _buildFeedbackEmoji(String emoji, String percentage, Color color) {
-    return Column(
-      children: [
-        Text(
-          emoji,
-          style: TextStyle(fontSize: 24.sp),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          percentage,
-          style: TextStyle(
-            color: color,
-            fontSize: 12.sp,
-            fontWeight: FontWeight.bold,
+  Widget _buildInteractiveEmoji(
+    BuildContext context,
+    DealDetailsViewModel viewModel,
+    int dealId,
+    String emoji,
+    String emojiType,
+    String label,
+    Color color,
+    String percentage,
+  ) {
+    final isSelected = viewModel.userSelectedEmoji == emojiType;
+    
+    return GestureDetector(
+      onTap: () async {
+        final success = await viewModel.submitEmojiFeedback(dealId, emojiType);
+        if (context.mounted) {
+          if (success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('شكراً لتقييمك! $emoji'),
+                duration: const Duration(seconds: 2),
+                backgroundColor: color,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('يجب تسجيل الدخول للتقييم'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? color.withValues(alpha: 0.2) 
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isSelected ? color : Colors.white10,
+            width: isSelected ? 2 : 1,
           ),
         ),
-      ],
+        child: Column(
+          children: [
+            Text(
+              emoji,
+              style: TextStyle(fontSize: 32.sp),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? color : Colors.grey[400],
+                fontSize: 11.sp,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              percentage,
+              style: TextStyle(
+                color: color,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

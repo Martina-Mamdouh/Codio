@@ -46,7 +46,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
                 child: Image.asset(
-                  'assets/images/slogan.png',
+                  'assets/images/logo.jpg',
                   width: 120.w,
                   height: 120.h,
                   fit: BoxFit.contain,

@@ -27,6 +27,9 @@ class CompanyCard extends StatelessWidget {
     final followers = company.followersCount ?? 0;
     final dealsCount = company.dealCount ?? 0;
 
+    print('📸 CompanyCard Logo URL: [${company.logoUrl}]');
+    print('📸 CompanyCard Cover URL: [${company.coverImageUrl}]');
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: InkWell(
@@ -49,31 +52,40 @@ class CompanyCard extends StatelessWidget {
                       top: Radius.circular(12.r),
                     ),
                     child: AspectRatio(
-                      aspectRatio: 16.w / 9.h,
-                      child: CachedNetworkImage(
-                        imageUrl:
-                            company.coverImageUrl ?? company.logoUrl ?? '',
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        placeholder: (context, url) => Container(
-                          color: const Color(0xFF2A2A2A),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.kElectricLime,
-                              strokeWidth: 2,
+                      aspectRatio: 16 / 9, // Using standard ratio
+                      child: (company.coverImageUrl?.isNotEmpty ?? false) || (company.logoUrl?.isNotEmpty ?? false)
+                        ? CachedNetworkImage(
+                            imageUrl: (company.coverImageUrl?.isNotEmpty ?? false)
+                                ? company.coverImageUrl!
+                                : company.logoUrl!,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            placeholder: (context, url) => Container(
+                              color: const Color(0xFF2A2A2A),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.kElectricLime,
+                                  strokeWidth: 2,
+                                ),
+                              ),
                             ),
+                            errorWidget: (context, url, error) {
+                              print('❌ CompanyCard Cover Error: $error for URL: [$url]');
+                              return Container(
+                                color: const Color(0xFF2A2A2A),
+                                child: Icon(
+                                  Icons.store,
+                                  color: Colors.white24,
+                                  size: 40.w,
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: const Color(0xFF2A2A2A),
+                            child: Icon(Icons.store, color: Colors.white24, size: 40.w),
                           ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: const Color(0xFF2A2A2A),
-                          child: Icon(
-                            Icons.store,
-                            color: Colors.white24,
-                            size: 40.w,
-                          ),
-                        ),
-                      ),
                     ),
                   ),
 
@@ -96,8 +108,10 @@ class CompanyCard extends StatelessWidget {
                                 placeholder: (context, url) => const Center(
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 ),
-                                errorWidget: (context, url, error) =>
-                                    Icon(Icons.store, color: Colors.grey, size: 28.w),
+                                errorWidget: (context, url, error) {
+                                  print('❌ CompanyCard Logo Error: $error for URL: [$url]');
+                                  return Icon(Icons.store, color: Colors.grey, size: 28.w);
+                                },
                               )
                             : Icon(Icons.store, color: Colors.grey, size: 28.w),
                       ),

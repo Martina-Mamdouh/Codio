@@ -55,5 +55,17 @@
 		<string>نستخدم موقعك لعرض العروض والمتاجر القريبة منك على الخريطة.</string>
 		<key>GMSApiKey</key>
 		<string>AIzaSyDutlG1pC0N-UqTnndAdRu0qVQf7iwV7xk</string>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<!-- Reversed client ID from GoogleService-Info.plist for iOS -->
+					<string>com.googleusercontent.apps.75334850507-3853qa1bm20pgefd8nfnsoahcemtqo1l</string>
+				</array>
+			</dict>
+		</array>
 	</dict>
 </plist>

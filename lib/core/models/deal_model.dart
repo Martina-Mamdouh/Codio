@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../utils/url_utils.dart';
 
 class DealModel {
   final int id;
@@ -58,15 +59,15 @@ class DealModel {
   factory DealModel.fromJson(Map<String, dynamic> json) {
     try {
       return DealModel(
-        id: json['id'] as int,
+        id: (json['id'] as num?)?.toInt() ?? 0,
         title: json['title'] ?? 'No Title',
         description: json['description'] ?? '',
-        imageUrl: json['image_url'] ?? '',
+        imageUrl: UrlUtils.constructFullUrl(json['image_url'] as String?),
         dealType: json['deal_type'] ?? 'unknown',
         dealValue: json['deal_value'] ?? '',
         expiresAt:
             DateTime.tryParse(json['expires_at'] ?? '') ?? DateTime.now(),
-        companyId: json['company_id'] as int,
+        companyId: (json['company_id'] as num?)?.toInt() ?? 0,
         createdAt:
             DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
         termsConditions: json['terms_conditions'] ?? '',
@@ -76,16 +77,28 @@ class DealModel {
         discountValue: json['discount_value'] ?? '',
         isForStudents: json['is_for_students'] ?? false,
         companyName: json['companies'] != null
-            ? json['companies']['name']
+            ? (json['companies'] is List
+                ? (json['companies'] as List).isNotEmpty 
+                    ? (json['companies'] as List).first['name'] 
+                    : null
+                : json['companies']['name'])
             : null,
         companyLogo: json['companies'] != null
-            ? json['companies']['logo_url']
+            ? (json['companies'] is List
+                ? (json['companies'] as List).isNotEmpty 
+                    ? UrlUtils.constructFullUrl((json['companies'] as List).first['logo_url'] as String?)
+                    : null
+                : UrlUtils.constructFullUrl(json['companies']['logo_url'] as String?))
             : null,
 
         // ✨ الحقول الجديدة
-        categoryId: json['category_id'] as int?,
+        categoryId: (json['category_id'] as num?)?.toInt(),
         categoryName: json['categories'] != null
-            ? json['categories']['name']
+            ? (json['categories'] is List
+                ? (json['categories'] as List).isNotEmpty 
+                    ? (json['categories'] as List).first['name'] 
+                    : null
+                : json['categories']['name'])
             : json['category_name'] as String?,
 
         // Dynamic feedback and success rate
@@ -106,6 +119,8 @@ class DealModel {
       if (kDebugMode) {
         print('❌ Error parsing DealModel: $e');
         print('JSON INPUT → $json');
+        print('IMAGE URL KEY: ${json['image_url']}');
+        print('COMPANIES KEY: ${json['companies']}');
       }
       rethrow;
     }

@@ -338,60 +338,6 @@ class CompanyInfoTab extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _SocialLinks(socialLinks: c.socialLinks!, viewModel: viewModel),
-              const SizedBox(height: 20),
-
-              // تتبع التفاعل
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.kLightBackground,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'تتبع التفاعل:',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.link, color: Colors.white70, size: 16),
-                        const SizedBox(width: 8),
-                        Text(
-                          'الضغط على التواصل: ${viewModel.socialClicks}',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                            fontFamily: 'Cairo',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Icon(Icons.map, color: Colors.white70, size: 16),
-                        const SizedBox(width: 8),
-                        Text(
-                          'الضغط على الخريطة: ${viewModel.mapClicks}',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                            fontFamily: 'Cairo',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
             ],
           ],
         ),

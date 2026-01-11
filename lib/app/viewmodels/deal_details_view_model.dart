@@ -39,10 +39,11 @@ class DealDetailsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Load both in parallel
+      // Load all data in parallel
       await Future.wait([
         _supabaseService.getCompanyById(companyId).then((res) => company = res),
         loadDealStats(dealId),
+        loadEmojiFeedbackStats(dealId),
       ]);
       
       companyViews++;
@@ -74,22 +75,76 @@ class DealDetailsViewModel extends ChangeNotifier {
 
   int favorite_count = 0;
 
+  // Emoji feedback statistics (from real user data)
+  int happyCount = 0;
+  int neutralCount = 0;
+  int sadCount = 0;
+  int totalEmojiCount = 0;
+  String? userSelectedEmoji; // Which emoji the current user selected
+
   // الحسابات الديناميكية للواجهة
   double get calculatedSuccessRate {
     if (dealViews == 0) return 100.0; // افتراضي للعروض الجديدة
     final interactions = copyCodeCount + openLinkCount;
-    if (interactions == 0) return 95.0; 
+    if (interactions == 0) return 0.0; // لا يوجد تفاعل
     
-    // نسبة النجاح = (التحويلات / المشاهدات) * 100 - بحد أدنى 70% لإعطاء انطباع جيد
+    // نسبة النجاح الحقيقية = (التحويلات / المشاهدات) * 100
     double rate = (interactions / dealViews) * 100;
-    if (rate < 70) rate = 70 + (rate / 10); // تحسين بسيط للعرض
     return rate > 100 ? 100 : rate;
   }
 
-  // توزيع الإيموجي تلقائياً بناءً على التفاعل
-  double get emotionalHappy => calculatedSuccessRate > 90 ? 85.0 : 75.0;
-  double get emotionalNeutral => calculatedSuccessRate > 90 ? 10.0 : 20.0;
-  double get emotionalSad => 5.0;
+  // توزيع الإيموجي من البيانات الفعلية
+  double get emotionalHappy {
+    if (totalEmojiCount == 0) return 0.0;
+    return (happyCount / totalEmojiCount) * 100;
+  }
+  
+  double get emotionalNeutral {
+    if (totalEmojiCount == 0) return 0.0;
+    return (neutralCount / totalEmojiCount) * 100;
+  }
+  
+  double get emotionalSad {
+    if (totalEmojiCount == 0) return 0.0;
+    return (sadCount / totalEmojiCount) * 100;
+  }
+
+  /// Submit emoji feedback
+  Future<bool> submitEmojiFeedback(int dealId, String emojiType) async {
+    final success = await _analyticsService.trackEmojiFeedback(
+      dealId,
+      emojiType: emojiType,
+    );
+    
+    if (success) {
+      // Reload emoji stats after submission
+      await loadEmojiFeedbackStats(dealId);
+    }
+    
+    return success;
+  }
+
+  /// Load emoji feedback statistics
+  Future<void> loadEmojiFeedbackStats(int dealId) async {
+    try {
+      // Load aggregated stats
+      final stats = await _analyticsService.getEmojiFeedbackStats(dealId);
+      if (stats != null) {
+        happyCount = stats['happy_count'] ?? 0;
+        neutralCount = stats['neutral_count'] ?? 0;
+        sadCount = stats['sad_count'] ?? 0;
+        totalEmojiCount = stats['total_count'] ?? 0;
+        notifyListeners();
+      }
+      
+      // Load user's selection
+      userSelectedEmoji = await _analyticsService.getUserEmojiFeedback(dealId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error loading emoji feedback stats: $e');
+    }
+  }
+
 
   // نسخ الكود
   Future<void> copyCode(BuildContext context, int dealId, String code) async {

@@ -19,16 +19,9 @@ class _CompanyDealsTabState extends State<CompanyDealsTab> {
   @override
   void initState() {
     super.initState();
-    // Load deals if not loaded
-    if (widget.viewModel.deals.isEmpty && !widget.viewModel.isDealsLoading) {
-      if (kDebugMode) {
-        print('CompanyDealsTab initState: loading deals for company ${widget.viewModel.company?.name ?? 'unknown'}');
-      }
-      widget.viewModel.loadDeals();
-    } else {
-      if (kDebugMode) {
-        print('CompanyDealsTab initState: deals already loaded: ${widget.viewModel.deals.length}');
-      }
+    // Removed redundant loadDeals() as it's already handled by loadCompanyData
+    if (kDebugMode) {
+      print('CompanyDealsTab: Deals count = ${widget.viewModel.deals.length}');
     }
   }
 
@@ -56,23 +49,24 @@ class _CompanyDealsTabState extends State<CompanyDealsTab> {
         itemCount: widget.viewModel.deals.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          mainAxisSpacing: 16.h,
+          childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.62 : 0.85, 
           crossAxisSpacing: 12.w,
-          childAspectRatio: 0.7,
+          mainAxisSpacing: 12.h,
         ),
         itemBuilder: (context, index) {
           final deal = widget.viewModel.deals[index];
           return DealCard(
-              deal: deal,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DealDetailsView(deal: deal),
-                  ),
-                );
-              },
-            );
+            deal: deal,
+            showCategory: true,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => DealDetailsView(deal: deal),
+                ),
+              );
+            },
+          );
         },
       ),
     );

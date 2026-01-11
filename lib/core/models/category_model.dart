@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+import '../utils/url_utils.dart';
+
 class CategoryModel {
   final int id;
   final String name;
@@ -14,12 +17,22 @@ class CategoryModel {
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
-    return CategoryModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      iconName: json['icon_name'] as String?,
-      imageUrl: json['image_url'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-    );
+    try {
+      return CategoryModel(
+        id: (json['id'] as num?)?.toInt() ?? 0,
+        name: json['name'] as String? ?? 'No Category',
+        iconName: json['icon_name'] as String?,
+        imageUrl: UrlUtils.constructFullUrl(json['image_url'] as String?),
+        createdAt: json['created_at'] != null 
+            ? DateTime.tryParse(json['created_at']) ?? DateTime.now()
+            : DateTime.now(),
+      );
+    } catch (e) {
+      return CategoryModel(
+        id: 0,
+        name: 'Parsing Error',
+        createdAt: DateTime.now(),
+      );
+    }
   }
 }

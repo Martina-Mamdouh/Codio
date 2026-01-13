@@ -7,22 +7,22 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:75334850507:android:38927ff6b44c7922e6c84e",
+        "mobilesdk_app_id": "1:75334850507:android:3caaaea28b743fc8e6c84e",
         "android_client_info": {
-          "package_name": "com.example.codio_app"
+          "package_name": "com.codio.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "623928105310-1u4dmp0if5aftjjvlqetk6hg7c4b4s63.apps.googleusercontent.com",
+          "client_id": "75334850507-vr66ndv3pgmt37rm22p3vcgbhtnr3r7o.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.codio_app",
-            "certificate_hash": "2c8e62c374ef81ec93c7ffd601bafa00783fa420"
+            "package_name": "com.codio.app",
+            "certificate_hash": "ab9ec2bda1f178d4a78da264a97b657d78554282"
           }
         },
         {
-          "client_id": "623928105310-1u4dmp0if5aftjjvlqetk6hg7c4b4s63.apps.googleusercontent.com",
+          "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -35,8 +35,95 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "623928105310-1u4dmp0if5aftjjvlqetk6hg7c4b4s63.apps.googleusercontent.com",
+              "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "75334850507-3853qa1bm20pgefd8nfnsoahcemtqo1l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kodioApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75334850507:android:38927ff6b44c7922e6c84e",
+        "android_client_info": {
+          "package_name": "com.example.codio_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "75334850507-5pdf4g60mmfnab5ncbqp2rt3ialtj43s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.codio_app",
+            "certificate_hash": "ab9ec2bda1f178d4a78da264a97b657d78554282"
+          }
+        },
+        {
+          "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSSQ7x1Og5sBYjKOenRKaUjtXMwm9GgpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "75334850507-3853qa1bm20pgefd8nfnsoahcemtqo1l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kodioApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75334850507:android:32cb359e05678574e6c84e",
+        "android_client_info": {
+          "package_name": "com.example.kodio_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSSQ7x1Og5sBYjKOenRKaUjtXMwm9GgpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "75334850507-3853qa1bm20pgefd8nfnsoahcemtqo1l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kodioApp"
+              }
             }
           ]
         }

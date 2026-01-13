@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.8.0
 
 dependencies:
   flutter:
@@ -56,7 +56,7 @@ dependencies:
   # File Handling (للـ Admin Panel)
   file_picker: ^10.3.3
   flutter_dropzone: ^4.2.1
-  font_awesome_flutter: ^10.12.0
+  font_awesome_flutter: ^10.9.1
   responsive_builder: ^0.7.1
 
 dev_dependencies:
@@ -70,6 +70,7 @@ dev_dependencies:
   flutter_native_splash: ^2.3.10
   flutter_launcher_icons: ^0.13.1
   change_app_package_name: ^1.5.0
+  rename: ^3.0.0
 
 flutter:
   uses-material-design: true

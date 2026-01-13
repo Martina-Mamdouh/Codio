@@ -11,6 +11,7 @@
 .text
 .svn/
 .swiftpm/
+.fvm/
 migrate_working_dir/
 
 # IntelliJ related

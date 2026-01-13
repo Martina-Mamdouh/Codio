@@ -55,7 +55,7 @@ class _SettingsViewState extends State<SettingsView> {
               children: [
                 // إشعارات التطبيق
                 SwitchListTile(
-                  activeThumbColor: AppTheme.kElectricLime,
+                  activeColor: AppTheme.kElectricLime,
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16.w,
                     vertical: 0,
@@ -78,7 +78,7 @@ class _SettingsViewState extends State<SettingsView> {
 
                 // إشعارات العروض فقط
                 SwitchListTile(
-                  activeThumbColor: AppTheme.kElectricLime,
+                  activeColor: AppTheme.kElectricLime,
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16.w,
                     vertical: 0,

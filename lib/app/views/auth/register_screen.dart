@@ -233,7 +233,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           /// DROPDOWN
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              initialValue: _selectedProfession,
+                              value: _selectedProfession,
                               dropdownColor: const Color(0xFF2C2C2E),
                               borderRadius: BorderRadius.circular(12.r),
                               style: TextStyle(

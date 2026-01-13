@@ -3,17 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>75334850507-3853qa1bm20pgefd8nfnsoahcemtqo1l.apps.googleusercontent.com</string>
+	<string>75334850507-lovoui09pqc3i6kjt42qs9ug0big0c37.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.75334850507-3853qa1bm20pgefd8nfnsoahcemtqo1l</string>
+	<string>com.googleusercontent.apps.75334850507-lovoui09pqc3i6kjt42qs9ug0big0c37</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>75334850507-8395nk69sf5sr6bfomvs5v1obnal5fa4.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyCSSQ7x1Og5sBYjKOenRKaUjtXMwm9GgpU</string>
+	<string>AIzaSyCqAkVByuiK3ytP-E9kNJZZnTpKCZwLq4o</string>
 	<key>GCM_SENDER_ID</key>
 	<string>75334850507</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.kodioApp</string>
+	<string>com.codio.app</string>
 	<key>PROJECT_ID</key>
 	<string>kodio-app-bdf6a</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:75334850507:ios:3853qa1bm20pgefd8nfn</string>
+	<string>1:75334850507:ios:02c82e18acded26be6c84e</string>
 </dict>
 </plist>

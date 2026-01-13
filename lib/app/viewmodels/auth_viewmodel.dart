@@ -26,10 +26,10 @@ class AuthViewModel extends ChangeNotifier {
       await _authService.signOut();
       currentUser = null;
       debugPrint('✅ Force logout completed');
-      
+
       // Wait for a clean state
       await Future.delayed(const Duration(milliseconds: 200));
-      
+
       await _loadCurrentUser();
       _listenToAuthChanges();
     } catch (e) {
@@ -48,8 +48,8 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<void> _loadCurrentUser({bool silent = false}) async {
     if (!silent) {
-       isLoading = true;
-       notifyListeners();
+      isLoading = true;
+      notifyListeners();
     }
 
     try {
@@ -74,10 +74,7 @@ class AuthViewModel extends ChangeNotifier {
     if (hasListeners) notifyListeners();
 
     try {
-      final result = await _authService.signIn(
-        email: email,
-        password: password,
-      );
+      final result = await _authService.signIn(email: email, password: password);
 
       if (result.success) {
         currentUser = result.user;
@@ -124,23 +121,13 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> signUp({
-    required String email,
-    required String password,
-    required String fullName,
-    required String profession,
-  }) async {
+  Future<bool> signUp({required String email, required String password, required String fullName, required String profession}) async {
     isLoading = true;
     errorMessage = null;
     if (hasListeners) notifyListeners();
 
     try {
-      final result = await _authService.signUp(
-        email: email,
-        password: password,
-        fullName: fullName,
-        profession: profession,
-      );
+      final result = await _authService.signUp(email: email, password: password, fullName: fullName, profession: profession);
 
       if (result.success) {
         currentUser = result.user;
@@ -199,17 +186,9 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // Update Profile
-  Future<bool> updateProfile({
-    String? fullName,
-    String? avatarUrl,
-    String? profession,
-  }) async {
+  Future<bool> updateProfile({String? fullName, String? avatarUrl, String? profession}) async {
     try {
-      final success = await _authService.updateProfile(
-        fullName: fullName,
-        avatarUrl: avatarUrl,
-        profession: profession,
-      );
+      final success = await _authService.updateProfile(fullName: fullName, avatarUrl: avatarUrl, profession: profession);
 
       if (success) {
         // Reload user profile to reflect changes

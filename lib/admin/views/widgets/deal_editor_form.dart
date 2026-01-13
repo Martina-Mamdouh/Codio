@@ -40,9 +40,7 @@ class DealEditorFormState extends State<DealEditorForm> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final selectedDeal = Provider.of<DealsManagementViewModel>(
-      context,
-    ).selectedDeal;
+    final selectedDeal = Provider.of<DealsManagementViewModel>(context).selectedDeal;
 
     if (_currentDeal != selectedDeal) {
       _currentDeal = selectedDeal;
@@ -61,14 +59,8 @@ class DealEditorFormState extends State<DealEditorForm> {
       _existingImageUrl = deal.imageUrl;
       _dealTypeController.text = deal.dealType;
       _dealValueController.text = deal.dealValue;
-      _startsAtController.text = deal.startsAt
-          .toIso8601String()
-          .split('T')
-          .first;
-      _expiresAtController.text = deal.expiresAt
-          .toIso8601String()
-          .split('T')
-          .first;
+      _startsAtController.text = deal.startsAt.toIso8601String().split('T').first;
+      _expiresAtController.text = deal.expiresAt.toIso8601String().split('T').first;
       _companyNameController.text = deal.companyName ?? '';
       _selectedCompanyId = deal.companyId;
       _termsController.text = deal.termsConditions;
@@ -112,10 +104,7 @@ class DealEditorFormState extends State<DealEditorForm> {
 
   Future<void> _pickImage() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        withData: true,
-      );
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
 
       if (result != null && result.files.first.bytes != null) {
         setState(() {
@@ -125,12 +114,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('خطأ في اختيار الصورة: $e'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في اختيار الصورة: $e'), backgroundColor: Colors.redAccent));
     }
   }
 
@@ -166,22 +150,12 @@ class DealEditorFormState extends State<DealEditorForm> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedCompanyId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('الرجاء اختيار الشركة'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الرجاء اختيار الشركة'), backgroundColor: Colors.redAccent));
       return;
     }
 
     if (_selectedImageBytes == null && !_isEditing) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('الرجاء اختيار صورة العرض'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الرجاء اختيار صورة العرض'), backgroundColor: Colors.redAccent));
       return;
     }
 
@@ -210,12 +184,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent));
       }
     }
   }
@@ -232,13 +201,7 @@ class DealEditorFormState extends State<DealEditorForm> {
         title: Text(_isEditing ? 'تعديل العرض' : 'إضافة عرض جديد'),
 
         backgroundColor: AppTheme.kDarkBackground,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: 'إغلاق',
-            onPressed: vmRead.hideEditor,
-          ),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.close), tooltip: 'إغلاق', onPressed: vmRead.hideEditor)],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -297,8 +260,7 @@ class DealEditorFormState extends State<DealEditorForm> {
                 hint: 'اكتب شروط استخدام العرض',
                 icon: Icons.rule,
                 maxLines: 3,
-                validator: (val) =>
-                    val!.isEmpty ? 'الشروط والأحكام مطلوبة' : null,
+                validator: (val) => val!.isEmpty ? 'الشروط والأحكام مطلوبة' : null,
               ),
               const SizedBox(height: 16),
 
@@ -332,19 +294,11 @@ class DealEditorFormState extends State<DealEditorForm> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildDateField(
-                      controller: _startsAtController,
-                      label: 'تاريخ البدء',
-                      hint: 'YYYY-MM-DD',
-                    ),
+                    child: _buildDateField(controller: _startsAtController, label: 'تاريخ البدء', hint: 'YYYY-MM-DD'),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildDateField(
-                      controller: _expiresAtController,
-                      label: 'تاريخ الانتهاء',
-                      hint: 'YYYY-MM-DD',
-                    ),
+                    child: _buildDateField(controller: _expiresAtController, label: 'تاريخ الانتهاء', hint: 'YYYY-MM-DD'),
                   ),
                 ],
               ),
@@ -375,24 +329,14 @@ class DealEditorFormState extends State<DealEditorForm> {
               ElevatedButton.icon(
                 onPressed: vm.isLoading ? null : () => _submit(vmRead),
                 icon: vm.isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : Icon(_isEditing ? Icons.save : Icons.add),
                 label: Text(_isEditing ? 'حفظ التعديلات' : 'إضافة العرض'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: AppTheme.kElectricLime,
                   foregroundColor: AppTheme.kDarkBackground,
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -419,10 +363,7 @@ class DealEditorFormState extends State<DealEditorForm> {
         prefixIcon: Icon(icon, color: AppTheme.kElectricLime),
         filled: true,
         fillColor: AppTheme.kDarkBackground,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
@@ -445,27 +386,17 @@ class DealEditorFormState extends State<DealEditorForm> {
     );
   }
 
-  Widget _buildDateField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-  }) {
+  Widget _buildDateField({required TextEditingController controller, required String label, required String hint}) {
     return TextFormField(
       controller: controller,
       readOnly: true,
       decoration: InputDecoration(
         labelText: '$label *',
         hintText: hint,
-        prefixIcon: const Icon(
-          Icons.calendar_today,
-          color: AppTheme.kElectricLime,
-        ),
+        prefixIcon: const Icon(Icons.calendar_today, color: AppTheme.kElectricLime),
         filled: true,
         fillColor: AppTheme.kDarkBackground,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
@@ -490,9 +421,7 @@ class DealEditorFormState extends State<DealEditorForm> {
           return const Iterable<CompanyModel>.empty();
         }
         return companiesVM.companies.where((CompanyModel company) {
-          return company.name.toLowerCase().contains(
-            textEditingValue.text.toLowerCase(),
-          );
+          return company.name.toLowerCase().contains(textEditingValue.text.toLowerCase());
         });
       },
       onSelected: (CompanyModel company) {
@@ -501,133 +430,87 @@ class DealEditorFormState extends State<DealEditorForm> {
           _companyNameController.text = company.name;
         });
       },
-      fieldViewBuilder:
-          (
-            BuildContext context,
-            TextEditingController textEditingController,
-            FocusNode focusNode,
-            VoidCallback onFieldSubmitted,
-          ) {
-            if (_companyNameController.text.isNotEmpty &&
-                textEditingController.text.isEmpty) {
-              textEditingController.text = _companyNameController.text;
-            }
+      fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+        if (_companyNameController.text.isNotEmpty && textEditingController.text.isEmpty) {
+          textEditingController.text = _companyNameController.text;
+        }
 
-            return TextFormField(
-              controller: textEditingController,
-              focusNode: focusNode,
-              decoration: InputDecoration(
-                labelText: 'الشركة *',
-                hintText: 'ابحث عن الشركة...',
-                prefixIcon: const Icon(
-                  Icons.business,
-                  color: AppTheme.kElectricLime,
-                ),
-                suffixIcon: const Icon(
-                  Icons.search,
-                  color: AppTheme.kSubtleText,
-                ),
-                filled: true,
-                fillColor: AppTheme.kDarkBackground,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: AppTheme.kSubtleText.withAlpha(51),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: AppTheme.kElectricLime,
-                    width: 2,
-                  ),
-                ),
-                labelStyle: const TextStyle(color: AppTheme.kSubtleText),
-                hintStyle: TextStyle(
-                  color: AppTheme.kSubtleText.withAlpha(128),
-                ),
-              ),
-              style: const TextStyle(color: AppTheme.kLightText),
-              validator: (val) {
-                if (val == null || val.isEmpty) return 'اسم الشركة مطلوب';
-                if (_selectedCompanyId == null) return 'اختر شركة من القائمة';
-                return null;
-              },
-              onChanged: (value) {
-                _companyNameController.text = value;
-                if (value != _companyNameController.text) {
-                  setState(() => _selectedCompanyId = null);
-                }
-              },
-            );
+        return TextFormField(
+          controller: textEditingController,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: 'الشركة *',
+            hintText: 'ابحث عن الشركة...',
+            prefixIcon: const Icon(Icons.business, color: AppTheme.kElectricLime),
+            suffixIcon: const Icon(Icons.search, color: AppTheme.kSubtleText),
+            filled: true,
+            fillColor: AppTheme.kDarkBackground,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppTheme.kElectricLime, width: 2),
+            ),
+            labelStyle: const TextStyle(color: AppTheme.kSubtleText),
+            hintStyle: TextStyle(color: AppTheme.kSubtleText.withAlpha(128)),
+          ),
+          style: const TextStyle(color: AppTheme.kLightText),
+          validator: (val) {
+            if (val == null || val.isEmpty) return 'اسم الشركة مطلوب';
+            if (_selectedCompanyId == null) return 'اختر شركة من القائمة';
+            return null;
           },
-      optionsViewBuilder:
-          (
-            BuildContext context,
-            AutocompleteOnSelected<CompanyModel> onSelected,
-            Iterable<CompanyModel> options,
-          ) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                elevation: 4.0,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 300,
-                  constraints: const BoxConstraints(maxHeight: 200),
-                  decoration: BoxDecoration(
-                    color: AppTheme.kDarkBackground,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    itemCount: options.length,
-                    shrinkWrap: true,
-                    itemBuilder: (BuildContext context, int index) {
-                      final CompanyModel option = options.elementAt(index);
-                      return ListTile(
-                        title: Text(
-                          option.name,
-                          style: const TextStyle(color: AppTheme.kLightText),
-                        ),
-                        subtitle: Text(
-                          'ID: ${option.id}',
-                          style: const TextStyle(
-                            color: AppTheme.kSubtleText,
-                            fontSize: 12,
-                          ),
-                        ),
-                        leading: const Icon(
-                          Icons.business,
-                          color: AppTheme.kElectricLime,
-                        ),
-                        onTap: () => onSelected(option),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            );
+          onChanged: (value) {
+            _companyNameController.text = value;
+            if (value != _companyNameController.text) {
+              setState(() => _selectedCompanyId = null);
+            }
           },
+        );
+      },
+      optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<CompanyModel> onSelected, Iterable<CompanyModel> options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4.0,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              width: 300,
+              constraints: const BoxConstraints(maxHeight: 200),
+              decoration: BoxDecoration(color: AppTheme.kDarkBackground, borderRadius: BorderRadius.circular(8)),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: options.length,
+                shrinkWrap: true,
+                itemBuilder: (BuildContext context, int index) {
+                  final CompanyModel option = options.elementAt(index);
+                  return ListTile(
+                    title: Text(option.name, style: const TextStyle(color: AppTheme.kLightText)),
+                    subtitle: Text('ID: ${option.id}', style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 12)),
+                    leading: const Icon(Icons.business, color: AppTheme.kElectricLime),
+                    onTap: () => onSelected(option),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildCategoryDropdown(DealsManagementViewModel vm) {
     return DropdownButtonFormField<int>(
-      initialValue: _selectedCategoryId,
+      value: _selectedCategoryId,
       decoration: InputDecoration(
         labelText: 'الفئة',
         prefixIcon: const Icon(Icons.category, color: AppTheme.kElectricLime),
         filled: true,
         fillColor: AppTheme.kDarkBackground,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
@@ -640,15 +523,9 @@ class DealEditorFormState extends State<DealEditorForm> {
       ),
       dropdownColor: AppTheme.kDarkBackground,
       style: const TextStyle(color: AppTheme.kLightText),
-      hint: const Text(
-        'اختر الفئة (اختياري)',
-        style: TextStyle(color: AppTheme.kSubtleText),
-      ),
+      hint: const Text('اختر الفئة (اختياري)', style: TextStyle(color: AppTheme.kSubtleText)),
       items: vm.categories.map((category) {
-        return DropdownMenuItem<int>(
-          value: category.id,
-          child: Text(category.name),
-        );
+        return DropdownMenuItem<int>(value: category.id, child: Text(category.name));
       }).toList(),
       onChanged: (value) => setState(() => _selectedCategoryId = value),
     );
@@ -676,7 +553,7 @@ class DealEditorFormState extends State<DealEditorForm> {
           ],
         ),
         value: value,
-        activeThumbColor: activeColor ?? AppTheme.kElectricLime,
+        activeColor: activeColor ?? AppTheme.kElectricLime,
         onChanged: onChanged,
       ),
     );
@@ -688,11 +565,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       children: [
         const Text(
           'صورة العرض *',
-          style: TextStyle(
-            color: AppTheme.kLightText,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: AppTheme.kLightText, fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Container(
@@ -709,10 +582,7 @@ class DealEditorFormState extends State<DealEditorForm> {
         Center(
           child: TextButton.icon(
             icon: const Icon(Icons.upload_file, color: AppTheme.kElectricLime),
-            label: const Text(
-              'اختيار صورة',
-              style: TextStyle(color: AppTheme.kElectricLime),
-            ),
+            label: const Text('اختيار صورة', style: TextStyle(color: AppTheme.kElectricLime)),
             onPressed: _pickImage,
           ),
         ),
@@ -724,24 +594,14 @@ class DealEditorFormState extends State<DealEditorForm> {
     if (_selectedImageBytes != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.memory(
-          _selectedImageBytes!,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: 200,
-        ),
+        child: Image.memory(_selectedImageBytes!, fit: BoxFit.cover, width: double.infinity, height: 200),
       );
     }
 
     if (_existingImageUrl != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          _existingImageUrl!,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: 200,
-        ),
+        child: Image.network(_existingImageUrl!, fit: BoxFit.cover, width: double.infinity, height: 200),
       );
     }
 
@@ -749,16 +609,9 @@ class DealEditorFormState extends State<DealEditorForm> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.image_not_supported,
-            color: AppTheme.kSubtleText,
-            size: 48,
-          ),
+          Icon(Icons.image_not_supported, color: AppTheme.kSubtleText, size: 48),
           SizedBox(height: 8),
-          Text(
-            'لم يتم اختيار صورة',
-            style: TextStyle(color: AppTheme.kSubtleText),
-          ),
+          Text('لم يتم اختيار صورة', style: TextStyle(color: AppTheme.kSubtleText)),
         ],
       ),
     );

@@ -952,7 +952,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
-          initialValue: _selectedPrimaryCategoryId,
+          value: _selectedPrimaryCategoryId,
           items: selectedCategories.map((category) {
             return DropdownMenuItem<int>(
               value: category.id,

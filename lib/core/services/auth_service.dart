@@ -5,9 +5,9 @@ import '../models/user_model.dart';
 
 class AuthService {
   final _supabase = Supabase.instance.client;
-  // Remove serverClientId to use default configuration from google-services.json
-  // This avoids SHA-1 fingerprint mismatch issues
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  // Use Web client ID as serverClientId for Supabase OAuth
+  // This is the OAuth client ID that Supabase expects
+  final GoogleSignIn _googleSignIn = GoogleSignIn(serverClientId: '75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com');
 
   User? get currentUser => _supabase.auth.currentUser;
   bool get isAuthenticated => currentUser != null;
@@ -31,38 +31,22 @@ class AuthService {
       final idToken = googleAuth.idToken;
 
       if (idToken == null) {
-        return AuthResult(
-          success: false,
-          message: 'فشل الحصول على رمز الدخول من Google',
-        );
+        return AuthResult(success: false, message: 'فشل الحصول على رمز الدخول من Google');
       }
 
       // 3. Authenticate with Supabase
-      final response = await _supabase.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: idToken,
-        accessToken: accessToken,
-      );
+      final response = await _supabase.auth.signInWithIdToken(provider: OAuthProvider.google, idToken: idToken, accessToken: accessToken);
 
       if (response.user == null) {
-        return AuthResult(
-          success: false,
-          message: 'فشل تسجيل الدخول باستخدام Google',
-        );
+        return AuthResult(success: false, message: 'فشل تسجيل الدخول باستخدام Google');
       }
 
       // 4. Create/Get User Profile
-      final profile = await _getOrCreateUserProfile(
-        userId: response.user!.id,
-        email: response.user!.email!,
-      );
+      final profile = await _getOrCreateUserProfile(userId: response.user!.id, email: response.user!.email!);
 
       // Update full name and avatar from Google if new
       if (profile != null && (profile.fullName.isEmpty)) {
-        await updateProfile(
-          fullName: googleUser.displayName,
-          avatarUrl: googleUser.photoUrl,
-        );
+        await updateProfile(fullName: googleUser.displayName, avatarUrl: googleUser.photoUrl);
         // Reload profile
         final updatedProfile = await _getUserProfile(response.user!.id);
         return AuthResult(success: true, user: updatedProfile);
@@ -71,63 +55,37 @@ class AuthService {
       return AuthResult(success: true, user: profile);
     } catch (e) {
       debugPrint('❌ Google Sign In error: $e');
-      return AuthResult(
-        success: false,
-        message: 'حدث خطأ أثناء تسجيل الدخول باستخدام Google',
-      );
+      return AuthResult(success: false, message: 'حدث خطأ أثناء تسجيل الدخول باستخدام Google');
     }
   }
 
   // Sign In
-  Future<AuthResult> signIn({
-    required String email,
-    required String password,
-  }) async {
+  Future<AuthResult> signIn({required String email, required String password}) async {
     try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
+      final response = await _supabase.auth.signInWithPassword(email: email, password: password);
 
       if (response.user == null) {
         return AuthResult(success: false, message: 'فشل تسجيل الدخول');
       }
 
-      final profile = await _getOrCreateUserProfile(
-        userId: response.user!.id,
-        email: email,
-      );
+      final profile = await _getOrCreateUserProfile(userId: response.user!.id, email: email);
 
       return AuthResult(success: true, user: profile);
     } catch (e) {
       debugPrint('❌ Login error: $e');
       final errorStr = e.toString().toLowerCase();
       if (errorStr.contains('captcha')) {
-        return AuthResult(
-          success: false,
-          message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.',
-        );
+        return AuthResult(success: false, message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.');
       }
       if (errorStr.contains('timeout') || errorStr.contains('socket')) {
-        return AuthResult(
-          success: false,
-          message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.',
-        );
+        return AuthResult(success: false, message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.');
       }
-      return AuthResult(
-        success: false,
-        message: 'تحقق من البريد الإلكتروني وكلمة المرور',
-      );
+      return AuthResult(success: false, message: 'تحقق من البريد الإلكتروني وكلمة المرور');
     }
   }
 
   // Sign Up with OTP
-  Future<AuthResult> signUp({
-    required String email,
-    required String password,
-    required String fullName,
-    required String profession,
-  }) async {
+  Future<AuthResult> signUp({required String email, required String password, required String fullName, required String profession}) async {
     try {
       final response = await _supabase.auth.signUp(
         email: email,
@@ -143,12 +101,7 @@ class AuthService {
       // Check if email confirmation is required
       if (response.user!.emailConfirmedAt == null) {
         // Send OTP
-        return AuthResult(
-          success: true,
-          user: null,
-          message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
-          needsVerification: true,
-        );
+        return AuthResult(success: true, user: null, message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني', needsVerification: true);
       }
 
       // Email already confirmed - create profile
@@ -162,52 +115,31 @@ class AuthService {
       });
 
       final profile = await _getUserProfile(response.user!.id);
-      return AuthResult(
-        success: true,
-        user: profile,
-        message: 'تم إنشاء الحساب بنجاح',
-      );
+      return AuthResult(success: true, user: profile, message: 'تم إنشاء الحساب بنجاح');
     } catch (e) {
       debugPrint('❌ Register error: $e');
       final errorStr = e.toString().toLowerCase();
       if (errorStr.contains('captcha')) {
-        return AuthResult(
-          success: false,
-          message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.',
-        );
+        return AuthResult(success: false, message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.');
       }
       if (errorStr.contains('timeout') || errorStr.contains('socket')) {
-        return AuthResult(
-          success: false,
-          message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.',
-        );
+        return AuthResult(success: false, message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.');
       }
       return AuthResult(success: false, message: 'حدث خطأ في إنشاء الحساب');
     }
   }
 
   // Verify OTP
-  Future<AuthResult> verifyOTP({
-    required String email,
-    required String token,
-  }) async {
+  Future<AuthResult> verifyOTP({required String email, required String token}) async {
     try {
       AuthResponse response;
       try {
         // First try with signup type
-        response = await _supabase.auth.verifyOTP(
-          email: email,
-          token: token,
-          type: OtpType.signup,
-        );
+        response = await _supabase.auth.verifyOTP(email: email, token: token, type: OtpType.signup);
       } catch (e) {
         // If signup type fails, try with email type (common for resends or magic links)
         debugPrint('⚠️ Signup OTP failed, trying Email OTP...');
-        response = await _supabase.auth.verifyOTP(
-          email: email,
-          token: token,
-          type: OtpType.email,
-        );
+        response = await _supabase.auth.verifyOTP(email: email, token: token, type: OtpType.email);
       }
 
       if (response.user == null) {
@@ -217,10 +149,7 @@ class AuthService {
       return await _handleVerificationSuccess(response.user!);
     } catch (e) {
       debugPrint('❌ Verify OTP error: $e');
-      return AuthResult(
-        success: false,
-        message: 'رمز التحقق غير صحيح أو منتهي الصلاحية',
-      );
+      return AuthResult(success: false, message: 'رمز التحقق غير صحيح أو منتهي الصلاحية');
     }
   }
 
@@ -228,8 +157,7 @@ class AuthService {
   Future<AuthResult> _handleVerificationSuccess(User user) async {
     try {
       final userEmail = user.email!;
-      final fullName =
-          user.userMetadata?['full_name'] ?? userEmail.split('@')[0];
+      final fullName = user.userMetadata?['full_name'] ?? userEmail.split('@')[0];
       final profession = user.userMetadata?['profession'] ?? '';
 
       await _supabase.from('users').upsert({
@@ -242,32 +170,24 @@ class AuthService {
       }, onConflict: 'id');
 
       final profile = await _getUserProfile(user.id);
-      return AuthResult(
-        success: true,
-        user: profile,
-        message: 'تم التحقق بنجاح',
-      );
+      return AuthResult(success: true, user: profile, message: 'تم التحقق بنجاح');
     } catch (e) {
       debugPrint('❌ Handle verification success error: $e');
-      
+
       // FALLBACK: Always try without profession if first attempt fails
       try {
-         await _supabase.from('users').upsert({
-           'id': user.id,
-           'email': user.email!,
-           'full_name': user.userMetadata?['full_name'] ?? user.email!.split('@')[0],
-           // 'profession': '', // Omitted
-           'avatar_url': null,
-           'created_at': DateTime.now().toIso8601String(),
-         });
-         final profile = await _getUserProfile(user.id);
-         return AuthResult(
-           success: true,
-           user: profile,
-           message: 'تم التحقق بنجاح',
-         );
+        await _supabase.from('users').upsert({
+          'id': user.id,
+          'email': user.email!,
+          'full_name': user.userMetadata?['full_name'] ?? user.email!.split('@')[0],
+          // 'profession': '', // Omitted
+          'avatar_url': null,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+        final profile = await _getUserProfile(user.id);
+        return AuthResult(success: true, user: profile, message: 'تم التحقق بنجاح');
       } catch (retryError) {
-          debugPrint('❌ Retry verification success error: $retryError');
+        debugPrint('❌ Retry verification success error: $retryError');
       }
 
       return AuthResult(
@@ -288,20 +208,16 @@ class AuthService {
   // Resend OTP
   Future<bool> resendOTP(String email) async {
     try {
-      await _supabase.auth.resend(
-        type: OtpType.signup,
-        email: email,
-        emailRedirectTo: 'io.supabase.kodioapp://login-callback/',
-      );
+      await _supabase.auth.resend(type: OtpType.signup, email: email, emailRedirectTo: 'io.supabase.kodioapp://login-callback/');
       return true;
     } catch (e) {
       debugPrint('❌ Resend OTP error: $e');
       // If signup resend fails, try generic
       try {
-         debugPrint('⚠️ Resend Signup failed, trying generic resend...');
-         // Note: Some SDKs allow omitting type or using different one.
-         // We'll just stick to signup as primary, but if it fails, return false.
-         // Or we could try magiclink if we supported it.
+        debugPrint('⚠️ Resend Signup failed, trying generic resend...');
+        // Note: Some SDKs allow omitting type or using different one.
+        // We'll just stick to signup as primary, but if it fails, return false.
+        // Or we could try magiclink if we supported it.
       } catch (_) {}
       return false;
     }
@@ -319,27 +235,19 @@ class AuthService {
   // Get Current User Profile
   Future<UserModel?> getCurrentUserProfile() async {
     if (userId == null) return null;
-    
+
     // Ensure profile exists if we have a valid session
     if (userEmail != null) {
       // Pass existing meta data if available to avoid empty profession on first load
       final metaProfession = currentUser?.userMetadata?['profession'] as String?;
-      return _getOrCreateUserProfile(
-        userId: userId!, 
-        email: userEmail!,
-        initialProfession: metaProfession,
-      );
+      return _getOrCreateUserProfile(userId: userId!, email: userEmail!, initialProfession: metaProfession);
     }
-    
+
     return _getUserProfile(userId!);
   }
 
   // Update Profile
-  Future<bool> updateProfile({
-    String? fullName,
-    String? avatarUrl,
-    String? profession,
-  }) async {
+  Future<bool> updateProfile({String? fullName, String? avatarUrl, String? profession}) async {
     if (userId == null) return false;
 
     final updates = <String, dynamic>{};
@@ -358,12 +266,12 @@ class AuthService {
       if (updates.containsKey('profession')) {
         updates.remove('profession');
         if (updates.isNotEmpty) {
-           try {
-              await _supabase.from('users').update(updates).eq('id', userId!);
-              return true;
-           } catch (retryError) {
-              debugPrint('❌ Retry update profile error: $retryError');
-           }
+          try {
+            await _supabase.from('users').update(updates).eq('id', userId!);
+            return true;
+          } catch (retryError) {
+            debugPrint('❌ Retry update profile error: $retryError');
+          }
         }
       }
       return false;
@@ -372,15 +280,10 @@ class AuthService {
 
   // SECURITY FIX: Deprecated - conflicts with OTP-based password reset
   // Use ForgotPasswordScreen (OTP flow) instead of magic links
-  @Deprecated(
-    'Use OTP-based password reset via ForgotPasswordScreen. This method uses deprecated magic link approach.',
-  )
+  @Deprecated('Use OTP-based password reset via ForgotPasswordScreen. This method uses deprecated magic link approach.')
   Future<bool> resetPassword(String email) async {
     try {
-      await _supabase.auth.resetPasswordForEmail(
-        email,
-        redirectTo: 'io.supabase.kodioapp://reset-password/',
-      );
+      await _supabase.auth.resetPasswordForEmail(email, redirectTo: 'io.supabase.kodioapp://reset-password/');
       return true;
     } catch (e) {
       debugPrint('❌ Reset password error: $e');
@@ -391,11 +294,7 @@ class AuthService {
   // Private: Get user profile
   Future<UserModel?> _getUserProfile(String userId) async {
     try {
-      final data = await _supabase
-          .from('users')
-          .select()
-          .eq('id', userId)
-          .maybeSingle();
+      final data = await _supabase.from('users').select().eq('id', userId).maybeSingle();
 
       if (data == null) return null;
       return UserModel.fromJson(data);
@@ -405,11 +304,7 @@ class AuthService {
     }
   }
 
-  Future<UserModel?> _getOrCreateUserProfile({
-    required String userId,
-    required String email,
-    String? initialProfession,
-  }) async {
+  Future<UserModel?> _getOrCreateUserProfile({required String userId, required String email, String? initialProfession}) async {
     var profile = await _getUserProfile(userId);
 
     // Create if doesn't exist
@@ -458,10 +353,5 @@ class AuthResult {
   final UserModel? user;
   final bool needsVerification;
 
-  AuthResult({
-    required this.success,
-    this.message,
-    this.user,
-    this.needsVerification = false,
-  });
+  AuthResult({required this.success, this.message, this.user, this.needsVerification = false});
 }

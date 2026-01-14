@@ -192,6 +192,26 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                               ),
                             ),
                             SizedBox(height: 8.h),
+                            
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.timer_outlined,
+                                  color: Colors.redAccent,
+                                  size: 16.w,
+                                ),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  'ينتهي في $formattedDate',
+                                  style: TextStyle(
+                                    color: Colors.redAccent[100],
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 16.h),
 
                             // عداد الزيارات وتقييم النجاح
                             Consumer<DealDetailsViewModel>(
@@ -235,7 +255,7 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                                             ),
                                             SizedBox(height: 4.h),
                                             Text(
-                                              'زيارة',
+                                              'مشاهدة',
                                               style: TextStyle(
                                                 color: Colors.grey[400],
                                                 fontSize: 12.sp,
@@ -369,28 +389,18 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                             ),
                             SizedBox(height: 16.h),
 
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.timer_outlined,
-                                  color: Colors.redAccent,
-                                  size: 16.w,
-                                ),
-                                SizedBox(width: 6.w),
-                                Text(
-                                  'ينتهي في $formattedDate',
-                                  style: TextStyle(
-                                    color: Colors.redAccent[100],
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            SizedBox(height: 24.h),
+                            SizedBox(height: 8.h),
 
                             // كارت الشركة مع اللوجو الفعلي
+                            Text(
+                              'الشركة',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
                             Consumer<DealDetailsViewModel>(
                               builder: (context, viewModel, _) {
                                 final companyLogo = widget.deal.companyLogo;
@@ -493,7 +503,7 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                               },
                             ),
 
-                            SizedBox(height: 32.h),
+                            SizedBox(height: 16.h),
 
                             Text(
                               widget.deal.dealType == 'code'

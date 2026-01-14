@@ -34,99 +34,215 @@ class AuthService {
         return AuthResult(success: false, message: 'فشل الحصول على رمز الدخول من Google');
       }
 
-      // 3. Authenticate with Supabase
-      final response = await _supabase.auth.signInWithIdToken(provider: OAuthProvider.google, idToken: idToken, accessToken: accessToken);
+      // 3. Authenticate with Supabase (with Retry Logic)
+      int retryCount = 0;
+      const maxRetries = 2; // Total attempts = 1 + 2 = 3
 
-      if (response.user == null) {
-        return AuthResult(success: false, message: 'فشل تسجيل الدخول باستخدام Google');
+      while (true) {
+        try {
+          final response = await _supabase.auth.signInWithIdToken(
+            provider: OAuthProvider.google,
+            idToken: idToken,
+            accessToken: accessToken,
+          );
+
+          if (response.user == null) {
+            return AuthResult(success: false, message: 'فشل تسجيل الدخول باستخدام Google');
+          }
+
+          // 4. Create/Get User Profile
+          final profile = await _getOrCreateUserProfile(userId: response.user!.id, email: response.user!.email!);
+
+          // Update full name and avatar from Google if new
+          if (profile != null && (profile.fullName.isEmpty)) {
+            await updateProfile(fullName: googleUser.displayName, avatarUrl: googleUser.photoUrl);
+            // Reload profile
+            final updatedProfile = await _getUserProfile(response.user!.id);
+            return AuthResult(success: true, user: updatedProfile);
+          }
+
+          return AuthResult(success: true, user: profile);
+        } catch (e) {
+          debugPrint('❌ Google Sign In error (attempt ${retryCount + 1}): $e');
+          final errorStr = e.toString().toLowerCase();
+          
+          bool isRetryable = errorStr.contains('connection reset') ||
+              errorStr.contains('authretryablefetchexception') ||
+              errorStr.contains('socketexception') ||
+              errorStr.contains('timeout');
+
+          if (isRetryable && retryCount < maxRetries) {
+            retryCount++;
+            await Future.delayed(Duration(milliseconds: 1000 * retryCount)); // Exponential backoff
+            continue;
+          }
+          
+          if (errorStr.contains('network') || errorStr.contains('connection')) {
+             return AuthResult(success: false, message: 'خطأ في الاتصال. حاول مرة أخرى.');
+          }
+
+          return AuthResult(success: false, message: 'حدث خطأ أثناء تسجيل الدخول باستخدام Google');
+        }
       }
-
-      // 4. Create/Get User Profile
-      final profile = await _getOrCreateUserProfile(userId: response.user!.id, email: response.user!.email!);
-
-      // Update full name and avatar from Google if new
-      if (profile != null && (profile.fullName.isEmpty)) {
-        await updateProfile(fullName: googleUser.displayName, avatarUrl: googleUser.photoUrl);
-        // Reload profile
-        final updatedProfile = await _getUserProfile(response.user!.id);
-        return AuthResult(success: true, user: updatedProfile);
-      }
-
-      return AuthResult(success: true, user: profile);
     } catch (e) {
-      debugPrint('❌ Google Sign In error: $e');
-      return AuthResult(success: false, message: 'حدث خطأ أثناء تسجيل الدخول باستخدام Google');
+      debugPrint('❌ Google Sign In initialization error: $e');
+      return AuthResult(success: false, message: 'حدث خطأ غير متوقع');
     }
   }
 
-  // Sign In
+
+  // Sign In with Retry Logic
   Future<AuthResult> signIn({required String email, required String password}) async {
-    try {
-      final response = await _supabase.auth.signInWithPassword(email: email, password: password);
+    int retryCount = 0;
+    const maxRetries = 2;
+    
+    while (retryCount <= maxRetries) {
+      try {
+        final response = await _supabase.auth.signInWithPassword(
+          email: email,
+          password: password,
+        );
 
-      if (response.user == null) {
-        return AuthResult(success: false, message: 'فشل تسجيل الدخول');
-      }
+        if (response.user == null) {
+          return AuthResult(success: false, message: 'فشل تسجيل الدخول');
+        }
 
-      final profile = await _getOrCreateUserProfile(userId: response.user!.id, email: email);
+        final profile = await _getOrCreateUserProfile(
+          userId: response.user!.id,
+          email: email,
+        );
 
-      return AuthResult(success: true, user: profile);
-    } catch (e) {
-      debugPrint('❌ Login error: $e');
-      final errorStr = e.toString().toLowerCase();
-      if (errorStr.contains('captcha')) {
-        return AuthResult(success: false, message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.');
+        return AuthResult(success: true, user: profile);
+      } catch (e) {
+        debugPrint('❌ Login error (attempt ${retryCount + 1}/$maxRetries): $e');
+        final errorStr = e.toString().toLowerCase();
+        
+        // Check if it's a retryable network error
+        bool isRetryable = errorStr.contains('connection reset') ||
+            errorStr.contains('authretryablefetchexception') ||
+            errorStr.contains('socketexception') ||
+            errorStr.contains('timeout');
+        
+        if (isRetryable && retryCount < maxRetries) {
+          retryCount++;
+          debugPrint('🔄 Retrying login... (attempt ${retryCount + 1})');
+          await Future.delayed(Duration(milliseconds: 500 * retryCount)); // Exponential backoff
+          continue;
+        }
+        
+        // Non-retryable error or max retries reached
+        if (errorStr.contains('captcha')) {
+          return AuthResult(
+            success: false,
+            message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.',
+          );
+        }
+        if (errorStr.contains('timeout') || errorStr.contains('socket') || errorStr.contains('connection')) {
+          return AuthResult(
+            success: false,
+            message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.',
+          );
+        }
+        return AuthResult(
+          success: false,
+          message: 'تحقق من البريد الإلكتروني وكلمة المرور',
+        );
       }
-      if (errorStr.contains('timeout') || errorStr.contains('socket')) {
-        return AuthResult(success: false, message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.');
-      }
-      return AuthResult(success: false, message: 'تحقق من البريد الإلكتروني وكلمة المرور');
     }
+    
+    // Should never reach here, but just in case
+    return AuthResult(
+      success: false,
+      message: 'فشل الاتصال بالخادم بعد عدة محاولات',
+    );
   }
 
-  // Sign Up with OTP
-  Future<AuthResult> signUp({required String email, required String password, required String fullName, required String profession}) async {
-    try {
-      final response = await _supabase.auth.signUp(
-        email: email,
-        password: password,
-        emailRedirectTo: 'io.supabase.kodioapp://login-callback/',
-        data: {'full_name': fullName, 'profession': profession},
-      );
+  // Sign Up with OTP & Retry Logic
+  Future<AuthResult> signUp({
+    required String email,
+    required String password,
+    required String fullName,
+    required String profession,
+  }) async {
+    int retryCount = 0;
+    const maxRetries = 3;
 
-      if (response.user == null) {
-        return AuthResult(success: false, message: 'فشل إنشاء الحساب');
-      }
+    while (retryCount <= maxRetries) {
+      try {
+        final response = await _supabase.auth.signUp(
+          email: email,
+          password: password,
+          emailRedirectTo: 'io.supabase.kodioapp://login-callback/',
+          data: {'full_name': fullName, 'profession': profession},
+        );
 
-      // Check if email confirmation is required
-      if (response.user!.emailConfirmedAt == null) {
-        // Send OTP
-        return AuthResult(success: true, user: null, message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني', needsVerification: true);
-      }
+        if (response.user == null) {
+          return AuthResult(success: false, message: 'فشل إنشاء الحساب');
+        }
 
-      // Email already confirmed - create profile
-      await _supabase.from('users').upsert({
-        'id': response.user!.id,
-        'email': email,
-        'full_name': fullName,
-        'profession': profession,
-        'avatar_url': null,
-        'created_at': DateTime.now().toIso8601String(),
-      });
+        // Check if email confirmation is required
+        if (response.user!.emailConfirmedAt == null) {
+          // Send OTP
+          return AuthResult(
+            success: true,
+            user: null,
+            message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
+            needsVerification: true,
+          );
+        }
 
-      final profile = await _getUserProfile(response.user!.id);
-      return AuthResult(success: true, user: profile, message: 'تم إنشاء الحساب بنجاح');
-    } catch (e) {
-      debugPrint('❌ Register error: $e');
-      final errorStr = e.toString().toLowerCase();
-      if (errorStr.contains('captcha')) {
-        return AuthResult(success: false, message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.');
+        // Email already confirmed - create profile
+        await _supabase.from('users').upsert({
+          'id': response.user!.id,
+          'email': email,
+          'full_name': fullName,
+          'profession': profession,
+          'avatar_url': null,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+
+        final profile = await _getUserProfile(response.user!.id);
+        return AuthResult(
+          success: true,
+          user: profile,
+          message: 'تم إنشاء الحساب بنجاح',
+        );
+      } catch (e) {
+        debugPrint('❌ Register error (attempt ${retryCount + 1}/$maxRetries): $e');
+        final errorStr = e.toString().toLowerCase();
+
+        // Check if it's a retryable network error
+        bool isRetryable = errorStr.contains('connection reset') ||
+            errorStr.contains('authretryablefetchexception') ||
+            errorStr.contains('socketexception') ||
+            errorStr.contains('timeout') ||
+            errorStr.contains('upstream request timeout') ||
+            errorStr.contains('statuscode: 50');
+
+        if (isRetryable && retryCount < maxRetries) {
+          retryCount++;
+          debugPrint('🔄 Retrying registration... (attempt ${retryCount + 1})');
+          await Future.delayed(Duration(milliseconds: 2000 * retryCount)); // Exponential backoff
+          continue;
+        }
+
+        if (errorStr.contains('captcha')) {
+          return AuthResult(
+            success: false,
+            message: 'خطأ في التحقق (CAPTCHA). يرجى تعطيل حماية CAPTCHA من إعدادات Supabase.',
+          );
+        }
+        if (errorStr.contains('timeout') || errorStr.contains('socket') || errorStr.contains('upstream')) {
+          return AuthResult(
+            success: false,
+            message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.',
+          );
+        }
+        return AuthResult(success: false, message: 'حدث خطأ في إنشاء الحساب');
       }
-      if (errorStr.contains('timeout') || errorStr.contains('socket')) {
-        return AuthResult(success: false, message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.');
-      }
-      return AuthResult(success: false, message: 'حدث خطأ في إنشاء الحساب');
     }
+    
+    return AuthResult(success: false, message: 'فشل الاتصال بالخادم بعد عدة محاولات');
   }
 
   // Verify OTP
@@ -345,6 +461,7 @@ class AuthService {
     return profile;
   }
 }
+// End of auth service
 
 // Auth Result Model
 class AuthResult {

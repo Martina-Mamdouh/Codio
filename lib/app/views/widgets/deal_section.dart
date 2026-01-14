@@ -66,7 +66,7 @@ class DealSection extends StatelessWidget {
 
         // Horizontal ListView (Orientation-aware height)
         Container(
-          height: MediaQuery.of(context).orientation == Orientation.portrait ? 300.h : 360, 
+          height: MediaQuery.of(context).orientation == Orientation.portrait ? 260.h : 360, 
           child: Consumer<UserProfileViewModel>(
             builder: (context, profileVm, child) {
               return ListView.separated(

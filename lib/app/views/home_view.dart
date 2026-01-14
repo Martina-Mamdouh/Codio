@@ -201,10 +201,60 @@ class HomeView extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: _DiscoverNearbyCard(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MapView(startNearby: true),
+                            // TODO: Temporarily disabled - Coming Soon
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (_) => const MapView(startNearby: true),
+                            //   ),
+                            // );
+                            
+                            // Show coming soon dialog
+                            showDialog(
+                              context: context,
+                              builder: (context) => Directionality(
+                                textDirection: TextDirection.rtl,
+                                child: AlertDialog(
+                                  backgroundColor: AppTheme.kDarkBackground,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    side: BorderSide(color: AppTheme.kElectricLime.withOpacity(0.3)),
+                                  ),
+                                  title: Row(
+                                    children: [
+                                      Icon(Icons.schedule, color: AppTheme.kElectricLime, size: 28.w),
+                                      SizedBox(width: 12.w),
+                                      Text(
+                                        'قريباً',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  content: Text(
+                                    'هذه الميزة قيد التطوير وستكون متاحة قريباً!',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 14.sp,
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text(
+                                        'حسناً',
+                                        style: TextStyle(
+                                          color: AppTheme.kElectricLime,
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },

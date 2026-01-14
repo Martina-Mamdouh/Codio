@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kodio_app/app/views/profile/settings_view.dart';
 import 'package:provider/provider.dart';
+import '../../main_layout.dart';
+import '../widgets/yellow_scaffold.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user_model.dart';
@@ -9,7 +11,7 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
 import '../auth/login_screen.dart';
 import 'favorite_deals_view.dart';
-import 'following_companies_view.dart';
+
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -46,15 +48,15 @@ class _ProfileViewState extends State<ProfileView> {
     final profileVm = context.watch<UserProfileViewModel>();
     final user = authVm.currentUser;
 
-    return Scaffold(
-      backgroundColor: AppTheme.kDarkBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
+    return YellowScaffold(
+      title: 'الملف الشخصي',
+      showBackButton: true,
+      onBackTap: () {
+        context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
+      },
+      actions: [
           IconButton(
-            icon: const Icon(Icons.build, color: AppTheme.kElectricLime),
+            icon: const Icon(Icons.build, color: Colors.black),
             tooltip: 'فحص المشاكل',
             onPressed: () async {
               showDialog(
@@ -84,15 +86,7 @@ class _ProfileViewState extends State<ProfileView> {
               }
             },
           ),
-        ],
-        shape: const Border(
-          bottom: BorderSide(color: Colors.white10, width: 1),
-        ),
-        title: const Text(
-          'الملف الشخصي',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+      ],
       body: user == null
           ? _buildGuestView(context)
           : _buildLoggedInView(context, user, profileVm, authVm),
@@ -112,7 +106,7 @@ class _ProfileViewState extends State<ProfileView> {
             style: TextStyle(
               color: Colors.white70,
               fontSize: 16.sp,
-              fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
             ),
           ),
           SizedBox(height: 32.h),
@@ -141,7 +135,7 @@ class _ProfileViewState extends State<ProfileView> {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                 ),
               ),
             ),
@@ -195,33 +189,6 @@ class _ProfileViewState extends State<ProfileView> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const FavoriteDealsView(),
-                      ),
-                    );
-                  },
-                ),
-                const Divider(height: 1, color: Colors.white12),
-                ListTile(
-                  leading: const Icon(
-                    Icons.store,
-                    color: AppTheme.kElectricLime,
-                  ),
-                  title: const Text(
-                    'الشركات المتابعة',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  // subtitle: Text(
-                  //   '${profileVm.followedCompaniesCount} شركة',
-                  //   style: const TextStyle(color: Colors.white54),
-                  // ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: Colors.white54,
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const FollowingCompaniesView(),
                       ),
                     );
                   },

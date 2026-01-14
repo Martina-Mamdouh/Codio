@@ -85,7 +85,8 @@ class DealDetailsViewModel extends ChangeNotifier {
   // الحسابات الديناميكية للواجهة
   double get calculatedSuccessRate {
     if (dealViews == 0) return 100.0; // افتراضي للعروض الجديدة
-    final interactions = copyCodeCount + openLinkCount;
+    // دمجنا التقييمات الإيجابية (happyCount) مع التفاعلات لزيادة دقة نسبة النجاح
+    final interactions = copyCodeCount + openLinkCount + happyCount;
     if (interactions == 0) return 0.0; // لا يوجد تفاعل
     
     // نسبة النجاح الحقيقية = (التحويلات / المشاهدات) * 100

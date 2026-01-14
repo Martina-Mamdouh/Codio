@@ -7,6 +7,7 @@ import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 import 'widgets/deal_card.dart';
+import 'widgets/yellow_scaffold.dart';
 import 'deal_details_view.dart';
 
 class CategoryDealsView extends StatefulWidget {
@@ -35,24 +36,14 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
     setState(() {
       _deals = deals;
       _isLoading = false;
+      print('DEBUG: Loaded ${deals.length} deals for category ${widget.category.id}');
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.kDarkBackground,
-      appBar: AppBar(
-        backgroundColor: AppTheme.kDarkBackground,
-        elevation: 0,
-        shape: const Border(
-          bottom: BorderSide(color: Colors.white10, width: 1),
-        ),
-        title: Text(
-          widget.category.name,
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
+    return YellowScaffold(
+      title: widget.category.name,
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.kElectricLime),
@@ -69,13 +60,18 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
                 return RefreshIndicator(
                   onRefresh: _loadDeals,
                   color: AppTheme.kElectricLime,
-                  child: ListView.separated(
+                  child: GridView.builder(
                     padding: EdgeInsets.symmetric(
                       vertical: 16.h,
                       horizontal: 16.w,
                     ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.78 : 0.85,
+                      crossAxisSpacing: 12.w,
+                      mainAxisSpacing: 12.h,
+                    ),
                     itemCount: _deals.length,
-                    separatorBuilder: (context, index) => SizedBox(height: 16.h),
                     itemBuilder: (context, index) {
                       final deal = _deals[index];
                       final isFav = profileVm.isDealFavorite(deal.id);

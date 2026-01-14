@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../viewmodels/notification_viewmodel.dart';
 import 'deal_details_view.dart';
 import 'widgets/notification_card.dart';
+import 'widgets/yellow_scaffold.dart';
 
 class NotificationsView extends StatelessWidget {
   const NotificationsView({super.key});
@@ -14,24 +15,9 @@ class NotificationsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => NotificationsViewModel()..loadNotifications(),
-      child: Scaffold(
-        backgroundColor: AppTheme.kDarkBackground,
-        appBar: AppBar(
-          backgroundColor: AppTheme.kDarkBackground,
-          elevation: 0,
-          shape: const Border(
-            bottom: BorderSide(color: Colors.white10, width: 1),
-          ),
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new,
-              color: Colors.white,
-              size: 20.w,
-            ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text('الإشعارات', style: TextStyle(color: Colors.white)),
-        ),
+      child: YellowScaffold(
+        title: 'الإشعارات',
+        // showBackButton: true, // Default
         body: Consumer<NotificationsViewModel>(
           builder: (context, vm, child) {
             if (vm.isLoading) {

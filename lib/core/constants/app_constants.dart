@@ -6,7 +6,7 @@ class AppConstants {
   static const int buildNumber = 2;
 
   // Links
-  static const String appWebsite = 'https://codio.app';
+  static const String appWebsite = 'https://codio.cc';
   static const String playStoreUrl =
       'https://play.google.com/store/apps/details?id=com.example.codioapp';
   static const String appStoreUrl = 'https://apps.apple.com/app/codio/id123456';

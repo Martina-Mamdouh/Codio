@@ -31,7 +31,7 @@ class DealCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final formattedDate = DateFormat('dd/MM/yyyy').format(deal.expiresAt);
     final AuthService authService = AuthService();
-    print('📸 DealCard Image URL: [${deal.imageUrl}]');
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     return GestureDetector(
       onTap: () {
@@ -43,11 +43,11 @@ class DealCard extends StatelessWidget {
         }
 
         if (onTap != null) {
-          debugPrint('➡️ Triggering navigation for: ${deal.title}');
           onTap!();
         }
       },
       child: Container(
+        clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           color: AppTheme.kLightBackground,
           borderRadius: BorderRadius.circular(12.r),
@@ -61,13 +61,14 @@ class DealCard extends StatelessWidget {
           ],
         ),
         child: Column(
+          // mainAxisSize: MainAxisSize.min, // Removed to allow Expanded to work if parent constrains
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // -------------------- IMAGE SECTION --------------------
             Stack(
               children: [
                 AspectRatio(
-                  aspectRatio: 1.4, // Consistent ratio for Grid
+                  aspectRatio: isLandscape ? 2.2 : (1280 / 700), // Requested 1280x700
                   child: ClipRRect(
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(12.r),
@@ -85,13 +86,10 @@ class DealCard extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            errorWidget: (context, url, error) {
-                              print('❌ DealCard Image Error: $error for URL: [$url]');
-                              return Container(
-                                color: AppTheme.kDarkBackground,
-                                child: const Icon(Icons.broken_image, color: Colors.white24),
-                              );
-                            },
+                            errorWidget: (context, url, error) => Container(
+                              color: AppTheme.kDarkBackground,
+                              child: const Icon(Icons.broken_image, color: Colors.white24),
+                            ),
                           )
                         : Container(
                             color: Colors.grey[900],
@@ -118,7 +116,7 @@ class DealCard extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 10.sp,
+                          fontSize: isLandscape ? 8.sp : 10.sp,
                         ),
                       ),
                     ),
@@ -146,7 +144,7 @@ class DealCard extends StatelessWidget {
                       child: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite ? Colors.redAccent : Colors.white,
-                        size: 18.w,
+                        size: isLandscape ? 14.w : 18.w,
                       ),
                     ),
                   ),
@@ -154,66 +152,75 @@ class DealCard extends StatelessWidget {
               ],
             ),
             // -------------------- INFO SECTION --------------------
-            Padding(
-              padding: EdgeInsets.all(10.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                   // Company Name (Natural state)
-                  if (deal.companyName != null)
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 2.h),
-                      child: Text(
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 6.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Company Name
+                    if (deal.companyName != null)
+                      Text(
                         deal.companyName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 10.sp,
-                          fontFamily: 'Cairo',
+                          fontSize: isLandscape ? 9.sp : 10.sp,
+                                                    // fontFamily: 'Cairo', // Inherited
                         ),
                       ),
+                    
+                    SizedBox(height: 2.h),
+
+                    // Title
+                    Text(
+                      deal.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppTheme.kLightText,
+                        fontWeight: FontWeight.bold,
+                        fontSize: isLandscape ? 11.sp : 13.sp,
+                        height: 1.2,
+                      ),
                     ),
-                   // Title (2 lines)
-                  Text(
-                    deal.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppTheme.kLightText,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13.sp,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  // Expiry
-                  Row(
-                    children: [
-                      Icon(Icons.access_time, size: 12.w, color: Colors.redAccent),
-                      SizedBox(width: 4.w),
-                      Expanded(
-                        child: Text(
+                    
+                    SizedBox(height: isLandscape ? 2.h : 4.h),
+
+                    // Expiry
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.access_time, size: isLandscape ? 10.w : 12.w, color: Colors.redAccent),
+                        SizedBox(width: 4.w),
+                        Text(
                           formattedDate,
                           style: TextStyle(
                             color: Colors.redAccent,
-                            fontSize: 10.sp,
+                            fontSize: isLandscape ? 9.sp : 10.sp,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                      ],
+                    ),
+                     
+                    // Category (Only show if space helps, or keep it but ensure no overflow)
+                    if (showCategory && deal.categoryName != null && deal.categoryName!.isNotEmpty) ...[
+                      SizedBox(height: 2.h),
+                      Text(
+                        deal.categoryName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppTheme.kElectricLime,
+                          fontSize: isLandscape ? 9.sp : 10.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
-                  ),
-                  
-                  if (showCategory && deal.categoryName != null && deal.categoryName!.isNotEmpty) ...[
-                    SizedBox(height: 6.h),
-                    Text(
-                      deal.categoryName!,
-                      style: TextStyle(
-                        color: AppTheme.kElectricLime,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                   ],
-                ],
+                ),
               ),
             ),
           ],
@@ -232,7 +239,10 @@ class DealCard extends StatelessWidget {
             const Expanded(
               child: Text(
                 'يجب تسجيل الدخول لإضافة المفضلات',
-                style: TextStyle(fontFamily: 'Cairo', color: Colors.white),
+                style: TextStyle(
+                  // fontFamily: 'Cairo', // Inherited
+                  color: Colors.white,
+                ),
               ),
             ),
           ],

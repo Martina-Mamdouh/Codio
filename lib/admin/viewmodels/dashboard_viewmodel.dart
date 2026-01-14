@@ -27,7 +27,7 @@ class DashboardViewModel extends ChangeNotifier {
     try {
       // Fetch everything in parallel
       final results = await Future.wait([
-        _analyticsService.getTopDealsByViews(limit: 5),
+        _analyticsService.getTopDealsByViews(limit: 100),
         _analyticsService.getCompanyPerformance(),
         _analyticsService.getBannerPerformance(),
         _analyticsService.getSocialPlatformBreakdown(),

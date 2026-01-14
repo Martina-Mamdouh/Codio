@@ -28,10 +28,16 @@ class UserProfileViewModel extends ChangeNotifier {
 
   bool isDealFavorite(int dealId) => _favoriteDealIds.contains(dealId);
 
+  bool get isLoadingProfile => _isLoadingProfile;
+
   // ===== Actions =====
+
+  bool _isLoadingProfile = false;
 
   /// تحميل بيانات البروفايل (المفضلات + الشركات المتابعة)
   Future<void> loadProfileData() async {
+    if (_isLoadingProfile) return; // Prevent concurrent loads
+    
     if (!isAuthenticated) {
       _favoriteDealIds.clear();
       favoriteDeals = [];
@@ -43,7 +49,12 @@ class UserProfileViewModel extends ChangeNotifier {
       return;
     }
 
-    await Future.wait([loadFavoriteDeals(), loadFollowedCompanies()]);
+    _isLoadingProfile = true;
+    try {
+      await Future.wait([loadFavoriteDeals(), loadFollowedCompanies()]);
+    } finally {
+      _isLoadingProfile = false;
+    }
   }
 
   /// تحميل مفضّلات المستخدم من Supabase
@@ -73,6 +84,10 @@ class UserProfileViewModel extends ChangeNotifier {
     }
   }
 
+  // Pending optimistic changes to handle race conditions with slow loads
+  final Map<int, CompanyModel> _pendingAdds = {};
+  final Set<int> _pendingRemovals = {};
+
   /// تحميل الشركات المتابعة من Supabase
   Future<void> loadFollowedCompanies() async {
     if (!isAuthenticated) {
@@ -84,24 +99,50 @@ class UserProfileViewModel extends ChangeNotifier {
 
     try {
       // Load full company objects
-      followedCompanies = await _supabaseService.getFollowedCompanies();
+      var fetched = await _supabaseService.getFollowedCompanies();
+      
+      // Merge with pending optimistic changes
+      // 1. Remove what was locally removed
+      if (_pendingRemovals.isNotEmpty) {
+        fetched.removeWhere((c) => _pendingRemovals.contains(c.id));
+      }
+      
+      // 2. Add what was locally added (if not already in fetch)
+      if (_pendingAdds.isNotEmpty) {
+        for (final pending in _pendingAdds.values) {
+          if (!fetched.any((c) => c.id == pending.id)) {
+            fetched.add(pending);
+          }
+        }
+      }
+      
+      // Clear pending queues now that we've synced?
+      // Actually, to be safe against very fast subsequent loads, keep them until we are sure?
+      // For now, clearing them is standard "Sync complete" logic. 
+      // But if the server fetch didn't catch the latest insert yet, clearing them might lose the optimistic state on NEXT load?
+      // No, because NEXT load will catch it. The race is usually against the *first* in-flight load.
+      _pendingAdds.clear();
+      _pendingRemovals.clear();
+
+      followedCompanies = fetched;
       followedCompaniesCount = followedCompanies.length;
     } catch (e) {
       errorMessage = 'خطأ في تحميل الشركات: $e';
       debugPrint('❌ Error loading followed companies: $e');
-      followedCompanies = [];
-      followedCompaniesCount = 0;
+      // On error, we arguably keep the local state which is `followedCompanies` currently.
     } finally {
       notifyListeners();
     }
   }
 
-  /// مسح كل المفضّلات والمتابعات من الذاكرة (مثلاً عند تسجيل خروج)
+  /// مسح كل المفضّلات والمتابعات من الذاكرة
   void clearFavorites() {
     _favoriteDealIds.clear();
     favoriteDeals = [];
     followedCompanies = [];
     followedCompaniesCount = 0;
+    _pendingAdds.clear();
+    _pendingRemovals.clear();
     if (hasListeners) {
       notifyListeners();
     }
@@ -152,7 +193,7 @@ class UserProfileViewModel extends ChangeNotifier {
       if (wasFavorite) {
         _favoriteDealIds.add(dealId);
         // We can't easily restore the deleted deal object unless we cached it. 
-        // For now, reload whole list or just ignore deep restore.
+        // For now, load whole list.
         await loadFavoriteDeals(); 
       } else {
         _favoriteDealIds.remove(dealId);
@@ -168,35 +209,59 @@ class UserProfileViewModel extends ChangeNotifier {
   Future<bool> toggleCompanyFollow(int companyId, {CompanyModel? company}) async {
     if (!isAuthenticated) return false;
 
-    // Optimistic check: is it currently in our list?
     final exists = followedCompanies.any((c) => c.id == companyId);
 
     if (exists) {
+      // Unfollow
       followedCompanies.removeWhere((c) => c.id == companyId);
       followedCompaniesCount = followedCompanies.length;
+      
+      _pendingAdds.remove(companyId);
+      _pendingRemovals.add(companyId);
+      
       notifyListeners();
     } else {
-      // Adding
+      // Follow
       if (company != null) {
         followedCompanies.add(company);
         followedCompaniesCount = followedCompanies.length;
+        
+        _pendingRemovals.remove(companyId);
+        _pendingAdds[companyId] = company;
+        
         notifyListeners();
       }
-      // If company is null, we can't add optimistically to the list (unless we fetch it)
-      // We will rely on loadFollowedCompanies below, or we could fetch it here similarly to deal.
     }
 
     try {
       final isFollowedNow = await _supabaseService.toggleCompanyFollow(companyId);
-      
-      // Sync with server to be safe
-      // If we didn't have the company model to add optimistically, this load will pop it in.
-      await loadFollowedCompanies();
-      
       return isFollowedNow;
     } catch (e) {
-      await loadFollowedCompanies(); // Revert on error
-      return exists; // Return original state
+       await loadFollowedCompanies(); 
+       return exists;
+    }
+  }
+
+  /// تحديث الحالة محلياً فقط 
+  void updateFollowStatusLocal(CompanyModel company, bool isFollowing) {
+    final exists = followedCompanies.any((c) => c.id == company.id);
+
+    if (isFollowing && !exists) {
+      followedCompanies.add(company);
+      followedCompaniesCount = followedCompanies.length;
+      
+      _pendingRemovals.remove(company.id);
+      _pendingAdds[company.id] = company;
+      
+      notifyListeners();
+    } else if (!isFollowing && exists) {
+      followedCompanies.removeWhere((c) => c.id == company.id);
+      followedCompaniesCount = followedCompanies.length;
+      
+      _pendingAdds.remove(company.id);
+      _pendingRemovals.add(company.id);
+      
+      notifyListeners();
     }
   }
 }

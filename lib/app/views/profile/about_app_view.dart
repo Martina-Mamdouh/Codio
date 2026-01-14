@@ -62,7 +62,7 @@ class AboutScreen extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                 ),
               ),
 
@@ -74,7 +74,7 @@ class AboutScreen extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white54,
                   fontSize: 14.sp,
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                 ),
               ),
 
@@ -88,7 +88,7 @@ class AboutScreen extends StatelessWidget {
                   color: Colors.white70,
                   fontSize: 14.sp,
                   height: 1.6,
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                 ),
               ),
 
@@ -98,7 +98,7 @@ class AboutScreen extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.3),
                   fontSize: 12.sp,
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                 ),
               ),
 
@@ -150,7 +150,7 @@ class AboutScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Cairo',
+                                        // fontFamily: 'Cairo', // Inherited
                     ),
                   ),
                 ),
@@ -164,7 +164,7 @@ class AboutScreen extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.3),
                   fontSize: 12.sp,
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                 ),
               ),
             ],
@@ -220,7 +220,7 @@ class _LinkTile extends StatelessWidget {
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14.sp,
-                      fontFamily: 'Cairo',
+                                        // fontFamily: 'Cairo', // Inherited
                     ),
                   ),
                   if (subtitle != null) ...[
@@ -230,7 +230,7 @@ class _LinkTile extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white54,
                         fontSize: 12.sp,
-                        fontFamily: 'Cairo',
+                                          // fontFamily: 'Cairo', // Inherited
                       ),
                     ),
                   ],

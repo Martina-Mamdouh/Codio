@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kodio_app/app/views/profile/rate_codio.dart';
 import 'package:provider/provider.dart';
+import '../widgets/yellow_scaffold.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../terms_view.dart';
@@ -22,16 +23,9 @@ class _SettingsViewState extends State<SettingsView> {
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
 
-    return Scaffold(
-      backgroundColor: AppTheme.kDarkBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        shape: const Border(
-          bottom: BorderSide(color: Colors.white10, width: 1),
-        ),
-        title: const Text('الإعدادات', style: TextStyle(color: Colors.white)),
-      ),
+    return YellowScaffold(
+      title: 'الإعدادات',
+      // showBackButton: true, // Default
       body: ListView(
         padding: EdgeInsets.all(16.w),
         children: [

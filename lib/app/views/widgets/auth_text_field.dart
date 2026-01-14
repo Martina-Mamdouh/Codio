@@ -78,7 +78,11 @@ class AuthTextField extends StatelessWidget {
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
                 border: InputBorder.none,
-                errorStyle: TextStyle(height: 0, color: Colors.transparent),
+                errorStyle: TextStyle(
+                  color: Colors.redAccent,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

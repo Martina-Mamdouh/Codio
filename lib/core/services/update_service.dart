@@ -38,7 +38,7 @@ class UpdateService {
             'تحديث متاح',
             style: TextStyle(
               color: Colors.white,
-              fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -73,7 +73,7 @@ class UpdateService {
               child: const Text(
                 'تحديث الآن',
                 style: TextStyle(
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -95,7 +95,7 @@ class UpdateService {
             '✓ التطبيق محدث',
             style: TextStyle(
               color: Colors.white,
-              fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -110,7 +110,7 @@ class UpdateService {
                 'حسناً',
                 style: TextStyle(
                   color: AppTheme.kElectricLime,
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -132,7 +132,7 @@ class UpdateService {
             'خطأ',
             style: TextStyle(
               color: Colors.white,
-              fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -147,7 +147,7 @@ class UpdateService {
                 'حسناً',
                 style: TextStyle(
                   color: AppTheme.kElectricLime,
-                  fontFamily: 'Cairo',
+                                    // fontFamily: 'Cairo', // Inherited
                   fontWeight: FontWeight.bold,
                 ),
               ),

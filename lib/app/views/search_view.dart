@@ -129,7 +129,13 @@ class _SearchViewState extends State<SearchView> {
           titleSpacing: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
+            onPressed: () {
+               if (Navigator.canPop(context)) {
+                 Navigator.pop(context);
+               } else {
+                 Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+               }
+            },
           ),
           title: Padding(
             padding: EdgeInsets.only(left: 16.w),

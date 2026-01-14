@@ -134,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: EdgeInsets.fromLTRB(16.w, 28.h, 16.w, 16.w),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -172,8 +173,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (value == null || value.isEmpty) {
                             return 'يرجى إدخال كلمة المرور';
                           }
-                          if (value.length < 6) {
-                            return 'كلمة المرور قصيرة جداً';
+                          if (value.length < 10) {
+                            return 'كلمة المرور يجب أن تكون 10 أحرف على الأقل';
                           }
                           return null;
                         },
@@ -288,37 +289,36 @@ class _LoginScreenState extends State<LoginScreen> {
                         padding: EdgeInsets.symmetric(horizontal: 12.w),
                         child: Row(
                           children: [
-                            SocialLoginButton(
-                              text: 'جوجل',
-                              icon: FontAwesomeIcons.google,
-                              onPressed: _handleGoogleLogin,
-                            ),
                             if (Platform.isAndroid) ...[
-                              SizedBox(width: 16.w),
+                              const Spacer(flex: 1),
                               SocialLoginButton(
-                                text: 'أندرويد',
-                                icon: FontAwesomeIcons.android,
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('تسجيل الدخول عبر أندرويد متاح قريباً'),
-                                    ),
-                                  );
-                                },
+                                text: 'جوجل',
+                                icon: FontAwesomeIcons.google,
+                                onPressed: _handleGoogleLogin,
+                                flex: 2,
                               ),
-                            ] else if (Platform.isIOS) ...[
-                              SizedBox(width: 16.w),
+                              const Spacer(flex: 1),
+                            ] else ...[
                               SocialLoginButton(
-                                text: 'أبل',
-                                icon: FontAwesomeIcons.apple,
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('تسجيل الدخول عبر أبل متاح قريباً'),
-                                    ),
-                                  );
-                                },
+                                text: 'جوجل',
+                                icon: FontAwesomeIcons.google,
+                                onPressed: _handleGoogleLogin,
                               ),
+                              if (Platform.isIOS) ...[
+                                SizedBox(width: 16.w),
+                                SocialLoginButton(
+                                  text: 'أبل',
+                                  icon: FontAwesomeIcons.apple,
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'تسجيل الدخول عبر أبل متاح قريباً'),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ],
                           ],
                         ),

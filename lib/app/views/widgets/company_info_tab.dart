@@ -65,7 +65,7 @@ class CompanyInfoTab extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Cairo',
+                                  // fontFamily: 'Cairo', // Inherited
                 ),
               ),
               const SizedBox(height: 8),
@@ -106,7 +106,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               ),
             ),
             const SizedBox(height: 8),
@@ -118,7 +118,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white70,
                 fontSize: 13,
                 height: 1.6,
-                fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               ),
             ),
 
@@ -131,7 +131,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               ),
             ),
             const SizedBox(height: 12),
@@ -151,7 +151,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                        fontFamily: 'Cairo',
+                                        // fontFamily: 'Cairo', // Inherited
                       ),
                     ),
                   ),
@@ -175,7 +175,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                        fontFamily: 'Cairo',
+                                        // fontFamily: 'Cairo', // Inherited
                       ),
                     ),
                   ),
@@ -199,7 +199,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                        fontFamily: 'Cairo',
+                                        // fontFamily: 'Cairo', // Inherited
                       ),
                     ),
                   ),
@@ -223,7 +223,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                        fontFamily: 'Cairo',
+                                        // fontFamily: 'Cairo', // Inherited
                       ),
                     ),
                   ),
@@ -241,7 +241,7 @@ class CompanyInfoTab extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white54,
                   fontSize: 13,
-                  fontFamily: 'Cairo',
+                                  // fontFamily: 'Cairo', // Inherited
                 ),
               ),
 
@@ -254,7 +254,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               ),
             ),
             const SizedBox(height: 8),
@@ -266,7 +266,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white70,
                 fontSize: 13,
                 height: 1.6,
-                fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               ),
             ),
 
@@ -279,7 +279,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Cairo',
+                                // fontFamily: 'Cairo', // Inherited
               ),
             ),
             const SizedBox(height: 8),
@@ -299,7 +299,7 @@ class CompanyInfoTab extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
-                      fontFamily: 'Cairo',
+                                      // fontFamily: 'Cairo', // Inherited
                     ),
                   ),
                 ),
@@ -316,7 +316,7 @@ class CompanyInfoTab extends StatelessWidget {
                     style: TextStyle(
                       color: AppTheme.kElectricLime,
                       fontSize: 13,
-                      fontFamily: 'Cairo',
+                                      // fontFamily: 'Cairo', // Inherited
                     ),
                   ),
                 ),
@@ -333,7 +333,7 @@ class CompanyInfoTab extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Cairo',
+                                  // fontFamily: 'Cairo', // Inherited
                 ),
               ),
               const SizedBox(height: 12),

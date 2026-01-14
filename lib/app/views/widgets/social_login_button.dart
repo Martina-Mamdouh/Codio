@@ -6,6 +6,7 @@ class SocialLoginButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
   final Color? iconColor;
+  final int flex;
 
   const SocialLoginButton({
     super.key,
@@ -13,11 +14,13 @@ class SocialLoginButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     this.iconColor,
+    this.flex = 1,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
+      flex: flex,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -41,17 +44,20 @@ class SocialLoginButton extends StatelessWidget {
           ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Flexible(
-              child: Text(
-                text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14.sp, // Reduced slightly
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

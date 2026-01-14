@@ -49,7 +49,7 @@ class _CompanyDealsTabState extends State<CompanyDealsTab> {
         itemCount: widget.viewModel.deals.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.62 : 0.85, 
+          childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.78 : 0.85, 
           crossAxisSpacing: 12.w,
           mainAxisSpacing: 12.h,
         ),

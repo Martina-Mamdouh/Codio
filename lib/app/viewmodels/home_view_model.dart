@@ -44,8 +44,6 @@ class HomeViewModel extends ChangeNotifier {
       newDeals = [];
       entertainmentDeals = [];
 
-      final Set<int> usedDealIds = {};
-
       // 3. Define Logic Helpers
       final now = DateTime.now();
       final sevenDaysLater = now.add(const Duration(days: 7));
@@ -53,6 +51,8 @@ class HomeViewModel extends ChangeNotifier {
       bool isEndingSoon(DealModel d) {
         return d.expiresAt.isAfter(now) && d.expiresAt.isBefore(sevenDaysLater);
       }
+
+      final Set<int> usedDealIds = {};
 
       // 4. Apply Display Priority (Highest -> Lowest)
 

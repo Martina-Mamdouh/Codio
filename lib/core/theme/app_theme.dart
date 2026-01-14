@@ -151,7 +151,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: kElectricLime, width: 1),
+          borderSide: BorderSide.none,
         ),
         labelStyle: TextStyle(
           color: kSubtleText,

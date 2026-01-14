@@ -54,7 +54,7 @@ class ViewAllDealsScreen extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white54,
                         fontSize: 16.sp,
-                        fontFamily: 'Cairo',
+                                                // fontFamily: 'Cairo', // Inherited
                       ),
                     ),
                   ],

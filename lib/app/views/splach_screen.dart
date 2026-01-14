@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
       curve: const Interval(0.4, 1.0),
     );
 
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(milliseconds: 2500), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,

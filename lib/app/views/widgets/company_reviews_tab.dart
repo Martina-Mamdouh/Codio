@@ -83,7 +83,7 @@ class ReviewsTab extends StatelessWidget {
                                     child: Text(
                                       'يرجى تسجيل الدخول لإضافة تقييم',
                                       style: TextStyle(
-                                        fontFamily: 'Cairo',
+                                        // fontFamily: 'Cairo', // Inherited
                                         fontSize: 12.sp,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.white,
@@ -118,7 +118,7 @@ class ReviewsTab extends StatelessWidget {
                                     child: Text(
                                       'تسجيل الدخول',
                                       style: TextStyle(
-                                        fontFamily: 'Cairo',
+                                        // fontFamily: 'Cairo', // Inherited
                                         fontSize: 12.sp,
                                         fontWeight: FontWeight.bold,
                                       ),

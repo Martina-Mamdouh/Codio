@@ -104,11 +104,75 @@ class CodioApp extends StatelessWidget {
             debugShowMaterialGrid: false,
 
             navigatorKey: navigatorKey, // Global key for deep-linking
-            home: child,
+            home: const AuthWrapper(),
           ),
         );
       },
       child: const SplashScreen(),
     );
+  }
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _wasAuthenticated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final authVm = context.read<AuthViewModel>();
+    _wasAuthenticated = authVm.isAuthenticated;
+    authVm.addListener(_onAuthChange);
+    
+    // Initial load check
+    if (_wasAuthenticated) {
+      _loadUserData();
+    }
+  }
+
+  void _onAuthChange() {
+    final authVm = context.read<AuthViewModel>();
+    final isAuth = authVm.isAuthenticated;
+
+    // Trigger only on transition from false -> true
+    if (isAuth && !_wasAuthenticated) {
+       _loadUserData();
+    } else if (!isAuth && _wasAuthenticated) {
+       // User logged out
+       context.read<UserProfileViewModel>().clearFavorites();
+    }
+
+    _wasAuthenticated = isAuth;
+  }
+
+  void _loadUserData() {
+    // Reload profile data (Follows, Favorites) whenever we have a user
+    // We delay slightly to allow the UI to transition first (Home page to render)
+    // This prevents the "Post-Login Slowness" caused by 5+ concurrent network requests
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+         debugPrint('🚀 Triggering background load: Profile & Notifications');
+         context.read<UserProfileViewModel>().loadProfileData();
+         context.read<NotificationsViewModel>().loadNotifications();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    context.read<AuthViewModel>().removeListener(_onAuthChange);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Proceed to SplashScreen, which handles navigation logic based on auth
+    return const SplashScreen();
   }
 }

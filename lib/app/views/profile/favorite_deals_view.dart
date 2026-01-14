@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import '../widgets/yellow_scaffold.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
 import '../../views/widgets/deal_card.dart';
@@ -29,19 +30,9 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
   Widget build(BuildContext context) {
     final profileVm = context.watch<UserProfileViewModel>();
 
-    return Scaffold(
-      backgroundColor: AppTheme.kDarkBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        shape: const Border(
-          bottom: BorderSide(color: Colors.white10, width: 1),
-        ),
-        title: const Text(
-          'العروض المفضّلة',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+    return YellowScaffold(
+      title: 'العروض المفضّلة',
+      // showBackButton: true, // Default
       body: Builder(
         builder: (context) {
           if (profileVm.isLoadingFavorites) {
@@ -91,7 +82,7 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
               itemCount: profileVm.favoriteDeals.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.62 : 0.85,
+                childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.78 : 0.85,
                 crossAxisSpacing: 12.w,
                 mainAxisSpacing: 12.h,
               ),

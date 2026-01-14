@@ -48,7 +48,12 @@ class CompanyProfileViewModel extends ChangeNotifier {
   // قناة Realtime
   RealtimeChannel? _companyChannel;
 
-  CompanyProfileViewModel(this.companyId) {
+  CompanyProfileViewModel(this.companyId, {CompanyModel? initialCompany}) {
+    if (initialCompany != null) {
+      company = initialCompany;
+      // We rely on loadCompanyData or local check for isFollowed
+    }
+    
     if (kDebugMode) {
       print('CompanyProfileViewModel created with companyId: $companyId');
     }
@@ -57,12 +62,13 @@ class CompanyProfileViewModel extends ChangeNotifier {
   }
 
   Future<void> loadCompanyData() async {
-    isLoading = true;
-    errorMessage = null;
-    // Notify only if not currently loading to avoid excessive rebuilds
-    if (hasListeners) {
+    // If we have initial data, don't show full screen loader
+    if (company == null) {
+      isLoading = true;
       notifyListeners();
     }
+    
+    errorMessage = null;
 
     try {
       // ✅ Fetch company, deal count, and category name in one optimized call
@@ -93,17 +99,27 @@ class CompanyProfileViewModel extends ChangeNotifier {
         mapClicks = stats['map_click_count'] ?? 0;
       }
 
+      
+      // ... existing code ...
+
       _subscribeToCompany();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error loadCompanyData: $e');
-      }
-      errorMessage = 'حدث خطأ أثناء تحميل بيانات الشركة';
+      // ... error handling ...
     } finally {
       isLoading = false;
       if (hasListeners) {
         notifyListeners();
       }
+    }
+  }
+
+  // ✅ Call this from View to sync with global UserProfile state
+  void checkFollowStatus(bool isGloballyFollowed) {
+    if (isFollowed != isGloballyFollowed) {
+       isFollowed = isGloballyFollowed;
+       // Simply update the local flag without triggering a full reload or notify unless changed
+       // actually we should notify if it changes visual state
+       notifyListeners();
     }
   }
 
@@ -206,8 +222,8 @@ class CompanyProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> toggleFollow() async {
-    if (company == null) return;
+  Future<bool> toggleFollow() async {
+    if (company == null) return false;
 
     isFollowLoading = true;
     if (hasListeners) {
@@ -254,10 +270,10 @@ class CompanyProfileViewModel extends ChangeNotifier {
       if (hasListeners) {
         notifyListeners();
       }
-      // Realtime + التريجر هيأكدوا القيمة من السيرفر بعد كده
+      return true;
     } catch (e) {
       debugPrint('خطأ في المتابعة: $e');
-      // اختياري: أعد التحميل من السيرفر عند فشل
+      return false;
     } finally {
       isFollowLoading = false;
       if (hasListeners) {

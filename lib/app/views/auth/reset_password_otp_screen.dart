@@ -111,7 +111,10 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
     }
 
     try {
-      await Supabase.instance.client.auth.resetPasswordForEmail(widget.email);
+      await Supabase.instance.client.auth.resetPasswordForEmail(
+        widget.email,
+        redirectTo: 'io.supabase.kodioapp://reset-callback/',
+      );
 
       if (mounted) {
         _lastResendTime = DateTime.now(); // Record time

@@ -39,6 +39,9 @@
                 <data
                     android:scheme="io.supabase.kodioapp"
                     android:host="login-callback" />
+                <data
+                    android:scheme="io.supabase.kodioapp"
+                    android:host="reset-callback" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

@@ -36,39 +36,10 @@ class YellowScaffold extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: EdgeInsets.only(
-                  left: 16.w, 
-                  right: 16.w, 
-                  top: 12.h, 
-                  bottom: 24.h // Add more bottom padding for the curve effect
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    if (showBackButton)
-                      GestureDetector(
-                        onTap: onBackTap ?? () {
-                           if (Navigator.canPop(context)) {
-                             Navigator.pop(context);
-                           } else {
-                             Navigator.of(context).pop(); 
-                           }
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(8.w),
-                          decoration: const BoxDecoration(
-                            color: Colors.black,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.arrow_back,
-                            color: Colors.white,
-                            size: 20.sp,
-                          ),
-                        ),
-                      ),
-                    
-                    if (showBackButton) SizedBox(width: 12.w),
-
                     Expanded(
                       child: Text(
                         title,
@@ -82,6 +53,20 @@ class YellowScaffold extends StatelessWidget {
                     ),
 
                     if (actions != null) ...actions!,
+
+                    if (showBackButton) ...[
+                      SizedBox(width: 8.w), // Spacing before back text/icon if needed
+                      IconButton(
+                        icon: Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 28.sp),
+                        onPressed: onBackTap ?? () {
+                           if (Navigator.canPop(context)) {
+                             Navigator.pop(context);
+                           } else {
+                             Navigator.of(context).pop(); 
+                           }
+                        },
+                      ),
+                    ],
                   ],
                 ),
               ),

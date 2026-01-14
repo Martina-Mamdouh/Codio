@@ -97,7 +97,7 @@ flutter_native_splash:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/slogan.png"
+  image_path: "assets/images/logo1.jpg"
   adaptive_icon_background: "#1A1A1A"  # لون الخلفية
-  adaptive_icon_foreground: "assets/images/slogan.png"
+  adaptive_icon_foreground: "assets/images/logo1.jpg"
   min_sdk_android: 21

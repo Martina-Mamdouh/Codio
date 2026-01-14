@@ -152,75 +152,73 @@ class DealCard extends StatelessWidget {
               ],
             ),
             // -------------------- INFO SECTION --------------------
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 6.h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Company Name
-                    if (deal.companyName != null)
-                      Text(
-                        deal.companyName!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: isLandscape ? 9.sp : 10.sp,
-                                                    // fontFamily: 'Cairo', // Inherited
-                        ),
-                      ),
-                    
-                    SizedBox(height: 2.h),
-
-                    // Title
+            Padding(
+              padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 6.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Company Name
+                  if (deal.companyName != null)
                     Text(
-                      deal.title,
-                      maxLines: 2,
+                      deal.companyName!,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppTheme.kLightText,
-                        fontWeight: FontWeight.bold,
-                        fontSize: isLandscape ? 11.sp : 13.sp,
-                        height: 1.2,
+                        color: Colors.white70,
+                        fontSize: isLandscape ? 9.sp : 10.sp,
+                                                  // fontFamily: 'Cairo', // Inherited
                       ),
                     ),
-                    
-                    SizedBox(height: isLandscape ? 2.h : 4.h),
+                  
+                  SizedBox(height: 2.h),
 
-                    // Expiry
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.access_time, size: isLandscape ? 10.w : 12.w, color: Colors.redAccent),
-                        SizedBox(width: 4.w),
-                        Text(
-                          formattedDate,
-                          style: TextStyle(
-                            color: Colors.redAccent,
-                            fontSize: isLandscape ? 9.sp : 10.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                  // Title
+                  Text(
+                    deal.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppTheme.kLightText,
+                      fontWeight: FontWeight.bold,
+                      fontSize: isLandscape ? 11.sp : 13.sp,
+                      height: 1.2,
                     ),
-                     
-                    // Category (Only show if space helps, or keep it but ensure no overflow)
-                    if (showCategory && deal.categoryName != null && deal.categoryName!.isNotEmpty) ...[
-                      SizedBox(height: 2.h),
+                  ),
+                  
+                  SizedBox(height: isLandscape ? 2.h : 4.h),
+
+                  // Expiry
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.access_time, size: isLandscape ? 10.w : 12.w, color: Colors.redAccent),
+                      SizedBox(width: 4.w),
                       Text(
-                        deal.categoryName!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        formattedDate,
                         style: TextStyle(
-                          color: AppTheme.kElectricLime,
+                          color: Colors.redAccent,
                           fontSize: isLandscape ? 9.sp : 10.sp,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
+                  ),
+                   
+                  // Category (Only show if space helps, or keep it but ensure no overflow)
+                  if (showCategory && deal.categoryName != null && deal.categoryName!.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      deal.categoryName!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppTheme.kElectricLime,
+                        fontSize: isLandscape ? 9.sp : 10.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
-                ),
+                ],
               ),
             ),
           ],

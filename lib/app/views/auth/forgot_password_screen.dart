@@ -70,6 +70,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       await Supabase.instance.client.auth.resetPasswordForEmail(
         _emailController.text.trim(),
+        redirectTo: 'io.supabase.kodioapp://reset-callback/',
       );
 
       if (!mounted) return;
@@ -127,7 +128,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       debugPrint('❌ Unexpected Reset Password Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('حدث خطأ غير متوقع. حاول مرة أخرى'),
+          content: Text('خطأ: $e'), // Showing actual error for debugging
           backgroundColor: Colors.red,
         ),
       );

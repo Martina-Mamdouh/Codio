@@ -54,39 +54,7 @@ class _ProfileViewState extends State<ProfileView> {
       onBackTap: () {
         context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
       },
-      actions: [
-          IconButton(
-            icon: const Icon(Icons.build, color: Colors.black),
-            tooltip: 'فحص المشاكل',
-            onPressed: () async {
-              showDialog(
-                context: context,
-                builder: (context) => const Center(child: CircularProgressIndicator()),
-              );
-              
-              final report = await context.read<UserProfileViewModel>().runDiagnostics();
-              
-              if (context.mounted) {
-                Navigator.pop(context); // Close loader
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('تقرير الفحص'),
-                    content: SingleChildScrollView(
-                      child: SelectableText(report),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('إغلاق'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-            },
-          ),
-      ],
+      actions: [],
       body: user == null
           ? _buildGuestView(context)
           : _buildLoggedInView(context, user, profileVm, authVm),

@@ -1,5 +1,10 @@
 import java.util.Properties
 import java.io.FileInputStream
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 
 plugins {
     id("com.android.application")
@@ -14,7 +19,7 @@ val mapsApiKey: String = System.getenv("MAPS_API_KEY")
     ?: "AIzaSyDutlG1pC0N-UqTnndAdRu0qVQf7iwV7xk"
 
 android {
-    namespace = "com.example.codio_app"
+    namespace = "com.codio.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "29.0.14206865"
 
@@ -28,7 +33,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.codio_app"
+        applicationId = "com.codio.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -38,11 +43,18 @@ android {
             "MAPS_API_KEY" to mapsApiKey,
         )
     }
+  signingConfigs {
+    create("release") {
+        keyAlias = keystoreProperties["keyAlias"] as String
+        keyPassword = keystoreProperties["keyPassword"] as String
+        storeFile = file(keystoreProperties["storeFile"] as String)
+        storePassword = keystoreProperties["storePassword"] as String
+    }
+}
 
-    buildTypes {
+   buildTypes {
         getByName("release") {
-            // استخدام توقيع الديباج مؤقتاً للسماح بتثبيت النسخة على الموبايل للتجربة
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             isShrinkResources = false
         }

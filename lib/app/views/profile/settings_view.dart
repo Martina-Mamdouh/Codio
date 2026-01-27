@@ -7,6 +7,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../terms_view.dart';
 import 'about_app_view.dart';
+import '../widgets/delete_account_dialog.dart';
+import '../auth/login_screen.dart';
+import '../splach_screen.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -253,6 +256,66 @@ class _SettingsViewState extends State<SettingsView> {
               ],
             ),
           ),
+          SizedBox(height: 32.h),
+
+          // Delete Account Button (Danger Zone)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w),
+            child: TextButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => DeleteAccountDialog(
+                    isLoading: authVm.isLoading,
+                    onConfirm: () async {
+                      // Capture navigator and messenger before async gap
+                      final navigator = Navigator.of(context);
+                      final messenger = ScaffoldMessenger.of(context);
+                      
+                      final success = await authVm.deleteAccount();
+                      
+                      // Use captured variables
+                      if (navigator.mounted) {
+                        navigator.pop(); // Close dialog
+                        
+                        if (success) {
+                          // Clean navigation to Splash Screen (which loads AuthWrapper)
+                          // This ensures AuthWrapper is in the tree to handle re-login
+                          navigator.pushAndRemoveUntil(
+                            MaterialPageRoute(
+                                builder: (_) => const SplashScreen()),
+                            (route) => false,
+                          );
+                        } else {
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Failed to delete account'),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                );
+              },
+              icon: Icon(Icons.delete_forever,
+                  color: Colors.redAccent.withOpacity(0.8), size: 20.sp),
+              label: Text(
+                'Delete Account',
+                style: TextStyle(
+                  color: Colors.redAccent.withOpacity(0.8),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                alignment: Alignment.centerLeft,
+                padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
+              ),
+            ),
+          ),
+          SizedBox(height: 24.h), // Bottom padding
         ],
       ),
     );

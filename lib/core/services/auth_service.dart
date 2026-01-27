@@ -20,6 +20,8 @@ class AuthService {
   Future<AuthResult> signInWithGoogle() async {
     try {
       // 1. Trigger Google Sign In
+      // Force sign out first to ensure we get a fresh token/account selection
+      await _googleSignIn.signOut();
       final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         return AuthResult(success: false, message: 'تم إلغاء تسجيل الدخول');
@@ -226,6 +228,13 @@ class AuthService {
           continue;
         }
 
+        if (errorStr.contains('error sending confirmation email')) {
+          return AuthResult(
+            success: false,
+            message: 'فشل إرسال بريد التفعيل. تم تجاوز الحد المسموح به أو الخادم غير مهيأ.',
+          );
+        }
+
         if (errorStr.contains('captcha')) {
           return AuthResult(
             success: false,
@@ -238,7 +247,7 @@ class AuthService {
             message: 'فشل الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وحاول مرة أخرى.',
           );
         }
-        return AuthResult(success: false, message: 'حدث خطأ في إنشاء الحساب');
+        return AuthResult(success: false, message: 'حدث خطأ في إنشاء الحساب: $e');
       }
     }
     
@@ -459,6 +468,25 @@ class AuthService {
     }
 
     return profile;
+  }
+
+  // Delete Account
+  Future<AuthResult> deleteAccount() async {
+    try {
+      final response = await _supabase.functions.invoke('delete-user');
+      
+      if (response.status == 200) {
+        // Sign out locally after successful deletion
+        await signOut();
+        return AuthResult(success: true, message: 'تم حذف الحساب بنجاح');
+      } else {
+        debugPrint('❌ Delete account failed: ${response.data}');
+        return AuthResult(success: false, message: 'فشل حذف الحساب. يرجى المحاولة مرة أخرى.');
+      }
+    } catch (e) {
+      debugPrint('❌ Delete account error: $e');
+      return AuthResult(success: false, message: 'حدث خطأ غير متوقع');
+    }
   }
 }
 // End of auth service

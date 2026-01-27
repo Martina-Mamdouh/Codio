@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_theme.dart';
-import 'login_screen.dart';
+import 'auth_wrapper_app.dart';
 
 class NewPasswordScreen extends StatefulWidget {
   final String
@@ -72,7 +72,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(builder: (context) => const AuthWrapperApp()),
         (route) => false,
       );
     } catch (e) {

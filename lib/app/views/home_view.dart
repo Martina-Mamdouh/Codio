@@ -82,16 +82,16 @@ class HomeView extends StatelessWidget {
                               fit: BoxFit.contain,
                             ),
                             const Spacer(),
-                            IconButton(
-                              icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
-                              onPressed: () {
-                                debugPrint('Notifications tapped');
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const NotificationsView()),
-                                );
-                              },
-                            ),
+                            // IconButton(
+                            //   icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
+                            //   onPressed: () {
+                            //     debugPrint('Notifications tapped');
+                            //     Navigator.push(
+                            //       context,
+                            //       MaterialPageRoute(builder: (_) => const NotificationsView()),
+                            //     );
+                            //   },
+                            // ),
                           ],
                         ),
                       ),
@@ -197,6 +197,7 @@ class HomeView extends StatelessWidget {
                       SizedBox(height: 28.h),
                       HomeBannerSlider(banners: viewModel.banners),
                       SizedBox(height: 20.h),
+                      /*
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: _DiscoverNearbyCard(
@@ -260,6 +261,7 @@ class HomeView extends StatelessWidget {
                           },
                         ),
                       ),
+                      */
                       SizedBox(height: 6.h),
                       DealSection(
                         title: 'عروض جديدة',

@@ -17,21 +17,21 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    debugPrint('🔄 AuthViewModel Initialization: Forcing logout...');
+    debugPrint('🔄 AuthViewModel Initialization...');
+    // Ensure we start with loading state
     isLoading = true;
     notifyListeners();
 
     try {
-      // Force sign out on start to require login every time (User Request)
-      await _authService.signOut();
-      currentUser = null;
-      debugPrint('✅ Force logout completed');
-
-      // Wait for a clean state
-      await Future.delayed(const Duration(milliseconds: 200));
-
-      await _loadCurrentUser();
+      // 1. Setup listener first to catch any immediate updates
       _listenToAuthChanges();
+
+      // 2. Load the initial state immediately
+      // We use silent: true because we manually set isLoading=true above.
+      // This ensures isLoading=false is set only when this completes.
+      await _loadCurrentUser(silent: true);
+      
+      debugPrint('✅ Init completed. User: ${currentUser?.email}');
     } catch (e) {
       debugPrint('❌ Error during Auth initialization: $e');
       isLoading = false;
@@ -199,6 +199,31 @@ class AuthViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Error updating profile: $e');
       return false;
+    }
+  }
+
+  // Delete Account
+  Future<bool> deleteAccount() async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final result = await _authService.deleteAccount();
+      
+      if (result.success) {
+        currentUser = null;
+        errorMessage = null;
+      } else {
+        errorMessage = result.message;
+      }
+      return result.success;
+    } catch (e) {
+      debugPrint('❌ Error deleting account: $e');
+      errorMessage = 'حدث خطأ غير متوقع';
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 }

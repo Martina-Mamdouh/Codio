@@ -108,6 +108,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -402,44 +404,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     SizedBox(height: 16.h),
 
+
+
+                    SizedBox(height: 16.h),
+
                     // Social Buttons
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w),
-                        child: Row(
-                          children: [
-                            if (Platform.isAndroid) ...[
-                              const Spacer(flex: 1),
+                      child: Row(
+                        children: [
+                          if (Platform.isAndroid) ...[
+                            const Spacer(flex: 1),
+                            SocialLoginButton(
+                              text: 'كوكل',
+                              icon: FontAwesomeIcons.google,
+                              onPressed: _handleGoogleLogin,
+                              flex: 2,
+                            ),
+                            const Spacer(flex: 1),
+                          ] else ...[
+                            SocialLoginButton(
+                              text: 'كوكل',
+                              icon: FontAwesomeIcons.google,
+                              onPressed: _handleGoogleLogin,
+                            ),
+                            if (Platform.isIOS) ...[
+                              SizedBox(width: 16.w),
                               SocialLoginButton(
-                                text: 'جوجل',
-                                icon: FontAwesomeIcons.google,
-                                onPressed: _handleGoogleLogin,
-                                flex: 2,
+                                text: 'أبل',
+                                icon: FontAwesomeIcons.apple,
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'تسجيل الدخول عبر أبل متاح قريباً'),
+                                    ),
+                                  );
+                                },
                               ),
-                              const Spacer(flex: 1),
-                            ] else ...[
-                              SocialLoginButton(
-                                text: 'جوجل',
-                                icon: FontAwesomeIcons.google,
-                                onPressed: _handleGoogleLogin,
-                              ),
-                              if (Platform.isIOS) ...[
-                                SizedBox(width: 16.w),
-                                SocialLoginButton(
-                                  text: 'أبل',
-                                  icon: FontAwesomeIcons.apple,
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'تسجيل الدخول عبر أبل متاح قريباً'),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
                             ],
                           ],
-                        ),
+                        ],
+                      ),
                     ),
 
                     SizedBox(height: 16.h),

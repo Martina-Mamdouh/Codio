@@ -292,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (Platform.isAndroid) ...[
                               const Spacer(flex: 1),
                               SocialLoginButton(
-                                text: 'جوجل',
+                                text: 'كوكل',
                                 icon: FontAwesomeIcons.google,
                                 onPressed: _handleGoogleLogin,
                                 flex: 2,
@@ -300,7 +300,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               const Spacer(flex: 1),
                             ] else ...[
                               SocialLoginButton(
-                                text: 'جوجل',
+                                text: 'كوكل',
                                 icon: FontAwesomeIcons.google,
                                 onPressed: _handleGoogleLogin,
                               ),

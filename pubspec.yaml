@@ -2,7 +2,7 @@ name: kodio_app
 description: "Kodio - Your Discount & Offers App"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.8.0
@@ -101,3 +101,4 @@ flutter_launcher_icons:
   adaptive_icon_background: "#1A1A1A"  # لون الخلفية
   adaptive_icon_foreground: "assets/images/logo1.jpg"
   min_sdk_android: 21
+

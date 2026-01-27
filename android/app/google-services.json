@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "75334850507-raeovdkmcfill67i1rasg68q339fpc6q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.codio.app",
+            "certificate_hash": "0bf078a8f57c6bf14ff5d7cc29a7620f0b98ee4d"
+          }
+        },
+        {
           "client_id": "75334850507-l89vbmniujl1f4ptv30rpieqab9f8pt1.apps.googleusercontent.com",
           "client_type": 3
         }

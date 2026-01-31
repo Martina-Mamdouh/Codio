@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../viewmodels/home_view_model.dart';
+import '../viewmodels/notification_viewmodel.dart';
 import 'notifications_view.dart';
 import 'map_view.dart';
 import 'widgets/home_banner_slider.dart';
@@ -82,16 +83,42 @@ class HomeView extends StatelessWidget {
                               fit: BoxFit.contain,
                             ),
                             const Spacer(),
-                            // IconButton(
-                            //   icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
-                            //   onPressed: () {
-                            //     debugPrint('Notifications tapped');
-                            //     Navigator.push(
-                            //       context,
-                            //       MaterialPageRoute(builder: (_) => const NotificationsView()),
-                            //     );
-                            //   },
-                            // ),
+                            Consumer<NotificationsViewModel>(
+                              builder: (context, notificationsVm, _) {
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.notifications_none,
+                                          color: Colors.black, size: 28),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const NotificationsView()),
+                                        );
+                                      },
+                                    ),
+                                    if (notificationsVm.newNotifications.isNotEmpty)
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: Container(
+                                          width: 10.w,
+                                          height: 10.w,
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                                color: const Color(0xFFE5FF17), width: 1.5),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),

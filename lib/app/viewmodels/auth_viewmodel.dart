@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/services/onesignal_service.dart';
 import '../../core/models/user_model.dart';
 
 class AuthViewModel extends ChangeNotifier {
@@ -56,6 +57,11 @@ class AuthViewModel extends ChangeNotifier {
       if (_authService.isAuthenticated) {
         currentUser = await _authService.getCurrentUserProfile();
         debugPrint('👤 Loaded user profile: ${currentUser?.email}');
+        
+        // Register OneSignal User ID
+        if (currentUser != null && currentUser!.id.isNotEmpty) {
+           OneSignalService().setExternalUserId(currentUser!.id);
+        }
       } else {
         currentUser = null;
       }
@@ -148,6 +154,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    OneSignalService().removeExternalUserId();
     await _authService.signOut();
     currentUser = null;
     if (hasListeners) notifyListeners();

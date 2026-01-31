@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 
 class YellowScaffold extends StatelessWidget {
   final String title;
+  final Widget? titleWidget; // Custom title widget (e.g. for badges)
   final Widget body;
   final bool showBackButton;
   final VoidCallback? onBackTap;
@@ -12,6 +13,7 @@ class YellowScaffold extends StatelessWidget {
   const YellowScaffold({
     super.key,
     required this.title,
+    this.titleWidget,
     required this.body,
     this.showBackButton = true,
     this.onBackTap,
@@ -41,7 +43,7 @@ class YellowScaffold extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: Text(
+                      child: titleWidget ?? Text(
                         title,
                         style: TextStyle(
                           fontSize: 24.sp,

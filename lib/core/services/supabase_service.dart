@@ -257,6 +257,23 @@ class SupabaseService {
     }
   }
 
+  // 2.5) جلب الإشعارات كـ Stream (Real-time)
+  Stream<List<NotificationModel>> getNotificationsStream() {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      return const Stream.empty();
+    }
+
+    return _client
+        .from('notifications')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', userId)
+        .order('created_at', ascending: false)
+        .map((data) => data
+            .map((json) => NotificationModel.fromJson(json))
+            .toList());
+  }
+
   // مفيدة لو في إشعارات inside-app غير OneSignal
   Future<void> logNotificationForCurrentUser(
     String title,

@@ -56,15 +56,22 @@ class OneSignalService {
 
         if (title.isNotEmpty || body.isNotEmpty) {
           // Guard: Prevent duplicate saves (foreground + click both fire)
-          if (!_isDuplicate(title, body)) {
-            await SupabaseService().logNotificationForCurrentUser(
-              title,
-              body,
-              dealId: dealId, // Pass optional deal_id
-            );
-          } else if (kDebugMode) {
-            print('OneSignal: Skipping duplicate notification');
-          }
+          // FIXME: Disabled strictly for debugging user issue
+          // if (!_isDuplicate(title, body)) {
+            try {
+              await SupabaseService().logNotificationForCurrentUser(
+                title,
+                body,
+                dealId: dealId,
+              );
+              // Show Debug SnackBar
+              _showDebugSnackBar('✅ تم حفظ الإشعار في قاعدة البيانات');
+            } catch (e) {
+              _showDebugSnackBar('❌ فشل حفظ الإشعار: $e');
+            }
+          // } else if (kDebugMode) {
+          //   print('OneSignal: Skipping duplicate notification');
+          // }
         }
 
         // نعرض الإشعار في الـ status bar
@@ -291,7 +298,6 @@ class OneSignalService {
     }
   }
 
-  /// Navigate to deal details screen (with graceful error handling)
   Future<void> _navigateToDeal(int dealId) async {
     if (_navigatorKey?.currentState == null) {
       if (kDebugMode) {
@@ -328,6 +334,18 @@ class OneSignalService {
       }
       _navigatorKey!.currentState!.push(
         MaterialPageRoute(builder: (_) => const NotificationsView()),
+      );
+    }
+  }
+
+  void _showDebugSnackBar(String message) {
+    if (_navigatorKey?.currentState?.context != null) {
+      ScaffoldMessenger.of(_navigatorKey!.currentState!.context).showSnackBar(
+        SnackBar(
+          content: Text(message, style: const TextStyle(fontFamily: 'Cairo')),
+          backgroundColor: Colors.blueGrey,
+          duration: const Duration(seconds: 3),
+        ),
       );
     }
   }

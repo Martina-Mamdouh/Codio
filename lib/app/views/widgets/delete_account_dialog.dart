@@ -14,7 +14,7 @@ class DeleteAccountDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.ltr, // For English text compliance
+      textDirection: TextDirection.rtl, // Arabic direction
       child: AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
@@ -26,7 +26,7 @@ class DeleteAccountDialog extends StatelessWidget {
             const Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
             SizedBox(width: 8.w),
             Text(
-              'Delete Account',
+              'حذف الحساب',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18.sp,
@@ -40,7 +40,7 @@ class DeleteAccountDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'This action permanently deletes your account and all associated data. This cannot be undone.',
+              'هل أنت متأكد من حذف الحساب؟ سيتم حذف جميع بياناتك نهائياً. لا يمكن التراجع عن هذا الإجراء.',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 14.sp,
@@ -53,7 +53,7 @@ class DeleteAccountDialog extends StatelessWidget {
           TextButton(
             onPressed: isLoading ? null : () => Navigator.pop(context),
             child: Text(
-              'Cancel',
+              'إلغاء',
               style: TextStyle(
                 color: Colors.white54,
                 fontSize: 15.sp,
@@ -80,7 +80,7 @@ class DeleteAccountDialog extends StatelessWidget {
                     ),
                   )
                 : Text(
-                    'Delete',
+                    'حذف',
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.bold,

@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:provider/provider.dart';
+import '../../app/viewmodels/notification_viewmodel.dart';
 import '../../app/views/deal_details_view.dart';
 import '../../app/views/notifications_view.dart';
 import '../../core/services/supabase_service.dart';
@@ -56,22 +58,30 @@ class OneSignalService {
 
         if (title.isNotEmpty || body.isNotEmpty) {
           // Guard: Prevent duplicate saves (foreground + click both fire)
-          // FIXME: Disabled strictly for debugging user issue
-          // if (!_isDuplicate(title, body)) {
+          if (!_isDuplicate(title, body)) {
             try {
               await SupabaseService().logNotificationForCurrentUser(
                 title,
                 body,
                 dealId: dealId,
               );
-              // Show Debug SnackBar
-              _showDebugSnackBar('✅ تم حفظ الإشعار في قاعدة البيانات');
+              
+              // Force UI update immediately (Waiting for Realtime can be slow)
+              if (_navigatorKey?.currentState?.context != null) {
+                // ignore: use_build_context_synchronously
+                final context = _navigatorKey!.currentState!.context;
+                // Check if widget is mounted to be safe, though context check covers most
+                Provider.of<NotificationsViewModel>(context, listen: false).loadNotifications();
+              }
+
             } catch (e) {
-              _showDebugSnackBar('❌ فشل حفظ الإشعار: $e');
+              if (kDebugMode) {
+                print('Error logging notification: $e');
+              }
             }
-          // } else if (kDebugMode) {
-          //   print('OneSignal: Skipping duplicate notification');
-          // }
+          } else if (kDebugMode) {
+            print('OneSignal: Skipping duplicate notification');
+          }
         }
 
         // نعرض الإشعار في الـ status bar
@@ -100,14 +110,21 @@ class OneSignalService {
 
         if (title.isNotEmpty || body.isNotEmpty) {
           // Guard: Prevent duplicate saves (foreground + click both fire)
-          if (!_isDuplicate(title, body)) {
+          if (!_isDuplicate(title, body) && !_isDuplicateInDatabase(title, body)) {
             await SupabaseService().logNotificationForCurrentUser(
               title,
               body,
               dealId: dealId, // Pass optional deal_id
             );
+            
+            // Force UI update
+             if (_navigatorKey?.currentState?.context != null) {
+              // ignore: use_build_context_synchronously
+              final context = _navigatorKey!.currentState!.context;
+               Provider.of<NotificationsViewModel>(context, listen: false).loadNotifications();
+             }
           } else if (kDebugMode) {
-            print('OneSignal: Skipping duplicate notification');
+            print('OneSignal: Skipping duplicate notification (Found in recent cache or DB list)');
           }
         }
 
@@ -268,7 +285,37 @@ class OneSignalService {
       (k, v) => now.difference(v).inSeconds > _duplicateWindowSeconds,
     );
 
+
+
     return false;
+  }
+
+  /// Check if notification already exists in the loaded list (ViewModel)
+  bool _isDuplicateInDatabase(String title, String body) {
+    if (_navigatorKey?.currentState?.context == null) return false;
+
+    try {
+      final context = _navigatorKey!.currentState!.context;
+      final vm = Provider.of<NotificationsViewModel>(context, listen: false);
+      
+      // Combine lists to check everywhere
+      final allNotifications = [...vm.newNotifications, ...vm.oldNotifications];
+
+      // Check for match
+      // We check if any notification has the same title AND body
+      // And was created reasonably recently (e.g. last 12 hours) to avoid false positives with generic messages
+      final now = DateTime.now();
+      return allNotifications.any((n) {
+        final isSameContent = n.title == title && n.body == body;
+        final isRecent = now.difference(n.createdAt).inHours < 12;
+        return isSameContent && isRecent;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error checking database for duplicates: $e');
+      }
+      return false;
+    }
   }
 
   /// Extract deal_id from OneSignal additionalData (safe parsing)
@@ -338,15 +385,47 @@ class OneSignalService {
     }
   }
 
-  void _showDebugSnackBar(String message) {
-    if (_navigatorKey?.currentState?.context != null) {
-      ScaffoldMessenger.of(_navigatorKey!.currentState!.context).showSnackBar(
-        SnackBar(
-          content: Text(message, style: const TextStyle(fontFamily: 'Cairo')),
-          backgroundColor: Colors.blueGrey,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+  // ==================== Push Control ====================
+  
+  // Enable/Disable Push Notifications
+  Future<void> setPushEnabled(bool enabled) async {
+    try {
+      if (enabled) {
+        await OneSignal.User.pushSubscription.optIn();
+      } else {
+        await OneSignal.User.pushSubscription.optOut();
+      }
+      if (kDebugMode) {
+        print('Push Enabled set to: $enabled');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error setting Push Enabled: $e');
+      }
+    }
+  }
+
+  // Check if Push is Enabled
+  bool get isPushEnabled {
+    try {
+      return OneSignal.User.pushSubscription.optedIn ?? false;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting Push Enabled status: $e');
+      }
+      return false;
+    }
+  }
+
+  // Get User Tags
+  Future<Map<String, dynamic>> getTags() async {
+    try {
+      return await OneSignal.User.getTags();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting tags: $e');
+      }
+      return {};
     }
   }
 }

@@ -11,6 +11,8 @@ import '../widgets/delete_account_dialog.dart';
 import '../auth/login_screen.dart';
 import '../splach_screen.dart';
 
+import '../../../core/services/onesignal_service.dart';
+
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
 
@@ -21,6 +23,31 @@ class SettingsView extends StatefulWidget {
 class _SettingsViewState extends State<SettingsView> {
   bool notificationsEnabled = true;
   bool offersOnlyEnabled = false;
+  bool isLoadingEvents = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final os = OneSignalService();
+    // Check Permission/Subscription
+    final isPush = os.isPushEnabled;
+    
+    // Check Tag for Offers Only
+    final tags = await os.getTags();
+    final isOffersOnly = tags['notification_preference'] == 'offers_only';
+
+    if (mounted) {
+      setState(() {
+        notificationsEnabled = isPush;
+        offersOnlyEnabled = isOffersOnly;
+        isLoadingEvents = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +93,9 @@ class _SettingsViewState extends State<SettingsView> {
                     style: TextStyle(color: Colors.white54),
                   ),
                   value: notificationsEnabled,
-                  onChanged: (value) {
+                  onChanged: (value) async {
                     setState(() => notificationsEnabled = value);
-                    // TODO: أربطها فعلياً بـ OneSignal أو خدمة الإشعارات
+                    await OneSignalService().setPushEnabled(value);
                   },
                 ),
                 const Divider(height: 1, color: Colors.white12),
@@ -90,8 +117,13 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                   value: offersOnlyEnabled,
                   onChanged: notificationsEnabled
-                      ? (value) {
+                      ? (value) async {
                           setState(() => offersOnlyEnabled = value);
+                          if (value) {
+                            OneSignalService().sendTag('notification_preference', 'offers_only');
+                          } else {
+                            OneSignalService().deleteTag('notification_preference');
+                          }
                         }
                       : null,
                 ),

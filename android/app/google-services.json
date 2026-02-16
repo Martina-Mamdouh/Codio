@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "75334850507-1bmiriub3om7lb4rhd7co31a6i3ianhu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.codio.app",
+            "certificate_hash": "a5c299b4c928bff1111b78f464dc6a656313088c"
+          }
+        },
+        {
           "client_id": "75334850507-p6kffl6canok04fpp856dfbtof93v8b1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

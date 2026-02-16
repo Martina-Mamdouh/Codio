@@ -46,7 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
       fullName: _emailController.text.trim().split('@')[0],
-      profession: _selectedProfession!,
+      profession: _selectedProfession ?? '',
     );
 
     if (!mounted) return;
@@ -274,9 +274,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 });
                               },
                               validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'يرجى اختيار المهنة';
-                                }
                                 return null;
                               },
                               icon: Padding(

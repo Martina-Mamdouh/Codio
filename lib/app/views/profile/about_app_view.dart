@@ -13,9 +13,7 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: AppTheme.kDarkBackground,
         appBar: AppBar(
           backgroundColor: AppTheme.kDarkBackground,
@@ -170,8 +168,7 @@ class AboutScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   Future<void> _openUrl(String url) async {

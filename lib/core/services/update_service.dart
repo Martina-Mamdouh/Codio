@@ -30,9 +30,7 @@ class UpdateService {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: AppTheme.kDarkBackground,
           title: const Text(
             'تحديث متاح',
@@ -80,16 +78,13 @@ class UpdateService {
             ),
           ],
         ),
-      ),
     );
   }
 
   static void _showNoUpdateDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: AppTheme.kDarkBackground,
           title: const Text(
             '✓ التطبيق محدث',
@@ -117,16 +112,13 @@ class UpdateService {
             ),
           ],
         ),
-      ),
     );
   }
 
   static void _showErrorDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
+      builder: (context) => AlertDialog(
           backgroundColor: AppTheme.kDarkBackground,
           title: const Text(
             'خطأ',
@@ -154,7 +146,6 @@ class UpdateService {
             ),
           ],
         ),
-      ),
     );
   }
 }

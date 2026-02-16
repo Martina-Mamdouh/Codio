@@ -26,123 +26,120 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: AppTheme.kDarkBackground,
+      appBar: AppBar(
+        title: const Text('الخريطة والعروض القريبة'),
         backgroundColor: AppTheme.kDarkBackground,
-        appBar: AppBar(
-          title: const Text('الخريطة والعروض القريبة'),
-          backgroundColor: AppTheme.kDarkBackground,
-          elevation: 0,
-          actions: [
-            IconButton(
-              onPressed: () {
-                context.read<MapViewModel>().refresh();
-              },
-              icon: const Icon(Icons.refresh),
-            ),
-          ],
-        ),
-        body: Consumer<MapViewModel>(
-          builder: (context, vm, _) {
-            if (vm.isLoading && vm.markers.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppTheme.kElectricLime),
-              );
-            }
+        elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.read<MapViewModel>().refresh();
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: Consumer<MapViewModel>(
+        builder: (context, vm, _) {
+          if (vm.isLoading && vm.markers.isEmpty) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppTheme.kElectricLime),
+            );
+          }
 
-            if (vm.errorMessage != null) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+          if (vm.errorMessage != null) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.redAccent,
+                    size: 42,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    vm.errorMessage!,
+                    style: const TextStyle(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: vm.refresh,
+                    child: const Text('إعادة المحاولة'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              _CategoryFilterRow(viewModel: vm),
+              Expanded(
+                child: Stack(
                   children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.redAccent,
-                      size: 42,
+                    GoogleMap(
+                      initialCameraPosition: vm.initialCameraPosition,
+                      markers: vm.markers.values.toSet(),
+                      zoomControlsEnabled: false,
+                      myLocationEnabled: vm.hasLocation,
+                      myLocationButtonEnabled: false,
+                      compassEnabled: true,
+                      onTap: (_) => vm.clearSelection(),
+                      onCameraMove: vm.onCameraMove,
+                      onMapCreated: (controller) =>
+                          vm.setMapController(controller),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      vm.errorMessage!,
-                      style: const TextStyle(color: Colors.white70),
-                      textAlign: TextAlign.center,
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Column(
+                        children: [
+                          _MapIconButton(
+                            icon: Icons.my_location,
+                            label: 'موقعي',
+                            isActive: vm.hasLocation,
+                            onTap: () {
+                              vm.centerOnUser();
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _MapIconButton(
+                            icon: Icons.local_fire_department,
+                            label: 'العروض القريبة',
+                            isActive: vm.nearbyOnly,
+                            onTap: () {
+                              vm.toggleNearby();
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          _MapIconButton(
+                            icon: Icons.refresh,
+                            label: 'إعادة التمركز',
+                            onTap: () {
+                              vm.disableNearbyMode();
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: vm.refresh,
-                      child: const Text('إعادة المحاولة'),
-                    ),
+                    if (vm.locationError != null)
+                      Positioned(
+                        left: 16,
+                        right: 16,
+                        top: 12,
+                        child: _InfoBanner(text: vm.locationError!),
+                      ),
                   ],
                 ),
-              );
-            }
-
-            return Column(
-              children: [
-                _CategoryFilterRow(viewModel: vm),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      GoogleMap(
-                        initialCameraPosition: vm.initialCameraPosition,
-                        markers: vm.markers.values.toSet(),
-                        zoomControlsEnabled: false,
-                        myLocationEnabled: vm.hasLocation,
-                        myLocationButtonEnabled: false,
-                        compassEnabled: true,
-                        onTap: (_) => vm.clearSelection(),
-                        onCameraMove: vm.onCameraMove,
-                        onMapCreated: (controller) =>
-                            vm.setMapController(controller),
-                      ),
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Column(
-                          children: [
-                            _MapIconButton(
-                              icon: Icons.my_location,
-                              label: 'موقعي',
-                              isActive: vm.hasLocation,
-                              onTap: () {
-                                vm.centerOnUser();
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            _MapIconButton(
-                              icon: Icons.local_fire_department,
-                              label: 'العروض القريبة',
-                              isActive: vm.nearbyOnly,
-                              onTap: () {
-                                vm.toggleNearby();
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            _MapIconButton(
-                              icon: Icons.refresh,
-                              label: 'إعادة التمركز',
-                              onTap: () {
-                                vm.disableNearbyMode();
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (vm.locationError != null)
-                        Positioned(
-                          left: 16,
-                          right: 16,
-                          top: 12,
-                          child: _InfoBanner(text: vm.locationError!),
-                        ),
-                    ],
-                  ),
-                ),
-                _SelectedCompanyCard(viewModel: vm),
-              ],
-            );
-          },
-        ),
+              ),
+              _SelectedCompanyCard(viewModel: vm),
+            ],
+          );
+        },
       ),
     );
   }

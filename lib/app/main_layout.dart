@@ -65,7 +65,7 @@ class MainLayoutState extends State<MainLayout> {
     });
   }
 
-  final List<Widget> _screens = [
+  final List<Widget> _mobileScreens = [
     const HomeView(),
     const CategoriesView(),
     const CompaniesView(),
@@ -73,35 +73,51 @@ class MainLayoutState extends State<MainLayout> {
     const ProfileView(),
   ];
 
+  final List<Widget> _tabletScreens = [
+    const HomeView(),
+    const CategoriesView(),
+    const CompaniesView(),
+    const ProfileView(),
+  ];
+
+  List<Widget> get _currentScreens {
+    final deviceType = getDeviceType(MediaQuery.of(context).size);
+    return deviceType == DeviceScreenType.mobile ? _mobileScreens : _tabletScreens;
+  }
+
   void switchToTab(int index) {
     _onTabChanged(index);
   }
 
   void _onTabChanged(int index) {
-    // Lazy Load Logic
-    if (index == 1) { // Categories
+    final deviceType = getDeviceType(MediaQuery.of(context).size);
+    final isMobile = deviceType == DeviceScreenType.mobile;
+
+    // Mapping:
+    // Mobile: 1=Cat, 2=Comp, 3=Follow, 4=Profile
+    // Tablet: 1=Cat, 2=Comp, 3=Profile
+
+    if (index == 1) { // Categories (Both)
       final vm = context.read<CategoriesViewModel>();
       if (vm.categories.isEmpty && !vm.isLoading) {
         vm.loadCategories();
       }
-    } else if (index == 2) { // Companies
+    } else if (index == 2) { // Companies (Both)
       final vm = context.read<CompaniesViewModel>();
       if (vm.companies.isEmpty && !vm.isLoading) {
         vm.loadCompanies();
       }
-      // Map init
       final mapVm = context.read<MapViewModel>();
       if (!mapVm.hasLoaded && !mapVm.isLoading) {
           mapVm.init(); 
       }
-    } else if (index == 3) { // Followed Companies
+    } else if (isMobile && index == 3) { // Followed (Mobile Only)
       final vm = context.read<UserProfileViewModel>();
-      // Reload if empty or stale? Just ensure it's loaded.
       if (vm.followedCompanies.isEmpty && !vm.isLoadingProfile) {
         vm.loadProfileData();
       }
     }
-    
+
     setState(() {
       _currentIndex = index;
     });
@@ -119,7 +135,7 @@ class MainLayoutState extends State<MainLayout> {
   Widget _buildMobileLayout() {
     return Scaffold(
       backgroundColor: AppTheme.kDarkBackground,
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: IndexedStack(index: _currentIndex, children: _mobileScreens),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.only(bottom: 16, left: 12, right: 12),
         child: ClipRRect(
@@ -188,7 +204,7 @@ class MainLayoutState extends State<MainLayout> {
             ],
           ),
           Expanded(
-            child: IndexedStack(index: _currentIndex, children: _screens),
+            child: IndexedStack(index: _currentIndex, children: _tabletScreens),
           ),
         ],
       ),

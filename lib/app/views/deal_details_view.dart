@@ -34,9 +34,7 @@ class _DealDetailsViewState extends State<DealDetailsView> {
         vm.loadCompanyData(widget.deal.companyId, widget.deal.id);
         return vm;
       },
-      child: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Scaffold(
+      child: Scaffold(
           backgroundColor: AppTheme.kDarkBackground,
           appBar: AppBar(
             backgroundColor: AppTheme.kDarkBackground,
@@ -418,7 +416,7 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                                     );
                                   },
                                   child: Container(
-                                    height: 64.h,
+                                    constraints: BoxConstraints(minHeight: 64.h),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF2C2C2E),
                                       borderRadius: BorderRadius.circular(12.r),
@@ -426,6 +424,7 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                                     ),
                                     padding: EdgeInsets.symmetric(
                                       horizontal: 16.w,
+                                      vertical: 12.h,
                                     ),
                                     child: Row(
                                       children: [
@@ -704,7 +703,6 @@ class _DealDetailsViewState extends State<DealDetailsView> {
             },
           ),
         ),
-      ),
     );
   }
 

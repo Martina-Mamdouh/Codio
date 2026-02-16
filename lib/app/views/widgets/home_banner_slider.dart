@@ -24,12 +24,14 @@ class HomeBannerSlider extends StatelessWidget {
     return CarouselSlider.builder(
       itemCount: banners.length,
       options: CarouselOptions(
-        height: MediaQuery.of(context).orientation == Orientation.portrait ? 160.0.h : 140,
+        height: MediaQuery.of(context).orientation == Orientation.portrait 
+            ? (MediaQuery.of(context).size.width > 600 ? 220.h : 180.h) 
+            : 160.h,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 5),
         enlargeCenterPage: true,
-        aspectRatio: 16 / 9,
-        viewportFraction: 0.9,
+        aspectRatio: MediaQuery.of(context).size.width > 600 ? 21 / 9 : 16 / 9,
+        viewportFraction: MediaQuery.of(context).size.width > 600 ? 0.7 : 0.9,
         onPageChanged: (index, reason) {
           // Track banner impression
           if (index < banners.length && banners[index].id != null) {

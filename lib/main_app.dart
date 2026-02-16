@@ -96,8 +96,16 @@ class CodioApp extends StatelessWidget {
             ],
 
             // نجبر التطبيق يكون عربي
+            locale: const Locale('ar'),
             localeResolutionCallback: (locale, supportedLocales) {
               return const Locale('ar');
+            },
+
+            builder: (context, child) {
+              return Directionality(
+                textDirection: TextDirection.rtl,
+                child: child!,
+              );
             },
 
             theme: AppTheme.darkTheme,

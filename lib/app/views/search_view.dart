@@ -39,8 +39,12 @@ class _SearchViewState extends State<SearchView> {
   @override
   void initState() {
     super.initState();
-    _focusNode.requestFocus();
     _loadRecentSearches();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -118,17 +122,17 @@ class _SearchViewState extends State<SearchView> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: AppTheme.kDarkBackground,
+      appBar: AppBar(
+        toolbarHeight: 70.h,
         backgroundColor: AppTheme.kDarkBackground,
-        appBar: AppBar(
-          toolbarHeight: 60.h,
-          backgroundColor: AppTheme.kDarkBackground,
-          elevation: 0,
-          titleSpacing: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+        elevation: 0,
+        titleSpacing: 0,
+        leading: Padding(
+          padding: EdgeInsets.only(right: 8.w),
+          child: IconButton(
+            icon: Icon(Icons.arrow_forward, color: Colors.white, size: 24.sp),
             onPressed: () {
                if (Navigator.canPop(context)) {
                  Navigator.pop(context);
@@ -137,24 +141,28 @@ class _SearchViewState extends State<SearchView> {
                }
             },
           ),
-          title: Padding(
-            padding: EdgeInsets.only(left: 16.w),
+        ),
+        title: Padding(
+          padding: EdgeInsets.only(left: 16.w, right: 8.w),
+          child: Hero(
+            tag: 'search_bar',
             child: Material(
               color: Colors.transparent,
               child: TextField(
                 controller: _searchController,
                 focusNode: _focusNode,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontSize: 16.sp),
                 decoration: InputDecoration(
                   hintText: 'ابحث عن المتاجر والعروض...',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  prefixIcon: const Icon(
+                  hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+                  prefixIcon: Icon(
                     Icons.search,
                     color: AppTheme.kElectricLime,
+                    size: 22.sp,
                   ),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          icon: Icon(Icons.clear, color: Colors.grey, size: 20.sp),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {});
@@ -169,8 +177,8 @@ class _SearchViewState extends State<SearchView> {
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 0,
-                    vertical: 12.h,
+                    horizontal: 12.w,
+                    vertical: 10.h,
                   ),
                 ),
                 onChanged: (value) {
@@ -188,17 +196,17 @@ class _SearchViewState extends State<SearchView> {
             ),
           ),
         ),
-        body: SafeArea(
-          child: _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.kElectricLime,
-                  ),
-                )
-              : _hasSearched
-              ? _buildSearchResults()
-              : _buildSuggestions(),
-        ),
+      ),
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppTheme.kElectricLime,
+                ),
+              )
+            : _hasSearched
+            ? _buildSearchResults()
+            : _buildSuggestions(),
       ),
     );
   }

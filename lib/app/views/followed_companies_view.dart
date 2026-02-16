@@ -22,101 +22,103 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.kDarkBackground,
-      // No AppBar, UnifiedHeader in body
-      body: Column(
-        children: [
-// Invalid lines removed
+    return Column(
+      children: [
+        UnifiedHeader(
+          title: 'المتابعة',
+          subtitle: 'تصفح الشركات التي تهمك',
+          searchHint: 'ابحث في المتابعة...',
+          showBackButton: true,
+          onBackTap: () {
+            context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
+          },
+          onSearchChanged: (val) {
+            setState(() {
+              _searchQuery = val;
+            });
+          },
+        ),
+        Expanded(
+          child: Consumer<UserProfileViewModel>(
+            builder: (context, profileVm, child) {
+              // Show loading ONLY if initial load and empty (to avoid empty state flash)
+              if (profileVm.isLoadingProfile && profileVm.followedCompanies.isEmpty) {
+                return const Center(child: CircularProgressIndicator(color: AppTheme.kElectricLime));
+              }
+          
+              // If truly empty
+              if (profileVm.followedCompanies.isEmpty) {
+                return Center(child: Text('لا يوجد شركات متابعة بعد', style: TextStyle(color: Colors.white70)));
+              }
+          
+              final companies = profileVm.followedCompanies;
+              final filteredCompanies = companies.where((c) {
+                 return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
+              }).toList();
+          
+              if (filteredCompanies.isEmpty) {
+                 return Center(child: Text('لا توجد نتائج بحث', style: TextStyle(color: Colors.white70)));
+              }
+          
+              final width = MediaQuery.of(context).size.width;
+              final crossAxisCount = width < 340 ? 1 : 2;
 
-          UnifiedHeader(
-              title: 'المتابعة',
-              subtitle: 'تصفح الشركات التي تهمك',
-              searchHint: 'ابحث في المتابعة...',
-              showBackButton: true,
-              onBackTap: () {
-                context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
-              },
-              onSearchChanged: (val) {
-                setState(() {
-                  _searchQuery = val;
-                });
-              },
-            ),
-          Expanded(
-            child: Consumer<UserProfileViewModel>(
-              builder: (context, profileVm, child) {
-                // Show loading ONLY if initial load and empty (to avoid empty state flash)
-                if (profileVm.isLoadingProfile && profileVm.followedCompanies.isEmpty) {
-                  return const Center(child: CircularProgressIndicator(color: AppTheme.kElectricLime));
-                }
-            
-                // If truly empty
-                if (profileVm.followedCompanies.isEmpty) {
-                  return Center(child: Text('لا يوجد شركات متابعة بعد', style: TextStyle(color: Colors.white70)));
-                }
-            
-                final companies = profileVm.followedCompanies;
-                final filteredCompanies = companies.where((c) {
-                   return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
-                }).toList();
-            
-                if (filteredCompanies.isEmpty) {
-                   return Center(child: Text('لا توجد نتائج بحث', style: TextStyle(color: Colors.white70)));
-                }
-            
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    int crossAxisCount;
-                    final width = constraints.maxWidth;
-                    if (width < 340) {
-                      crossAxisCount = 1;
-                    } else {
-                      crossAxisCount = 2;
-                    }
-                    return GridView.builder(
-                      padding: EdgeInsets.all(16),
-                      itemCount: filteredCompanies.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: 0.73,
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await profileVm.loadProfileData();
+                },
+                color: AppTheme.kElectricLime,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  slivers: [
+                    SliverPadding(
+                      padding: EdgeInsets.only(
+                        left: 16.w,
+                        right: 16.w,
+                        top: 24.h,
+                        bottom: 16.h,
                       ),
-                      itemBuilder: (context, index) {
-                        final company = filteredCompanies[index];
-                        return CompanyCard(
-                          company: company,
-                          // We pass true because this LIST only contains followed companies!
-                          // But to be safe and reactive, we could check IDs.
-                          // However, optimizing: UserProfileVM ensures this list is valid.
-                          isFollowed: true, 
-                          isFollowLoading: false,
-                          onToggleFollow: () async {
-                             // Use VM to toggle, which handles optimistic updates
-                             await profileVm.toggleCompanyFollow(company.id, company: company);
-                          },
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CompanyProfileView(
-                                  companyId: company.id, 
-                                  company: company, // Pass instant load data!
-                                ),
-                              ),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.73 : 1.1,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final company = filteredCompanies[index];
+                            return CompanyCard(
+                              company: company,
+                              isFollowed: true, 
+                              isFollowLoading: false,
+                              onToggleFollow: () async {
+                                 await profileVm.toggleCompanyFollow(company.id, company: company);
+                              },
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CompanyProfileView(
+                                      companyId: company.id, 
+                                      company: company,
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
+                          childCount: filteredCompanies.length,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

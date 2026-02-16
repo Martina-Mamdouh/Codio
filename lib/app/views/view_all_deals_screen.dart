@@ -22,9 +22,7 @@ class ViewAllDealsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: AppTheme.kDarkBackground,
         appBar: AppBar(
           elevation: 2,
@@ -100,7 +98,6 @@ class ViewAllDealsScreen extends StatelessWidget {
                   );
                 },
               ),
-      ),
-    );
+      );
   }
 }

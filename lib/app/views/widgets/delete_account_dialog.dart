@@ -13,9 +13,7 @@ class DeleteAccountDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl, // Arabic direction
-      child: AlertDialog(
+    return AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
@@ -88,7 +86,6 @@ class DeleteAccountDialog extends StatelessWidget {
                   ),
           ),
         ],
-      ),
-    );
+      );
   }
 }

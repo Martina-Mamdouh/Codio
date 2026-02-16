@@ -27,158 +27,139 @@ class _CompaniesViewState extends State<CompaniesView> {
     // Using simple Consumer approach assuming parent provider exists
     // Lazy loading handled by MainLayout
 
-    return Scaffold(
-      backgroundColor: AppTheme.kDarkBackground,
-      // No standard AppBar, UnifiedHeader is part of the body
-      body: Column(
-        children: [
-// Invalid lines removed
+    return Column(
+      children: [
+        UnifiedHeader(
+          title: 'الشركات',
+          subtitle: 'تابع عروض الشركات التي تهمك',
+          searchHint: 'ابحث عن شركة...',
+          showBackButton: true,
+          onBackTap: () {
+            context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
+          },
+          onSearchChanged: (val) {
+            setState(() {
+              _searchQuery = val;
+            });
+          },
+        ),
+        Expanded(
+          child: Consumer2<CompaniesViewModel, UserProfileViewModel>(
+            builder: (context, vm, profileVm, child) {
+              if (vm.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppTheme.kElectricLime),
+                );
+              }
 
-           UnifiedHeader(
-              title: 'الشركات',
-              subtitle: 'تابع عروض الشركات التي تهمك',
-              searchHint: 'ابحث عن شركة...',
-              showBackButton: true,
-              onBackTap: () {
-                context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
-              },
-              onSearchChanged: (val) {
-                setState(() {
-                  _searchQuery = val;
-                });
-              },
-            ),
-          Expanded(
-            child: Consumer<CompaniesViewModel>(
-              builder: (context, vm, child) {
-                if (vm.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: AppTheme.kElectricLime),
-                  );
-                }
-            
-                if (vm.errorMessage != null) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.error_outline, color: Colors.red, size: 40.w),
-                        SizedBox(height: 12.h),
-                        Text(
-                          vm.errorMessage!,
-                          style: TextStyle(color: Colors.white70, fontSize: 14.sp),
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(height: 16.h),
-                        ElevatedButton(
-                          onPressed: vm.loadCompanies,
-                          child: const Text('إعادة المحاولة'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-            
-                if (vm.companies.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'لا توجد شركات حالياً',
-                      style: TextStyle(color: Colors.white70, fontSize: 16.sp),
-                    ),
-                  );
-                }
-            
-                final filteredCompanies = vm.companies.where((c) {
-                   return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
-                }).toList();
-                
-                if (filteredCompanies.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'لا توجد نتائج بحث',
-                        style: TextStyle(color: Colors.white70, fontSize: 16.sp),
+              if (vm.errorMessage != null) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red, size: 40.w),
+                      SizedBox(height: 12.h),
+                      Text(
+                        vm.errorMessage!,
+                        style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+                        textAlign: TextAlign.center,
                       ),
-                    );
-                }
-            
-                // حساب عدد الأعمدة حسب عرض الشاشة
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    int crossAxisCount;
-                    final width = constraints.maxWidth;
-            
-                    if (width < 340) {
-                      crossAxisCount = 1;
-                    } else {
-                      crossAxisCount = 2;
-                    }
-            
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        await Future.wait([
-                          vm.loadCompanies(),
-                          context.read<MapViewModel>().refresh(),
-                        ]);
-                      },
-                      color: AppTheme.kElectricLime,
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.all(16.w),
-                        child: Column(
-                          children: [
-                            // const MiniMapWidget(focusNearby: false),
-                            // SizedBox(height: 16.h),
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: filteredCompanies.length,
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                mainAxisSpacing: 16,
-                                crossAxisSpacing: 16,
-                                childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.65 : 0.6,
-                              ),
-                              itemBuilder: (context, index) {
-                                final company = filteredCompanies[index];
-                                // Check global follow status
-                                final profileVm = context.watch<UserProfileViewModel>();
-                                final isFollowed = profileVm.followedCompanies.any((c) => c.id == company.id);
-                                
-                                return CompanyCard(
+                      SizedBox(height: 16.h),
+                      ElevatedButton(
+                        onPressed: vm.loadCompanies,
+                        child: const Text('إعادة المحاولة'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              if (vm.companies.isEmpty) {
+                return Center(
+                  child: Text(
+                    'لا توجد شركات حالياً',
+                    style: TextStyle(color: Colors.white70, fontSize: 16.sp),
+                  ),
+                );
+              }
+
+              final filteredCompanies = vm.companies.where((c) {
+                return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
+              }).toList();
+
+              if (filteredCompanies.isEmpty) {
+                return Center(
+                  child: Text(
+                    'لا توجد نتائج بحث',
+                    style: TextStyle(color: Colors.white70, fontSize: 16.sp),
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await Future.wait([
+                    vm.loadCompanies(),
+                    context.read<MapViewModel>().refresh(),
+                  ]);
+                },
+                color: AppTheme.kElectricLime,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  slivers: [
+                    SliverPadding(
+                      padding: EdgeInsets.only(
+                        left: 16.w,
+                        right: 16.w,
+                        top: 24.h,
+                        bottom: 16.h,
+                      ),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 900 ? 3 : 4),
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.65 : 1.1,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final company = filteredCompanies[index];
+                            final isFollowed = profileVm.followedCompanies.any((c) => c.id == company.id);
+
+                            return CompanyCard(
+                              company: company,
+                              isFollowed: isFollowed,
+                              isFollowLoading: false,
+                              onToggleFollow: () async {
+                                await profileVm.toggleCompanyFollow(
+                                  company.id,
                                   company: company,
-                                  isFollowed: isFollowed, 
-                                  isFollowLoading: false, 
-                                  onToggleFollow: () async {
-                                     await profileVm.toggleCompanyFollow(
-                                       company.id, 
-                                       company: company
-                                     );
-                                  },
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => CompanyProfileView(
-                                          companyId: company.id, 
-                                          company: company, // Instant Load
-                                        ),
-                                      ),
-                                    );
-                                  },
                                 );
                               },
-                            ),
-                          ],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CompanyProfileView(
+                                      companyId: company.id,
+                                      company: company,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          childCount: filteredCompanies.length,
                         ),
                       ),
-                    );
-                  },
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

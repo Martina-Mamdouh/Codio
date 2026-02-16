@@ -368,9 +368,7 @@ class _SettingsViewState extends State<SettingsView> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => Directionality(
-          textDirection: TextDirection.rtl,
-          child: AlertDialog(
+        builder: (context, setState) => AlertDialog(
             backgroundColor: AppTheme.kLightBackground,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.r),
@@ -529,7 +527,6 @@ class _SettingsViewState extends State<SettingsView> {
               ),
             ],
           ),
-        ),
       ),
     );
   }

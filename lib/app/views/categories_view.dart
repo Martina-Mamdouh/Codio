@@ -26,88 +26,96 @@ class _CategoriesViewState extends State<CategoriesView> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppTheme.kDarkBackground,
-         // No AppBar, using UnifiedHeader in body
-        body: Column(
-          children: [
-// Invalid lines removed
+    return Column(
+      children: [
+        UnifiedHeader(
+          title: 'التصنيفات',
+          subtitle: 'تصفح العروض حسب الفئة',
+          searchHint: 'ابحث عن تصنيف...',
+          showBackButton: true,
+          onBackTap: () {
+            context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
+          },
+          onSearchChanged: (val) {
+            setState(() {
+              _searchQuery = val;
+            });
+          },
+        ),
+        Expanded(
+          child: Consumer<CategoriesViewModel>(
+            builder: (context, vm, child) {
+              if (vm.isLoading) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppTheme.kElectricLime),
+                );
+              }
+              if (vm.categories.isEmpty) {
+                return const Center(
+                  child: Text(
+                    'لا توجد فئات',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                );
+              }
+              
+              final filtered = vm.categories.where((c) {
+                 return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
+              }).toList();
 
-            UnifiedHeader(
-              title: 'التصنيفات',
-              subtitle: 'تصفح العروض حسب الفئة',
-              searchHint: 'ابحث عن تصنيف...',
-              showBackButton: true,
-              onBackTap: () {
-                context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
-              },
-              onSearchChanged: (val) {
-                setState(() {
-                  _searchQuery = val;
-                });
-              },
-            ),
-            Expanded(
-              child: Consumer<CategoriesViewModel>(
-                builder: (context, vm, child) {
-                  if (vm.isLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: AppTheme.kElectricLime),
-                    );
-                  }
-                  if (vm.categories.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'لا توجد فئات',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    );
-                  }
-                  
-                  final filtered = vm.categories.where((c) {
-                     return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
-                  }).toList();
+              if (filtered.isEmpty) {
+                return Center(
+                  child: Text(
+                    'لا توجد نتائج بحث',
+                    style: TextStyle(color: Colors.white70, fontSize: 16.sp),
+                  ),
+                );
+              }
 
-                  if (filtered.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'لا توجد نتائج بحث',
-                        style: TextStyle(color: Colors.white70, fontSize: 16.sp),
-                      ),
-                    );
-                  }
+              final width = MediaQuery.of(context).size.width;
+              int crossAxisCount = 2;
+              if (width > 900) {
+                crossAxisCount = 4;
+              } else if (width > 600) {
+                crossAxisCount = 3;
+              }
 
-                  return RefreshIndicator(
-                    onRefresh: vm.loadCategories,
-                    color: AppTheme.kElectricLime,
-                    child: GridView.builder(
+              return RefreshIndicator(
+                onRefresh: vm.loadCategories,
+                color: AppTheme.kElectricLime,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  slivers: [
+                    SliverPadding(
                       padding: EdgeInsets.only(
-                        top: 4.h, // Reduced top padding as header has space
+                        top: 24.h,
                         bottom: 16.h,
                         left: 16.w,
                         right: 8.w,
                       ),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16.w,
-                        mainAxisSpacing: 16.h,
-                        childAspectRatio: 3.5,
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 16.w,
+                          mainAxisSpacing: 16.h,
+                          childAspectRatio: 3.5,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final category = filtered[index];
+                            return _CategoryCard(category: category);
+                          },
+                          childCount: filtered.length,
+                        ),
                       ),
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final category = filtered[index];
-                        return _CategoryCard(category: category);
-                      },
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                  ],
+                ),
+              );
+            },
+          ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -82,7 +82,7 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
               itemCount: profileVm.favoriteDeals.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.78 : 0.85,
+                childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.85 : 0.9,
                 crossAxisSpacing: 12.w,
                 mainAxisSpacing: 12.h,
               ),

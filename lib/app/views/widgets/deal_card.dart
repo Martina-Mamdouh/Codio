@@ -99,9 +99,9 @@ class DealCard extends StatelessWidget {
                 ),
                 // -------------------- DISCOUNT BADGE --------------------
                 if (deal.discountValue.isNotEmpty)
-                  Positioned(
+                  PositionedDirectional(
                     top: 8.h,
-                    left: 8.w,
+                    start: 8.w,
                     child: Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 6.w,
@@ -122,9 +122,9 @@ class DealCard extends StatelessWidget {
                     ),
                   ),
                 // -------------------- FAVORITE BUTTON --------------------
-                Positioned(
+                PositionedDirectional(
                   top: 8.h,
-                  right: 8.w,
+                  end: 8.w,
                   child: GestureDetector(
                     onTap: () {
                       if (authService.currentUser == null) {
@@ -153,7 +153,7 @@ class DealCard extends StatelessWidget {
             ),
             // -------------------- INFO SECTION --------------------
             Padding(
-              padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 6.h),
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

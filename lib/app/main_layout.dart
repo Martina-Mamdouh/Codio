@@ -137,7 +137,13 @@ class MainLayoutState extends State<MainLayout> {
       backgroundColor: AppTheme.kDarkBackground,
       body: IndexedStack(index: _currentIndex, children: _mobileScreens),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(bottom: 16, left: 12, right: 12),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewPadding.bottom > 0
+              ? MediaQuery.of(context).viewPadding.bottom
+              : 16,
+          left: 12,
+          right: 12,
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(18),
           child: Container(

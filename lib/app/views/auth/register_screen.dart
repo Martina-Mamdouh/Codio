@@ -277,7 +277,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 return null;
                               },
                               icon: Padding(
-                                padding: EdgeInsets.only(left: 8.w),
+                                padding: EdgeInsetsDirectional.only(start: 8.w),
                                 child: Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   color: Colors.white.withAlpha(180),
@@ -300,7 +300,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.black,
-                            padding: EdgeInsets.only(right: 8.w),
+                            padding: EdgeInsetsDirectional.only(end: 8.w),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(999.r),
                             ),

@@ -171,7 +171,7 @@ class _CategoryFilterRow extends StatelessWidget {
             ),
             ...viewModel.categories.map(
               (c) => Padding(
-                padding: EdgeInsets.only(right: 6.w),
+                padding: EdgeInsetsDirectional.only(end: 6.w),
                 child: _CategoryChip(
                   label: c.name,
                   selected: viewModel.selectedCategoryIds.contains(c.id),

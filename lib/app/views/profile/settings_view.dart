@@ -294,7 +294,7 @@ class _SettingsViewState extends State<SettingsView> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 4.w),
             child: Align(
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerEnd,
               child: TextButton.icon(
                 onPressed: () {
                   showDialog(
@@ -344,7 +344,7 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                 ),
                 style: TextButton.styleFrom(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
                 ),
               ),

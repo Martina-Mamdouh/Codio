@@ -130,7 +130,7 @@ class _SearchViewState extends State<SearchView> {
         elevation: 0,
         titleSpacing: 0,
         leading: Padding(
-          padding: EdgeInsets.only(right: 8.w),
+          padding: EdgeInsetsDirectional.only(end: 8.w),
           child: IconButton(
             icon: Icon(Icons.arrow_forward, color: Colors.white, size: 24.sp),
             onPressed: () {
@@ -143,7 +143,7 @@ class _SearchViewState extends State<SearchView> {
           ),
         ),
         title: Padding(
-          padding: EdgeInsets.only(left: 16.w, right: 8.w),
+          padding: EdgeInsetsDirectional.only(start: 16.w, end: 8.w),
           child: Hero(
             tag: 'search_bar',
             child: Material(
@@ -279,7 +279,7 @@ class _SearchViewState extends State<SearchView> {
               Expanded(
                 child: Text(
                   'مقترحات شائعة',
-                  textAlign: TextAlign.right,
+                  textAlign: TextAlign.end,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18.sp,

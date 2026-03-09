@@ -113,7 +113,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                                   padding: EdgeInsets.only(bottom: 8.h),
                                   child: Text(
                                     'جديد',
-                                    textAlign: TextAlign.right,
+                                    textAlign: TextAlign.end,
                                     style: TextStyle(
                                       color: AppTheme.kElectricLime,
                                       fontSize: 14.sp,
@@ -161,7 +161,7 @@ class _NotificationsViewState extends State<NotificationsView> {
                                   padding: EdgeInsets.only(bottom: 8.h),
                                   child: Text(
                                     'في وقت سابق',
-                                    textAlign: TextAlign.right,
+                                    textAlign: TextAlign.end,
                                     style: TextStyle(
                                       color: AppTheme.kElectricLime,
                                       fontSize: 14.sp,

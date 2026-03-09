@@ -84,9 +84,9 @@ class CompanyCard extends StatelessWidget {
                   ),
                 ),
 
-                Positioned(
+                PositionedDirectional(
                   bottom: -20.h, // Slightly adjusted
-                  left: 12.w,
+                  end: 12.w,
                   child: Container(
                     width: isLandscape ? 40.w : 50.w, // Smaller logo in landscape
                     height: isLandscape ? 40.w : 50.w,
@@ -126,7 +126,7 @@ class CompanyCard extends StatelessWidget {
                   children: [
                     // اسم الشركة
                     Padding(
-                      padding: EdgeInsets.only(left: isLandscape ? 45.w : 60.w),
+                      padding: EdgeInsetsDirectional.only(end: isLandscape ? 45.w : 60.w),
                       child: Text(
                         company.name,
                         maxLines: 1,

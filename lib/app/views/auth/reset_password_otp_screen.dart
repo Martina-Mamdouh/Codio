@@ -248,7 +248,7 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
-                          padding: EdgeInsets.only(right: 8.w),
+                          padding: EdgeInsetsDirectional.only(end: 8.w),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(999.r),
                           ),

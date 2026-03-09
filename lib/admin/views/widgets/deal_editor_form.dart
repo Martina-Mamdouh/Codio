@@ -473,7 +473,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       },
       optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<CompanyModel> onSelected, Iterable<CompanyModel> options) {
         return Align(
-          alignment: Alignment.topLeft,
+          alignment: AlignmentDirectional.topStart,
           child: Material(
             elevation: 4.0,
             borderRadius: BorderRadius.circular(8),

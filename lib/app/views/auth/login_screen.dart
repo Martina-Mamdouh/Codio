@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Padding(
                         padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
                         child: Align(
-                          alignment: Alignment.centerLeft,
+                          alignment: AlignmentDirectional.centerStart,
                           child: GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -215,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.black,
-                              padding: EdgeInsets.only(right: 8.w),
+                              padding: EdgeInsetsDirectional.only(end: 8.w),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(999.r),
                               ),

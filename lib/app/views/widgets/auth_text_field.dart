@@ -92,7 +92,7 @@ class AuthTextField extends StatelessWidget {
             GestureDetector(
               onTap: onTogglePassword,
               child: Padding(
-                padding: EdgeInsets.only(left: 8.w),
+                padding: EdgeInsetsDirectional.only(start: 8.w),
                 child: Icon(
                   obscureText
                       ? Icons.visibility_off_outlined

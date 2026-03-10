@@ -6,9 +6,11 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/models/company_model.dart';
+import '../../core/models/deal_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/map_view_model.dart';
 import 'company_profile_view.dart';
+import 'deal_details_view.dart';
 
 class MapView extends StatefulWidget {
   final bool startNearby;
@@ -418,108 +420,230 @@ class _SelectedCompanyCard extends StatelessWidget {
       return SizedBox(height: 10.h);
     }
 
-    final discount = viewModel.discountLabelFor(company.id);
     final distance = viewModel.distanceKmFor(company);
+    final companyDeals = viewModel.dealsForCompany(company.id);
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: const BoxDecoration(
         color: AppTheme.kLightBackground,
         border: Border(top: BorderSide(color: Colors.white10)),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 64.w,
-            height: 64.w,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: company.logoUrl != null && company.logoUrl!.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12.r),
-                    child: CachedNetworkImage(
-                      imageUrl: company.logoUrl!,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) =>
-                          const Icon(Icons.store, color: Colors.grey),
-                      errorWidget: (_, __, ___) =>
-                          const Icon(Icons.store, color: Colors.grey),
-                    ),
-                  )
-                : const Icon(Icons.store, color: Colors.grey),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          // Company header
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+            child: Row(
               children: [
-                Text(
-                  company.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                Container(
+                  width: 48.w,
+                  height: 48.w,
+                  decoration: BoxDecoration(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15.sp,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: company.logoUrl != null && company.logoUrl!.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12.r),
+                          child: CachedNetworkImage(
+                            imageUrl: company.logoUrl!,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) =>
+                                const Icon(Icons.store, color: Colors.grey),
+                            errorWidget: (_, __, ___) =>
+                                const Icon(Icons.store, color: Colors.grey),
+                          ),
+                        )
+                      : const Icon(Icons.store, color: Colors.grey),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        company.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15.sp,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          if (company.categoryName != null)
+                            Text(
+                              company.categoryName!,
+                              style: TextStyle(
+                                  color: Colors.white60, fontSize: 11.sp),
+                            ),
+                          if (company.categoryName != null && distance != null)
+                            Text(' · ',
+                                style: TextStyle(
+                                    color: Colors.white38, fontSize: 11.sp)),
+                          if (distance != null)
+                            Text(
+                              '${distance.toStringAsFixed(1)} كم',
+                              style: TextStyle(
+                                  color: Colors.white70, fontSize: 11.sp),
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                if (company.categoryName != null)
-                  Text(
-                    company.categoryName!,
-                    style: TextStyle(color: Colors.white60, fontSize: 12.sp),
-                  ),
-                if (distance != null)
-                  Text(
-                    '${distance.toStringAsFixed(1)} كم من موقعك',
-                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
-                  ),
-                if (discount.isNotEmpty)
-                  Container(
-                    margin: EdgeInsets.only(top: 4.h),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent,
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      discount,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.sp,
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            CompanyProfileView(companyId: company.id),
                       ),
-                    ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppTheme.kElectricLime,
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
                   ),
+                  child: Text('صفحة الشركة', style: TextStyle(fontSize: 12.sp)),
+                ),
               ],
             ),
           ),
-          SizedBox(width: 12.w),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CompanyProfileView(companyId: company.id),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-              backgroundColor: AppTheme.kElectricLime,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
+          // Deals list
+          if (companyDeals.isEmpty)
+            Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: Text(
+                'لا توجد عروض حالياً',
+                style: TextStyle(color: Colors.white38, fontSize: 12.sp),
+              ),
+            )
+          else
+            SizedBox(
+              height: 120.h,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+                itemCount: companyDeals.length,
+                separatorBuilder: (_, __) => SizedBox(width: 10.w),
+                itemBuilder: (context, index) {
+                  return _DealMiniCard(deal: companyDeals[index]);
+                },
               ),
             ),
-            child: Text('عرض العروض', style: TextStyle(fontSize: 13.sp)),
-          ),
         ],
+      ),
+    );
+  }
+}
+
+class _DealMiniCard extends StatelessWidget {
+  final DealModel deal;
+  const _DealMiniCard({required this.deal});
+
+  @override
+  Widget build(BuildContext context) {
+    final discount =
+        deal.discountValue.isNotEmpty ? deal.discountValue : deal.dealValue;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DealDetailsView(deal: deal),
+          ),
+        );
+      },
+      child: Container(
+        width: 180.w,
+        padding: EdgeInsets.all(10.w),
+        decoration: BoxDecoration(
+          color: AppTheme.kDarkBackground,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Deal image + discount badge
+            Expanded(
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: deal.imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: deal.imageUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: Colors.white10,
+                              child: const Center(
+                                child: Icon(Icons.local_offer,
+                                    color: Colors.white24, size: 24),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: Colors.white10,
+                              child: const Center(
+                                child: Icon(Icons.local_offer,
+                                    color: Colors.white24, size: 24),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: Colors.white10,
+                            child: const Center(
+                              child: Icon(Icons.local_offer,
+                                  color: Colors.white24, size: 24),
+                            ),
+                          ),
+                  ),
+                  if (discount.isNotEmpty)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 2.h),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          discount,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            SizedBox(height: 6.h),
+            // Deal title
+            Text(
+              deal.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

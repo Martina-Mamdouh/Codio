@@ -303,6 +303,10 @@ class MapViewModel extends ChangeNotifier {
 
   String discountLabelFor(int companyId) => _discountLookup[companyId] ?? '';
 
+  List<DealModel> dealsForCompany(int companyId) {
+    return deals.where((d) => d.companyId == companyId).toList();
+  }
+
   double? distanceKmFor(CompanyModel company) {
     if (userPosition == null) return null;
     final distance = Geolocator.distanceBetween(

@@ -95,6 +95,16 @@ class MapViewModel extends ChangeNotifier {
       deals = results[1] as List<DealModel>;
       categories = results[2] as List<CategoryModel>;
 
+      if (kDebugMode) {
+        print('🗺️ MapVM loaded: ${companies.length} companies, ${deals.length} deals, ${categories.length} categories');
+        if (deals.isNotEmpty) {
+          print('🗺️ First deal: id=${deals.first.id}, companyId=${deals.first.companyId}, title=${deals.first.title}');
+        }
+        if (companies.isNotEmpty) {
+          print('🗺️ First company: id=${companies.first.id}, name=${companies.first.name}');
+        }
+      }
+
       _buildDiscountLookup();
       hasLoaded = true;
 
@@ -304,7 +314,11 @@ class MapViewModel extends ChangeNotifier {
   String discountLabelFor(int companyId) => _discountLookup[companyId] ?? '';
 
   List<DealModel> dealsForCompany(int companyId) {
-    return deals.where((d) => d.companyId == companyId).toList();
+    final result = deals.where((d) => d.companyId == companyId).toList();
+    if (kDebugMode) {
+      print('🗺️ dealsForCompany($companyId): found ${result.length} out of ${deals.length} total deals');
+    }
+    return result;
   }
 
   double? distanceKmFor(CompanyModel company) {

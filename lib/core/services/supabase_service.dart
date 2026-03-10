@@ -24,14 +24,26 @@ class SupabaseService {
           )
           .order('created_at', ascending: false);
 
-      print('📊 Raw Deals Data Sample: ${data.isNotEmpty ? data.first : "Empty"}');
-      
-      // Use compute to parse JSON in background isolate
-      final deals = await compute(parseDeals, data);
+      if (kDebugMode) {
+        print('📊 getDeals: ${data.length} raw rows');
+        if (data.isNotEmpty) {
+          print('📊 First deal raw: ${data.first}');
+        }
+      }
+
+      final deals = data.map((item) => DealModel.fromJson(item)).toList();
+
+      if (kDebugMode) {
+        print('📊 getDeals: parsed ${deals.length} deals');
+        if (deals.isNotEmpty) {
+          print('📊 First parsed deal: id=${deals.first.id}, companyId=${deals.first.companyId}');
+        }
+      }
+
       return deals;
     } catch (e) {
       if (kDebugMode) {
-        print('Error getting deals: $e');
+        print('❌ Error getting deals: $e');
       }
       return [];
     }

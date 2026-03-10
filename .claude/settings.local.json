@@ -4,7 +4,8 @@
       "Bash(flutter analyze:*)",
       "Bash(xargs grep:*)",
       "Bash(grep:*)",
-      "Bash(find /c/Users/moata/Documents/Codio -name \"*.dart\" -type f -exec grep -l \"route\\\\|Route\\\\|navigation\" {} \\\\; | grep -E \"\\(main|route|app_router\\)\" | head -5)"
+      "Bash(find /c/Users/moata/Documents/Codio -name \"*.dart\" -type f -exec grep -l \"route\\\\|Route\\\\|navigation\" {} \\\\; | grep -E \"\\(main|route|app_router\\)\" | head -5)",
+      "Bash(flutter run:*)"
     ]
   }
 }

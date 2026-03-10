@@ -1,8 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/models/company_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/map_view_model.dart';
 import 'company_profile_view.dart';
@@ -43,7 +46,7 @@ class _MapViewState extends State<MapView> {
       ),
       body: Consumer<MapViewModel>(
         builder: (context, vm, _) {
-          if (vm.isLoading && vm.markers.isEmpty) {
+          if (vm.isLoading && !vm.hasLoaded) {
             return const Center(
               child: CircularProgressIndicator(color: AppTheme.kElectricLime),
             );
@@ -81,18 +84,58 @@ class _MapViewState extends State<MapView> {
               Expanded(
                 child: Stack(
                   children: [
-                    GoogleMap(
-                      initialCameraPosition: vm.initialCameraPosition,
-                      markers: vm.markers.values.toSet(),
-                      zoomControlsEnabled: false,
-                      myLocationEnabled: vm.hasLocation,
-                      myLocationButtonEnabled: false,
-                      compassEnabled: true,
-                      onTap: (_) => vm.clearSelection(),
-                      onCameraMove: vm.onCameraMove,
-                      onMapCreated: (controller) =>
-                          vm.setMapController(controller),
+                    FlutterMap(
+                      mapController: vm.mapController,
+                      options: MapOptions(
+                        initialCenter: vm.initialCenter,
+                        initialZoom: vm.initialZoom,
+                        onPositionChanged: vm.onPositionChanged,
+                        onTap: (_, __) => vm.clearSelection(),
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.kodio.app',
+                        ),
+                        // User location marker
+                        if (vm.hasLocation)
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: LatLng(
+                                  vm.userPosition!.latitude,
+                                  vm.userPosition!.longitude,
+                                ),
+                                width: 24,
+                                height: 24,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 3,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue.withOpacity(0.4),
+                                        blurRadius: 8,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        // Company markers
+                        MarkerLayer(
+                          markers: _buildCompanyMarkers(vm),
+                        ),
+                      ],
                     ),
+                    // Control buttons
                     Positioned(
                       top: 12,
                       right: 12,
@@ -102,26 +145,20 @@ class _MapViewState extends State<MapView> {
                             icon: Icons.my_location,
                             label: 'موقعي',
                             isActive: vm.hasLocation,
-                            onTap: () {
-                              vm.centerOnUser();
-                            },
+                            onTap: () => vm.centerOnUser(),
                           ),
                           const SizedBox(height: 8),
                           _MapIconButton(
                             icon: Icons.local_fire_department,
                             label: 'العروض القريبة',
                             isActive: vm.nearbyOnly,
-                            onTap: () {
-                              vm.toggleNearby();
-                            },
+                            onTap: () => vm.toggleNearby(),
                           ),
                           const SizedBox(height: 8),
                           _MapIconButton(
                             icon: Icons.refresh,
                             label: 'إعادة التمركز',
-                            onTap: () {
-                              vm.disableNearbyMode();
-                            },
+                            onTap: () => vm.disableNearbyMode(),
                           ),
                         ],
                       ),
@@ -133,6 +170,13 @@ class _MapViewState extends State<MapView> {
                         top: 12,
                         child: _InfoBanner(text: vm.locationError!),
                       ),
+                    if (vm.isLocationLoading)
+                      Positioned(
+                        left: 16,
+                        right: 16,
+                        top: 12,
+                        child: _InfoBanner(text: 'جاري تحديد موقعك...'),
+                      ),
                   ],
                 ),
               ),
@@ -141,6 +185,106 @@ class _MapViewState extends State<MapView> {
           );
         },
       ),
+    );
+  }
+
+  List<Marker> _buildCompanyMarkers(MapViewModel vm) {
+    return vm.filteredCompanies
+        .where((c) => c.lat != 0 && c.lng != 0)
+        .map((company) {
+      final discount = vm.discountLabelFor(company.id);
+      final isSelected = vm.selectedCompany?.id == company.id;
+
+      return Marker(
+        point: LatLng(company.lat, company.lng),
+        width: 56,
+        height: discount.isNotEmpty ? 72 : 56,
+        child: GestureDetector(
+          onTap: () => vm.selectCompany(company),
+          child: _CompanyMarkerWidget(
+            company: company,
+            discount: discount,
+            isSelected: isSelected,
+          ),
+        ),
+      );
+    }).toList();
+  }
+}
+
+class _CompanyMarkerWidget extends StatelessWidget {
+  final CompanyModel company;
+  final String discount;
+  final bool isSelected;
+
+  const _CompanyMarkerWidget({
+    required this.company,
+    required this.discount,
+    required this.isSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (discount.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.redAccent,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              discount,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        const SizedBox(height: 2),
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            border: Border.all(
+              color: isSelected ? AppTheme.kElectricLime : Colors.white,
+              width: isSelected ? 3 : 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isSelected
+                    ? AppTheme.kElectricLime.withOpacity(0.5)
+                    : Colors.black.withOpacity(0.4),
+                blurRadius: 6,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: company.logoUrl != null && company.logoUrl!.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: company.logoUrl!,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => const Icon(
+                      Icons.store,
+                      color: Colors.grey,
+                      size: 24,
+                    ),
+                    errorWidget: (_, __, ___) => const Icon(
+                      Icons.store,
+                      color: Colors.grey,
+                      size: 24,
+                    ),
+                  )
+                : const Icon(Icons.store, color: Colors.grey, size: 24),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -296,7 +440,14 @@ class _SelectedCompanyCard extends StatelessWidget {
             child: company.logoUrl != null && company.logoUrl!.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12.r),
-                    child: Image.network(company.logoUrl!, fit: BoxFit.cover),
+                    child: CachedNetworkImage(
+                      imageUrl: company.logoUrl!,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) =>
+                          const Icon(Icons.store, color: Colors.grey),
+                      errorWidget: (_, __, ___) =>
+                          const Icon(Icons.store, color: Colors.grey),
+                    ),
                   )
                 : const Icon(Icons.store, color: Colors.grey),
           ),

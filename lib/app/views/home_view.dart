@@ -151,7 +151,23 @@ class HomeView extends StatelessWidget {
                   SizedBox(height: 48.h), // Space for search bar overlap
 
                   HomeBannerSlider(banners: viewModel.banners),
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 16.h),
+
+                  // Discover Nearby Offers button
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: _DiscoverNearbyCard(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MapView(startNearby: true),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
 
                   SizedBox(height: 6.h),
                   DealSection(

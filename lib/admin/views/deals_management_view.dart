@@ -312,7 +312,27 @@ class _DealsTable extends StatelessWidget {
               ),
             ),
             // الكود/الرابط
-            DataCell(Center(child: Text(deal.dealValue, style: cellStyle))),
+            DataCell(
+              Center(
+                child: deal.dealValue.startsWith('http')
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.link, color: Colors.blueAccent, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            'رابط العرض',
+                            style: cellStyle.copyWith(color: Colors.blueAccent),
+                          ),
+                        ],
+                      )
+                    : Text(
+                        deal.dealValue,
+                        style: cellStyle,
+                        textAlign: TextAlign.center,
+                      ),
+              ),
+            ),
             // تاريخ البدء
             DataCell(
               Center(

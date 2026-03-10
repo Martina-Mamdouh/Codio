@@ -61,6 +61,19 @@ class SupabaseService {
 
   Future<void> deleteDeal(int id) async {
     try {
+      // ✨ PRE-DELETE: Handle Foreign Key Constraints (favorites and notifications)
+      // This prevents "Failed to delete deal" when the deal is referenced elsewhere.
+      try {
+        await _client.from('favorites_deals').delete().eq('deal_id', id);
+        await _client.from('notifications').delete().eq('deal_id', id);
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error deleting related records for deal $id: $e');
+        }
+        // Continue even if this fails, as the table might not have those records
+      }
+
+      // NOW DELETE THE DEAL
       await _client.from('deals').delete().eq('id', id);
     } catch (e) {
       if (kDebugMode) {

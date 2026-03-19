@@ -261,6 +261,28 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  // Change Password
+  Future<bool> changePassword(String newPassword) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final result = await _authService.updatePassword(newPassword);
+      if (!result.success) {
+        errorMessage = result.message;
+      }
+      return result.success;
+    } catch (e) {
+      debugPrint('❌ Error changing password: $e');
+      errorMessage = 'حدث خطأ غير متوقع';
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
   // Delete Account
   Future<bool> deleteAccount() async {
     isLoading = true;

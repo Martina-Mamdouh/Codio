@@ -201,7 +201,7 @@ class _SettingsViewState extends State<SettingsView> {
                     color: Colors.white54,
                   ),
                   onTap: () {
-                    // TODO: شاشة تغيير كلمة المرور
+                    _showChangePasswordDialog(context, authVm);
                   },
                 ),
               ],
@@ -364,6 +364,201 @@ class _SettingsViewState extends State<SettingsView> {
           ),
           SizedBox(height: 24.h), // Bottom padding
         ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context, AuthViewModel authVm) {
+    final passwordController = TextEditingController();
+    final confirmController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool isLoading = false;
+    bool obscureText = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (stateContext, setState) => AlertDialog(
+          backgroundColor: AppTheme.kLightBackground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          title: Text(
+            'تغيير كلمة المرور',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // New Password Field
+                  TextFormField(
+                    controller: passwordController,
+                    enabled: !isLoading,
+                    obscureText: obscureText,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'كلمة المرور الجديدة',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: AppTheme.kElectricLime,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureText ? Icons.visibility : Icons.visibility_off,
+                          color: Colors.white54,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            obscureText = !obscureText;
+                          });
+                        },
+                      ),
+                      filled: true,
+                      fillColor: AppTheme.kDarkBackground,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: Colors.white12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(
+                          color: AppTheme.kElectricLime,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'الرجاء إدخال كلمة المرور';
+                      }
+                      if (value.trim().length < 10) {
+                        return 'كلمة المرور يجب أن تكون 10 أحرف على الأقل';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16.h),
+                  // Confirm Password Field
+                  TextFormField(
+                    controller: confirmController,
+                    enabled: !isLoading,
+                    obscureText: obscureText,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'تأكيد كلمة المرور',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      prefixIcon: const Icon(
+                        Icons.lock_reset,
+                        color: AppTheme.kElectricLime,
+                      ),
+                      filled: true,
+                      fillColor: AppTheme.kDarkBackground,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: Colors.white12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(
+                          color: AppTheme.kElectricLime,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'الرجاء تأكيد كلمة المرور';
+                      }
+                      if (value != passwordController.text) {
+                        return 'كلمة المرور غير متطابقة';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (formKey.currentState!.validate()) {
+                        setState(() => isLoading = true);
+
+                        final success = await authVm.changePassword(
+                          passwordController.text.trim(),
+                        );
+
+                        if (!context.mounted) return;
+
+                        if (success) {
+                          Navigator.pop(dialogContext); // Close dialog
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('تم تغيير كلمة المرور بنجاح'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else {
+                          setState(() => isLoading = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                authVm.errorMessage ??
+                                    'حدث خطأ في تغيير كلمة المرور',
+                              ),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.kElectricLime,
+                foregroundColor: AppTheme.kDarkBackground,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              child: isLoading
+                  ? SizedBox(
+                      width: 20.w,
+                      height: 20.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.kDarkBackground,
+                      ),
+                    )
+                  : const Text('حفظ'),
+            ),
+          ],
+        ),
       ),
     );
   }

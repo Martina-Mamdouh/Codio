@@ -303,6 +303,29 @@ class AuthService {
     );
   }
 
+  // Update Password
+  Future<AuthResult> updatePassword(String newPassword) async {
+    try {
+      final response = await _supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+
+      if (response.user != null) {
+        return AuthResult(success: true, message: 'تم تغيير كلمة المرور بنجاح');
+      }
+      return AuthResult(success: false, message: 'تعذر تغيير كلمة المرور');
+    } on AuthException catch (e) {
+      debugPrint('❌ Update password AuthException: ${e.message}');
+      return AuthResult(success: false, message: e.message);
+    } catch (e) {
+      debugPrint('❌ Update password error: $e');
+      return AuthResult(
+        success: false,
+        message: 'حدث خطأ أثناء الاتصال بالخادم',
+      );
+    }
+  }
+
   // Verify OTP
   Future<AuthResult> verifyOTP({
     required String email,

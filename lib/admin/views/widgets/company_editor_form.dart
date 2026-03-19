@@ -1,10 +1,12 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // ✅
 import 'package:kodio_app/admin/viewmodels/companies_management_viewmodel.dart';
 import 'package:kodio_app/core/models/company_model.dart';
 import 'package:kodio_app/core/theme/app_theme.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:kodio_app/core/models/category_model.dart'; // ✅ Added import
 
@@ -308,6 +310,127 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
     }
   }
 
+  Future<void> _openLocationPicker() async {
+    final initialLat = double.tryParse(_latController.text) ?? 24.7136;
+    final initialLng = double.tryParse(_lngController.text) ?? 46.6753;
+
+    LatLng selectedPoint = LatLng(initialLat, initialLng);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.8,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: AppTheme.kLightBackground,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: StatefulBuilder(
+                builder: (context, setSheetState) {
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+                        child: Row(
+                          children: [
+                            Text(
+                              'تحديد الموقع على الخريطة',
+                              style: TextStyle(
+                                color: AppTheme.kLightText,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              onPressed: () => Navigator.of(sheetContext).pop(),
+                              icon: const Icon(Icons.close),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: FlutterMap(
+                              options: MapOptions(
+                                initialCenter: selectedPoint,
+                                initialZoom: 13,
+                                onTap: (_, point) {
+                                  setSheetState(() {
+                                    selectedPoint = point;
+                                  });
+                                },
+                              ),
+                              children: [
+                                TileLayer(
+                                  urlTemplate:
+                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                  userAgentPackageName: 'com.kodio.app',
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      point: selectedPoint,
+                                      width: 40,
+                                      height: 40,
+                                      child: const Icon(
+                                        Icons.location_pin,
+                                        color: Colors.redAccent,
+                                        size: 38,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _latController.text =
+                                    selectedPoint.latitude.toStringAsFixed(6);
+                                _lngController.text =
+                                    selectedPoint.longitude.toStringAsFixed(6);
+                              });
+                              Navigator.of(sheetContext).pop();
+                            },
+                            icon: const Icon(Icons.check),
+                            label: const Text('اعتماد الموقع'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.kElectricLime,
+                              foregroundColor: AppTheme.kDarkBackground,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<CompaniesManagementViewModel>();
@@ -547,6 +670,18 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
               const SizedBox(height: 16),
 
               // خط العرض
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _openLocationPicker,
+                  icon: const Icon(Icons.map, color: AppTheme.kElectricLime),
+                  label: const Text(
+                    'اختيار الموقع من الخريطة',
+                    style: TextStyle(color: AppTheme.kElectricLime),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
               _buildTextField(
                 controller: _latController,
                 label: 'خط العرض (Latitude)',

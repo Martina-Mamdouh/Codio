@@ -16,6 +16,7 @@ class BannerEditorForm extends StatefulWidget {
 class BannerEditorFormState extends State<BannerEditorForm> {
   final _formKey = GlobalKey<FormState>();
   final _dealIdController = TextEditingController();
+  final _linkUrlController = TextEditingController();
 
   Uint8List? _selectedImageBytes;
   String? _existingImageUrl;
@@ -43,11 +44,13 @@ class BannerEditorFormState extends State<BannerEditorForm> {
       _isEditing = true;
       _existingImageUrl = banner.imageUrl;
       _dealIdController.text = banner.dealId?.toString() ?? '';
+      _linkUrlController.text = banner.linkUrl ?? '';
       _selectedImageBytes = null;
     } else {
       _isEditing = false;
       _existingImageUrl = null;
       _dealIdController.clear();
+      _linkUrlController.clear();
       _selectedImageBytes = null;
     }
   }
@@ -55,6 +58,7 @@ class BannerEditorFormState extends State<BannerEditorForm> {
   @override
   void dispose() {
     _dealIdController.dispose();
+    _linkUrlController.dispose();
     super.dispose();
   }
 
@@ -100,6 +104,9 @@ class BannerEditorFormState extends State<BannerEditorForm> {
       'deal_id': _dealIdController.text.trim().isEmpty
           ? null
           : int.tryParse(_dealIdController.text.trim()),
+      'link_url': _linkUrlController.text.trim().isEmpty
+          ? null
+          : _linkUrlController.text.trim(),
     };
 
     try {
@@ -181,6 +188,18 @@ class BannerEditorFormState extends State<BannerEditorForm> {
                 const SizedBox(height: 12),
                 _buildDealPreview(vm),
               ],
+
+              const SizedBox(height: 24),
+
+              // الرابط الخارجي (اختياري)
+              _buildTextField(
+                controller: _linkUrlController,
+                label: 'رابط خارجي (Link URL)',
+                hint: 'مثال: https://google.com (اختياري)',
+                icon: Icons.language,
+                required: false,
+                keyboardType: TextInputType.url,
+              ),
 
               const SizedBox(height: 24),
 

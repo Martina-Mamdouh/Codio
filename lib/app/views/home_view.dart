@@ -55,14 +55,23 @@ class HomeView extends StatelessWidget {
               child: Column(
                 children: [
                   SizedBox(
-                    height: (MediaQuery.of(context).orientation == Orientation.landscape ? 160.h : 140.h) + 30.h,
+                    height:
+                        (MediaQuery.of(context).orientation ==
+                                Orientation.landscape
+                            ? 160.h
+                            : 140.h) +
+                        30.h,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
                         // Background
                         Container(
                           width: double.infinity,
-                          height: MediaQuery.of(context).orientation == Orientation.landscape ? 160.h : 140.h,
+                          height:
+                              MediaQuery.of(context).orientation ==
+                                  Orientation.landscape
+                              ? 160.h
+                              : 140.h,
                           decoration: const BoxDecoration(
                             color: Color(0xFFE5FF17),
                             borderRadius: BorderRadius.vertical(
@@ -83,7 +92,11 @@ class HomeView extends StatelessWidget {
                                 Image.asset(
                                   'assets/images/slogan.png',
                                   width: 120.w,
-                                  height: MediaQuery.of(context).orientation == Orientation.landscape ? 50.h : 60.h,
+                                  height:
+                                      MediaQuery.of(context).orientation ==
+                                          Orientation.landscape
+                                      ? 50.h
+                                      : 60.h,
                                   fit: BoxFit.contain,
                                 ),
                                 const Spacer(),
@@ -109,7 +122,8 @@ class HomeView extends StatelessWidget {
                                           },
                                         ),
                                         if (notificationsVm
-                                            .newNotifications.isNotEmpty)
+                                            .newNotifications
+                                            .isNotEmpty)
                                           Positioned(
                                             top: 8,
                                             right: 8,
@@ -120,7 +134,9 @@ class HomeView extends StatelessWidget {
                                                 color: Colors.red,
                                                 shape: BoxShape.circle,
                                                 border: Border.all(
-                                                  color: const Color(0xFFE5FF17),
+                                                  color: const Color(
+                                                    0xFFE5FF17,
+                                                  ),
                                                   width: 1.5,
                                                 ),
                                               ),
@@ -139,9 +155,7 @@ class HomeView extends StatelessWidget {
                           bottom: 0, // Match the bottom of the SizedBox
                           left: 0,
                           right: 0,
-                          child: Center(
-                            child: _buildSearchBar(context),
-                          ),
+                          child: Center(child: _buildSearchBar(context)),
                         ),
                       ],
                     ),
@@ -179,25 +193,29 @@ class HomeView extends StatelessWidget {
                   DealSection(
                     title: 'تنتهي قريباً',
                     deals: viewModel.expiringDeals,
-                    onSeeAllTap: () => debugPrint('See all expiring deals tapped'),
+                    onSeeAllTap: () =>
+                        debugPrint('See all expiring deals tapped'),
                   ),
                   SizedBox(height: 8.h),
                   DealSection(
                     title: 'عروض مميزة',
                     deals: viewModel.featuredDeals,
-                    onSeeAllTap: () => debugPrint('See all featured deals tapped'),
+                    onSeeAllTap: () =>
+                        debugPrint('See all featured deals tapped'),
                   ),
                   SizedBox(height: 8.h),
                   DealSection(
                     title: 'عروض الطلاب',
                     deals: viewModel.studentDeals,
-                    onSeeAllTap: () => debugPrint('See all student deals tapped'),
+                    onSeeAllTap: () =>
+                        debugPrint('See all student deals tapped'),
                   ),
                   SizedBox(height: 6.h),
                   DealSection(
                     title: 'عروض الأنشطة الترفيهية',
                     deals: viewModel.entertainmentDeals,
-                    onSeeAllTap: () => debugPrint('See all entertainment deals tapped'),
+                    onSeeAllTap: () =>
+                        debugPrint('See all entertainment deals tapped'),
                   ),
                   SizedBox(height: 20.h),
                 ],
@@ -223,21 +241,28 @@ class HomeView extends StatelessWidget {
                     const SearchView(),
                 transitionDuration: const Duration(milliseconds: 300),
                 reverseTransitionDuration: const Duration(milliseconds: 250),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  const begin = Offset(0.0, 0.05); // Subtle lift instead of full slide
-                  const end = Offset.zero;
-                  const curve = Curves.easeOutCubic;
-                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                  var fadeTween = Tween<double>(begin: 0.0, end: 1.0);
-                  
-                  return FadeTransition(
-                    opacity: animation.drive(fadeTween),
-                    child: SlideTransition(
-                      position: animation.drive(tween),
-                      child: child,
-                    ),
-                  );
-                },
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(
+                        0.0,
+                        0.05,
+                      ); // Subtle lift instead of full slide
+                      const end = Offset.zero;
+                      const curve = Curves.easeOutCubic;
+                      var tween = Tween(
+                        begin: begin,
+                        end: end,
+                      ).chain(CurveTween(curve: curve));
+                      var fadeTween = Tween<double>(begin: 0.0, end: 1.0);
+
+                      return FadeTransition(
+                        opacity: animation.drive(fadeTween),
+                        child: SlideTransition(
+                          position: animation.drive(tween),
+                          child: child,
+                        ),
+                      );
+                    },
               ),
             );
           },
@@ -264,10 +289,7 @@ class HomeView extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'ابحث عن المتاجر والعروض...',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 15.sp,
-                    ),
+                    style: TextStyle(color: Colors.grey[400], fontSize: 15.sp),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -330,10 +352,7 @@ class _DiscoverNearbyCard extends StatelessWidget {
                   SizedBox(height: 4.h),
                   Text(
                     'شاهد جميع العروض والخصومات بالقرب منك على الخريطة',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12.sp,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                   ),
                 ],
               ),

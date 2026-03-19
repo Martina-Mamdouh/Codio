@@ -37,11 +37,18 @@ class AuthWrapper extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.gpp_bad_outlined, size: 64, color: Colors.orange),
+                    const Icon(
+                      Icons.gpp_bad_outlined,
+                      size: 64,
+                      color: Colors.orange,
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       'غير مصرح بالدخول',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     const Text(

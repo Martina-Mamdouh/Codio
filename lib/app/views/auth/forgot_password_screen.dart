@@ -101,9 +101,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       setState(() => _isLoading = false);
-      
+
       debugPrint('❌ Supabase Auth Error: ${e.message}, Code: ${e.statusCode}');
-      
+
       String message = 'حدث خطأ في إرسال الرمز';
       if (e.statusCode == '429') {
         message = 'كثير من المحاولات. برجاء الانتظار قليلاً';
@@ -114,10 +114,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     } catch (e) {
       if (!mounted) return;

@@ -134,11 +134,13 @@ class _SearchViewState extends State<SearchView> {
           child: IconButton(
             icon: Icon(Icons.arrow_forward, color: Colors.white, size: 24.sp),
             onPressed: () {
-               if (Navigator.canPop(context)) {
-                 Navigator.pop(context);
-               } else {
-                 Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-               }
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/home', (route) => false);
+              }
             },
           ),
         ),
@@ -154,7 +156,10 @@ class _SearchViewState extends State<SearchView> {
                 style: TextStyle(color: Colors.white, fontSize: 16.sp),
                 decoration: InputDecoration(
                   hintText: 'ابحث عن المتاجر والعروض...',
-                  hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14.sp),
+                  hintStyle: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 14.sp,
+                  ),
                   prefixIcon: Icon(
                     Icons.search,
                     color: AppTheme.kElectricLime,
@@ -162,7 +167,11 @@ class _SearchViewState extends State<SearchView> {
                   ),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: Icon(Icons.clear, color: Colors.grey, size: 20.sp),
+                          icon: Icon(
+                            Icons.clear,
+                            color: Colors.grey,
+                            size: 20.sp,
+                          ),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {});
@@ -200,9 +209,7 @@ class _SearchViewState extends State<SearchView> {
       body: SafeArea(
         child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.kElectricLime,
-                ),
+                child: CircularProgressIndicator(color: AppTheme.kElectricLime),
               )
             : _hasSearched
             ? _buildSearchResults()
@@ -370,50 +377,50 @@ class _SearchViewState extends State<SearchView> {
         Expanded(
           child: Consumer<UserProfileViewModel>(
             builder: (context, profileVm, _) {
-                  return RefreshIndicator(
-                    onRefresh: () => _performSearch(_searchController.text),
-                    color: AppTheme.kElectricLime,
-                    child: ListView.separated(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 16.h,
-                        horizontal: 16.w,
-                      ),
-                      itemCount: _searchResults.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 16.h),
-                      itemBuilder: (context, index) {
-                        final deal = _searchResults[index];
-                        final isFav = profileVm.isDealFavorite(deal.id);
+              return RefreshIndicator(
+                onRefresh: () => _performSearch(_searchController.text),
+                color: AppTheme.kElectricLime,
+                child: ListView.separated(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 16.h,
+                    horizontal: 16.w,
+                  ),
+                  itemCount: _searchResults.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                  itemBuilder: (context, index) {
+                    final deal = _searchResults[index];
+                    final isFav = profileVm.isDealFavorite(deal.id);
 
-                        return DealCard(
-                          deal: deal,
-                          isFavorite: isFav,
-                          showCategory: true,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DealDetailsView(deal: deal),
-                              ),
-                            );
-                          },
-                          onFavoriteToggle: () async {
-                            final success = await profileVm
-                                .toggleFavoriteForDeal(deal.id);
-                            if (!success && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'تعذّر تحديث المفضّلة، حاول مرة أخرى',
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+                    return DealCard(
+                      deal: deal,
+                      isFavorite: isFav,
+                      showCategory: true,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DealDetailsView(deal: deal),
+                          ),
                         );
                       },
-                    ),
-                  );
+                      onFavoriteToggle: () async {
+                        final success = await profileVm.toggleFavoriteForDeal(
+                          deal.id,
+                        );
+                        if (!success && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'تعذّر تحديث المفضّلة، حاول مرة أخرى',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                ),
+              );
             },
           ),
         ),

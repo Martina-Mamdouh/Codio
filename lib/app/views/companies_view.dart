@@ -48,7 +48,9 @@ class _CompaniesViewState extends State<CompaniesView> {
             builder: (context, vm, profileVm, child) {
               if (vm.isLoading) {
                 return const Center(
-                  child: CircularProgressIndicator(color: AppTheme.kElectricLime),
+                  child: CircularProgressIndicator(
+                    color: AppTheme.kElectricLime,
+                  ),
                 );
               }
 
@@ -61,7 +63,10 @@ class _CompaniesViewState extends State<CompaniesView> {
                       SizedBox(height: 12.h),
                       Text(
                         vm.errorMessage!,
-                        style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14.sp,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       SizedBox(height: 16.h),
@@ -84,7 +89,9 @@ class _CompaniesViewState extends State<CompaniesView> {
               }
 
               final filteredCompanies = vm.companies.where((c) {
-                return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
+                return c.name.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                );
               }).toList();
 
               if (filteredCompanies.isEmpty) {
@@ -105,7 +112,9 @@ class _CompaniesViewState extends State<CompaniesView> {
                 },
                 color: AppTheme.kElectricLime,
                 child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
                   slivers: [
                     SliverPadding(
                       padding: EdgeInsets.only(
@@ -116,41 +125,49 @@ class _CompaniesViewState extends State<CompaniesView> {
                       ),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : (MediaQuery.of(context).size.width < 900 ? 3 : 4),
+                          crossAxisCount:
+                              MediaQuery.of(context).size.width < 600
+                              ? 2
+                              : (MediaQuery.of(context).size.width < 900
+                                    ? 3
+                                    : 4),
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
-                          childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.65 : 1.1,
+                          childAspectRatio:
+                              MediaQuery.of(context).orientation ==
+                                  Orientation.portrait
+                              ? 0.65
+                              : 1.1,
                         ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final company = filteredCompanies[index];
-                            final isFollowed = profileVm.followedCompanies.any((c) => c.id == company.id);
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final company = filteredCompanies[index];
+                          final isFollowed = profileVm.followedCompanies.any(
+                            (c) => c.id == company.id,
+                          );
 
-                            return CompanyCard(
-                              company: company,
-                              isFollowed: isFollowed,
-                              isFollowLoading: false,
-                              onToggleFollow: () async {
-                                await profileVm.toggleCompanyFollow(
-                                  company.id,
-                                  company: company,
-                                );
-                              },
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => CompanyProfileView(
-                                      companyId: company.id,
-                                      company: company,
-                                    ),
+                          return CompanyCard(
+                            company: company,
+                            isFollowed: isFollowed,
+                            isFollowLoading: false,
+                            onToggleFollow: () async {
+                              await profileVm.toggleCompanyFollow(
+                                company.id,
+                                company: company,
+                              );
+                            },
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CompanyProfileView(
+                                    companyId: company.id,
+                                    company: company,
                                   ),
-                                );
-                              },
-                            );
-                          },
-                          childCount: filteredCompanies.length,
-                        ),
+                                ),
+                              );
+                            },
+                          );
+                        }, childCount: filteredCompanies.length),
                       ),
                     ),
                   ],

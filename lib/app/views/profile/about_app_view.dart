@@ -14,161 +14,158 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.kDarkBackground,
+      appBar: AppBar(
         backgroundColor: AppTheme.kDarkBackground,
-        appBar: AppBar(
-          backgroundColor: AppTheme.kDarkBackground,
-          title: const Text(
-            'حول التطبيق',
-            style: TextStyle(color: Colors.white, fontFamily: 'Cairo'),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
+        title: const Text('حول التطبيق', style: TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(16.w),
-          child: Column(
-            children: [
-              // App Logo
-              Container(
-                width: 140.w,
-                height: 140.w,
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: AppTheme.kElectricLime.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(
-                    color: AppTheme.kElectricLime.withValues(alpha: 0.3),
-                    width: 2,
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          children: [
+            // App Logo
+            Container(
+              width: 140.w,
+              height: 140.w,
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: AppTheme.kElectricLime.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(
+                  color: AppTheme.kElectricLime.withValues(alpha: 0.3),
+                  width: 2,
+                ),
+              ),
+              child: Image.asset(
+                'assets/images/logo.jpg',
+                width: 120.w,
+                height: 120.h,
+                fit: BoxFit.contain,
+              ),
+            ),
+
+            SizedBox(height: 16.h),
+
+            // App Name
+            Text(
+              AppConstants.appName,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.sp,
+                fontWeight: FontWeight.bold,
+                //  // Inherited
+              ),
+            ),
+
+            SizedBox(height: 8.h),
+
+            // Version
+            Text(
+              'الإصدار ${VersionService.fullVersion}',
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 14.sp,
+                //  // Inherited
+              ),
+            ),
+
+            SizedBox(height: 32.h),
+
+            //  Description
+            Text(
+              'تطبيق Codio يوفر لك أفضل العروض والخصومات من مختلف الشركات والمتاجر',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14.sp,
+                height: 1.6,
+                //  // Inherited
+              ),
+            ),
+
+            //  Copyright
+            Text(
+              '© 2025 Codio. جميع الحقوق محفوظة',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+                fontSize: 12.sp,
+                //  // Inherited
+              ),
+            ),
+
+            SizedBox(height: 32.h),
+
+            // Links
+            _LinkTile(
+              icon: Icons.language,
+              title: 'الموقع الإلكتروني',
+              onTap: () => _openUrl(AppConstants.appWebsite),
+            ),
+
+            _LinkTile(
+              icon: Icons.email_outlined,
+              title: 'الدعم الفني',
+              subtitle: AppConstants.supportEmail,
+              onTap: () => _openUrl('mailto:${AppConstants.supportEmail}'),
+            ),
+
+            _LinkTile(
+              icon: Icons.privacy_tip_outlined,
+              title: 'سياسة الخصوصية',
+              onTap: () => _openUrl(AppConstants.privacyPolicyUrl),
+            ),
+
+            _LinkTile(
+              icon: Icons.description_outlined,
+              title: 'الشروط والأحكام',
+              onTap: () => _openUrl(AppConstants.termsUrl),
+            ),
+
+            SizedBox(height: 32.h),
+
+            // Check for Updates Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => UpdateService.checkForUpdate(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.kElectricLime,
+                  foregroundColor: Colors.black,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
-                child: Image.asset(
-                  'assets/images/logo.jpg',
-                  width: 120.w,
-                  height: 120.h,
-                  fit: BoxFit.contain,
-                ),
-              ),
-
-              SizedBox(height: 16.h),
-
-              // App Name
-              Text(
-                AppConstants.appName,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.bold,
-                                    // fontFamily: 'Cairo', // Inherited
-                ),
-              ),
-
-              SizedBox(height: 8.h),
-
-              // Version
-              Text(
-                'الإصدار ${VersionService.fullVersion}',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 14.sp,
-                                    // fontFamily: 'Cairo', // Inherited
-                ),
-              ),
-
-              SizedBox(height: 32.h),
-
-              //  Description
-              Text(
-                'تطبيق Codio يوفر لك أفضل العروض والخصومات من مختلف الشركات والمتاجر',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14.sp,
-                  height: 1.6,
-                                    // fontFamily: 'Cairo', // Inherited
-                ),
-              ),
-
-              //  Copyright
-              Text(
-                '© 2025 Codio. جميع الحقوق محفوظة',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  fontSize: 12.sp,
-                                    // fontFamily: 'Cairo', // Inherited
-                ),
-              ),
-
-              SizedBox(height: 32.h),
-
-              // Links
-              _LinkTile(
-                icon: Icons.language,
-                title: 'الموقع الإلكتروني',
-                onTap: () => _openUrl(AppConstants.appWebsite),
-              ),
-
-              _LinkTile(
-                icon: Icons.email_outlined,
-                title: 'الدعم الفني',
-                subtitle: AppConstants.supportEmail,
-                onTap: () => _openUrl('mailto:${AppConstants.supportEmail}'),
-              ),
-
-              _LinkTile(
-                icon: Icons.privacy_tip_outlined,
-                title: 'سياسة الخصوصية',
-                onTap: () => _openUrl(AppConstants.privacyPolicyUrl),
-              ),
-
-              _LinkTile(
-                icon: Icons.description_outlined,
-                title: 'الشروط والأحكام',
-                onTap: () => _openUrl(AppConstants.termsUrl),
-              ),
-
-              SizedBox(height: 32.h),
-
-              // Check for Updates Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => UpdateService.checkForUpdate(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.kElectricLime,
-                    foregroundColor: Colors.black,
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                  ),
-                  child: Text(
-                    'التحقق من التحديثات',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                                        // fontFamily: 'Cairo', // Inherited
-                    ),
+                child: Text(
+                  'التحقق من التحديثات',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.bold,
+                    //  // Inherited
                   ),
                 ),
               ),
+            ),
 
-              SizedBox(height: 24.h),
+            SizedBox(height: 24.h),
 
-              // Copyright
-              Text(
-                '© 2025 Codio. جميع الحقوق محفوظة',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  fontSize: 12.sp,
-                                    // fontFamily: 'Cairo', // Inherited
-                ),
+            // Copyright
+            Text(
+              '© 2025 Codio. جميع الحقوق محفوظة',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+                fontSize: 12.sp,
+                //  // Inherited
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 
   Future<void> _openUrl(String url) async {
@@ -217,7 +214,7 @@ class _LinkTile extends StatelessWidget {
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14.sp,
-                                        // fontFamily: 'Cairo', // Inherited
+                      //  // Inherited
                     ),
                   ),
                   if (subtitle != null) ...[
@@ -227,7 +224,7 @@ class _LinkTile extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white54,
                         fontSize: 12.sp,
-                                          // fontFamily: 'Cairo', // Inherited
+                        //  // Inherited
                       ),
                     ),
                   ],

@@ -53,7 +53,7 @@ class CompanyProfileViewModel extends ChangeNotifier {
       company = initialCompany;
       // We rely on loadCompanyData or local check for isFollowed
     }
-    
+
     if (kDebugMode) {
       print('CompanyProfileViewModel created with companyId: $companyId');
     }
@@ -67,13 +67,13 @@ class CompanyProfileViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
     }
-    
+
     errorMessage = null;
 
     try {
       // ✅ Fetch company, deal count, and category name in one optimized call
       company = await _supabaseService.getCompanyById(companyId);
-      
+
       // Fetch all categories for tags
       allCategories = await _supabaseService.getCategories();
 
@@ -99,7 +99,6 @@ class CompanyProfileViewModel extends ChangeNotifier {
         mapClicks = stats['map_click_count'] ?? 0;
       }
 
-      
       // ... existing code ...
 
       _subscribeToCompany();
@@ -116,10 +115,10 @@ class CompanyProfileViewModel extends ChangeNotifier {
   // ✅ Call this from View to sync with global UserProfile state
   void checkFollowStatus(bool isGloballyFollowed) {
     if (isFollowed != isGloballyFollowed) {
-       isFollowed = isGloballyFollowed;
-       // Simply update the local flag without triggering a full reload or notify unless changed
-       // actually we should notify if it changes visual state
-       notifyListeners();
+      isFollowed = isGloballyFollowed;
+      // Simply update the local flag without triggering a full reload or notify unless changed
+      // actually we should notify if it changes visual state
+      notifyListeners();
     }
   }
 
@@ -210,7 +209,9 @@ class CompanyProfileViewModel extends ChangeNotifier {
     try {
       deals = await _supabaseService.getCompanyDeals(companyId);
       if (kDebugMode) {
-        print('loadDeals: loaded ${deals.length} deals for company ${company!.name}');
+        print(
+          'loadDeals: loaded ${deals.length} deals for company ${company!.name}',
+        );
       }
       if (hasListeners) {
         notifyListeners();
@@ -247,9 +248,12 @@ class CompanyProfileViewModel extends ChangeNotifier {
         company = company!.copyWith(
           followersCount: (company!.followersCount ?? 1) - 1,
         );
-        
+
         // Track unfollow
-        await _analyticsService.trackCompanyFollow(company!.id, isFollowed: false);
+        await _analyticsService.trackCompanyFollow(
+          company!.id,
+          isFollowed: false,
+        );
       } else {
         // متابعة
         await Supabase.instance.client.from('following').insert({
@@ -262,9 +266,12 @@ class CompanyProfileViewModel extends ChangeNotifier {
         company = company!.copyWith(
           followersCount: (company!.followersCount ?? 0) + 1,
         );
-        
+
         // Track follow
-        await _analyticsService.trackCompanyFollow(company!.id, isFollowed: true);
+        await _analyticsService.trackCompanyFollow(
+          company!.id,
+          isFollowed: true,
+        );
       }
 
       if (hasListeners) {

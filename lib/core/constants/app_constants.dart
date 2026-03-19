@@ -16,6 +16,8 @@ class AppConstants {
   static const String privacyPolicyUrl = 'https://codio.app/privacy';
   static const String termsUrl = 'https://codio.app/terms';
   // Supabase
-  static const String supabaseProjectUrl = 'https://anlixjwtmbduosemcwpv.supabase.co';
-  static const String storageBaseUrl = '$supabaseProjectUrl/storage/v1/object/public/images/';
+  static const String supabaseProjectUrl =
+      'https://anlixjwtmbduosemcwpv.supabase.co';
+  static const String storageBaseUrl =
+      '$supabaseProjectUrl/storage/v1/object/public/images/';
 }

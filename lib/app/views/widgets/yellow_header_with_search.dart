@@ -28,9 +28,7 @@ class YellowHeaderWithSearch extends StatelessWidget {
           height: 140.h,
           decoration: const BoxDecoration(
             color: Color(0xFFE5FF17),
-            borderRadius: BorderRadius.vertical(
-              bottom: Radius.circular(18),
-            ),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(18)),
           ),
         ),
         Positioned(
@@ -45,7 +43,11 @@ class YellowHeaderWithSearch extends StatelessWidget {
                 children: [
                   if (onBack != null)
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 28),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.black,
+                        size: 28,
+                      ),
                       onPressed: onBack,
                     ),
                   if (onBack == null) const SizedBox(width: 44),

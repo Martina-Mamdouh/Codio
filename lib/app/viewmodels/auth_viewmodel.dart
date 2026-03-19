@@ -11,6 +11,13 @@ class AuthViewModel extends ChangeNotifier {
   bool isLoading = true;
   String? errorMessage;
 
+  // Guest mode flag
+  bool isGuestMode = false;
+
+  // Prevents the Supabase auth state listener from interfering
+  // while a sign-in / sign-up operation is already in progress.
+  bool _isSigningIn = false;
+
   bool get isAuthenticated => _authService.isAuthenticated;
 
   AuthViewModel() {
@@ -31,7 +38,7 @@ class AuthViewModel extends ChangeNotifier {
       // We use silent: true because we manually set isLoading=true above.
       // This ensures isLoading=false is set only when this completes.
       await _loadCurrentUser(silent: true);
-      
+
       debugPrint('✅ Init completed. User: ${currentUser?.email}');
     } catch (e) {
       debugPrint('❌ Error during Auth initialization: $e');
@@ -42,8 +49,11 @@ class AuthViewModel extends ChangeNotifier {
 
   void _listenToAuthChanges() {
     _authService.authStateChanges.listen((event) {
-      // Reload user on auth change, but don't show full screen loader if not needed
-      _loadCurrentUser(silent: false);
+      // Always use silent=true so that delayed auth events (e.g. from Google Sign In
+      // OAuth which fires multiple events) never flip isLoading back to true after
+      // a successful login, which would trap the UI on the loading screen.
+      if (_isSigningIn) return;
+      _loadCurrentUser(silent: true);
     });
   }
 
@@ -57,10 +67,10 @@ class AuthViewModel extends ChangeNotifier {
       if (_authService.isAuthenticated) {
         currentUser = await _authService.getCurrentUserProfile();
         debugPrint('👤 Loaded user profile: ${currentUser?.email}');
-        
+
         // Register OneSignal User ID
         if (currentUser != null && currentUser!.id.isNotEmpty) {
-           OneSignalService().setExternalUserId(currentUser!.id);
+          OneSignalService().setExternalUserId(currentUser!.id);
         }
       } else {
         currentUser = null;
@@ -75,15 +85,20 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<bool> signIn({required String email, required String password}) async {
+    _isSigningIn = true;
     isLoading = true;
     errorMessage = null;
     if (hasListeners) notifyListeners();
 
     try {
-      final result = await _authService.signIn(email: email, password: password);
+      final result = await _authService.signIn(
+        email: email,
+        password: password,
+      );
 
       if (result.success) {
         currentUser = result.user;
+        isGuestMode = false;
         errorMessage = null;
       } else {
         errorMessage = result.message;
@@ -95,6 +110,7 @@ class AuthViewModel extends ChangeNotifier {
       debugPrint('Error in signIn: $e');
       return false;
     } finally {
+      _isSigningIn = false;
       isLoading = false;
       if (hasListeners) notifyListeners();
     }
@@ -102,6 +118,7 @@ class AuthViewModel extends ChangeNotifier {
 
   // Google Sign In
   Future<bool> signInWithGoogle() async {
+    _isSigningIn = true;
     isLoading = true;
     errorMessage = null;
     if (hasListeners) notifyListeners();
@@ -111,6 +128,7 @@ class AuthViewModel extends ChangeNotifier {
 
       if (result.success) {
         currentUser = result.user;
+        isGuestMode = false;
         errorMessage = null;
       } else {
         errorMessage = result.message;
@@ -122,21 +140,34 @@ class AuthViewModel extends ChangeNotifier {
       debugPrint('Error in signInWithGoogle: $e');
       return false;
     } finally {
+      _isSigningIn = false;
       isLoading = false;
       if (hasListeners) notifyListeners();
     }
   }
 
-  Future<bool> signUp({required String email, required String password, required String fullName, required String profession}) async {
+  Future<bool> signUp({
+    required String email,
+    required String password,
+    required String fullName,
+    required String profession,
+  }) async {
+    _isSigningIn = true;
     isLoading = true;
     errorMessage = null;
     if (hasListeners) notifyListeners();
 
     try {
-      final result = await _authService.signUp(email: email, password: password, fullName: fullName, profession: profession);
+      final result = await _authService.signUp(
+        email: email,
+        password: password,
+        fullName: fullName,
+        profession: profession,
+      );
 
       if (result.success) {
         currentUser = result.user;
+        isGuestMode = false;
         errorMessage = null;
       } else {
         errorMessage = result.message;
@@ -148,6 +179,7 @@ class AuthViewModel extends ChangeNotifier {
       debugPrint('Error in signUp: $e');
       return false;
     } finally {
+      _isSigningIn = false;
       isLoading = false;
       if (hasListeners) notifyListeners();
     }
@@ -157,7 +189,19 @@ class AuthViewModel extends ChangeNotifier {
     OneSignalService().removeExternalUserId();
     await _authService.signOut();
     currentUser = null;
+    isGuestMode = false;
     if (hasListeners) notifyListeners();
+  }
+
+  // Guest Mode
+  void enterGuestMode() {
+    isGuestMode = true;
+    notifyListeners();
+  }
+
+  void exitGuestMode() {
+    isGuestMode = false;
+    notifyListeners();
   }
 
   // Verify OTP
@@ -193,9 +237,17 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   // Update Profile
-  Future<bool> updateProfile({String? fullName, String? avatarUrl, String? profession}) async {
+  Future<bool> updateProfile({
+    String? fullName,
+    String? avatarUrl,
+    String? profession,
+  }) async {
     try {
-      final success = await _authService.updateProfile(fullName: fullName, avatarUrl: avatarUrl, profession: profession);
+      final success = await _authService.updateProfile(
+        fullName: fullName,
+        avatarUrl: avatarUrl,
+        profession: profession,
+      );
 
       if (success) {
         // Reload user profile to reflect changes
@@ -216,7 +268,7 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       final result = await _authService.deleteAccount();
-      
+
       if (result.success) {
         currentUser = null;
         errorMessage = null;

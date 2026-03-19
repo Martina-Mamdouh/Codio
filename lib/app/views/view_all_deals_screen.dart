@@ -23,81 +23,80 @@ class ViewAllDealsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.kDarkBackground,
+      appBar: AppBar(
+        elevation: 2,
         backgroundColor: AppTheme.kDarkBackground,
-        appBar: AppBar(
-          elevation: 2,
-          backgroundColor: AppTheme.kDarkBackground,
-          title: Text(
-            title,
-            style: const TextStyle(color: Colors.white, fontFamily: 'Cairo'),
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: deals.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.local_offer_outlined,
-                      size: 80.w,
-                      color: Colors.white30,
+      ),
+      body: deals.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.local_offer_outlined,
+                    size: 80.w,
+                    color: Colors.white30,
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'لا توجد عروض حاليًا',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 16.sp,
+                      //  // Inherited
                     ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      'لا توجد عروض حاليًا',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 16.sp,
-                                                // fontFamily: 'Cairo', // Inherited
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : Consumer<UserProfileViewModel>(
-                builder: (context, profileVm, _) {
-                  return ListView.separated(
-                    padding: EdgeInsets.all(16.w),
-                    itemCount: deals.length,
-                    separatorBuilder: (context, index) => SizedBox(height: 16.h),
-                    itemBuilder: (context, index) {
-                      final deal = deals[index];
-                      final isFav = profileVm.isDealFavorite(deal.id);
+                  ),
+                ],
+              ),
+            )
+          : Consumer<UserProfileViewModel>(
+              builder: (context, profileVm, _) {
+                return ListView.separated(
+                  padding: EdgeInsets.all(16.w),
+                  itemCount: deals.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                  itemBuilder: (context, index) {
+                    final deal = deals[index];
+                    final isFav = profileVm.isDealFavorite(deal.id);
 
-                      return DealCard(
-                        deal: deal,
-                        isFavorite: isFav,
-                        showCategory: true,
-                        onTap: () {
-                          debugPrint('Pressed on deal: ${deal.title}');
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DealDetailsView(deal: deal),
+                    return DealCard(
+                      deal: deal,
+                      isFavorite: isFav,
+                      showCategory: true,
+                      onTap: () {
+                        debugPrint('Pressed on deal: ${deal.title}');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DealDetailsView(deal: deal),
+                          ),
+                        );
+                      },
+                      onFavoriteToggle: () async {
+                        final success = await profileVm.toggleFavoriteForDeal(
+                          deal.id,
+                        );
+                        if (!success && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'تعذّر تحديث المفضّلة، حاول مرة أخرى',
+                              ),
                             ),
                           );
-                        },
-                        onFavoriteToggle: () async {
-                          final success = await profileVm
-                              .toggleFavoriteForDeal(deal.id);
-                          if (!success && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'تعذّر تحديث المفضّلة، حاول مرة أخرى'),
-                              ),
-                            );
-                          }
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-      );
+                        }
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+    );
   }
 }

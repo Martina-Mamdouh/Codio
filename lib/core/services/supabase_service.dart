@@ -36,7 +36,9 @@ class SupabaseService {
       if (kDebugMode) {
         print('📊 getDeals: parsed ${deals.length} deals');
         if (deals.isNotEmpty) {
-          print('📊 First parsed deal: id=${deals.first.id}, companyId=${deals.first.companyId}');
+          print(
+            '📊 First parsed deal: id=${deals.first.id}, companyId=${deals.first.companyId}',
+          );
         }
       }
 
@@ -104,7 +106,9 @@ class SupabaseService {
           .order('created_at', ascending: false);
 
       // 2. Fetch all categories to map names manually (Safest approach due to DB FK issues)
-      final categoriesData = await _client.from('categories').select('id, name');
+      final categoriesData = await _client
+          .from('categories')
+          .select('id, name');
 
       final categoryMap = {
         for (var item in categoriesData as List)
@@ -119,8 +123,9 @@ class SupabaseService {
         // Map Deal Count
         if (json['deals'] != null && json['deals'] is List) {
           final dealsList = json['deals'] as List;
-          json['deal_count'] =
-              dealsList.isNotEmpty ? dealsList.first['count'] : 0;
+          json['deal_count'] = dealsList.isNotEmpty
+              ? dealsList.first['count']
+              : 0;
         }
 
         // 3. Resolve Primary Category Name manually
@@ -294,9 +299,10 @@ class SupabaseService {
         .stream(primaryKey: ['id'])
         .eq('user_id', userId)
         .order('created_at', ascending: false)
-        .map((data) => data
-            .map((json) => NotificationModel.fromJson(json))
-            .toList());
+        .map(
+          (data) =>
+              data.map((json) => NotificationModel.fromJson(json)).toList(),
+        );
   }
 
   // مفيدة لو في إشعارات inside-app غير OneSignal
@@ -475,19 +481,22 @@ class SupabaseService {
       }
 
       final json = Map<String, dynamic>.from(data);
-      
+
       // ✅ Map Deal Count from join
       if (json['deals'] != null && json['deals'] is List) {
         final dealsList = json['deals'] as List;
-        json['deal_count'] = dealsList.isNotEmpty ? dealsList.first['count'] : 0;
+        json['deal_count'] = dealsList.isNotEmpty
+            ? dealsList.first['count']
+            : 0;
       }
-      
+
       // ✅ Map Category Name from join
       if (json['categories'] != null) {
-        if (json['categories'] is List && (json['categories'] as List).isNotEmpty) {
-           json['category_name'] = (json['categories'] as List).first['name'];
+        if (json['categories'] is List &&
+            (json['categories'] as List).isNotEmpty) {
+          json['category_name'] = (json['categories'] as List).first['name'];
         } else if (json['categories'] is Map) {
-           json['category_name'] = json['categories']['name'];
+          json['category_name'] = json['categories']['name'];
         }
       }
 
@@ -594,7 +603,9 @@ class SupabaseService {
       // Use deep select to fetch deals directly through the foreign key
       // 'deals!inner' ensures we only get rows where the deal still exists
       final data = await _client
-          .from('favorites_deals') // assuming FK name is 'deal_id' -> relation 'deals'
+          .from(
+            'favorites_deals',
+          ) // assuming FK name is 'deal_id' -> relation 'deals'
           .select('deals!inner(*, companies(*), categories(name))')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
@@ -765,7 +776,7 @@ class SupabaseService {
       // relationships: following -> companies (FK: company_id)
       // companies -> deals (for count)
       // companies -> categories (for category name) - assuming FK exists
-      
+
       final data = await _client
           .from('following')
           .select('''
@@ -780,32 +791,31 @@ class SupabaseService {
 
       return (data as List).map((row) {
         final companyJson = row['companies'] as Map<String, dynamic>;
-        
+
         // Handle Deal Count
         // Supabase returns {count: X} or [{count: X}]
         if (companyJson['deals'] != null) {
-           final dealsData = companyJson['deals'];
-           if (dealsData is List && dealsData.isNotEmpty) {
-             companyJson['deal_count'] = dealsData.first['count'];
-           } else if (dealsData is Map) {
-             companyJson['deal_count'] = dealsData['count'];
-           } else {
-             companyJson['deal_count'] = 0;
-           }
+          final dealsData = companyJson['deals'];
+          if (dealsData is List && dealsData.isNotEmpty) {
+            companyJson['deal_count'] = dealsData.first['count'];
+          } else if (dealsData is Map) {
+            companyJson['deal_count'] = dealsData['count'];
+          } else {
+            companyJson['deal_count'] = 0;
+          }
         }
-        
+
         // Handle Category Name
         // Supabase returns {name: "Foo"} or null
         if (companyJson['categories'] != null) {
-           final catData = companyJson['categories'];
-           if (catData is Map) {
-             companyJson['category_name'] = catData['name'];
-           }
+          final catData = companyJson['categories'];
+          if (catData is Map) {
+            companyJson['category_name'] = catData['name'];
+          }
         }
 
         return CompanyModel.fromJson(companyJson);
       }).toList();
-
     } catch (e) {
       if (kDebugMode) {
         print('Error getFollowedCompanies: $e');
@@ -1030,25 +1040,27 @@ class SupabaseService {
           .from('favorites_deals')
           .select('deal_id')
           .eq('user_id', user.id);
-      
+
       final count = (favRows as List).length;
       report.writeln('✅ Favorites Table Row Count: $count');
-      
+
       if (count > 0) {
         // Check visibility of first deal
         final firstDealId = favRows.first['deal_id'];
         report.writeln('🔍 Checking visibility for Deal ID: $firstDealId');
-        
+
         final dealCheck = await _client
             .from('deals')
             .select('id')
             .eq('id', firstDealId)
             .maybeSingle();
-            
+
         if (dealCheck != null) {
           report.writeln('✅ Deal $firstDealId is VISIBLE via standard select.');
         } else {
-          report.writeln('❌ Deal $firstDealId is NOT VISIBLE (RLS or Deleted).');
+          report.writeln(
+            '❌ Deal $firstDealId is NOT VISIBLE (RLS or Deleted).',
+          );
         }
       }
 
@@ -1057,8 +1069,10 @@ class SupabaseService {
           .from('following')
           .select('id')
           .eq('user_id', user.id);
-      
-      report.writeln('✅ Following Table Row Count: ${(followRows as List).length}');
+
+      report.writeln(
+        '✅ Following Table Row Count: ${(followRows as List).length}',
+      );
 
       // ---------------------------------------------------------
       // TEST MAIN QUERY
@@ -1067,14 +1081,13 @@ class SupabaseService {
         final deals = await getFavoriteDeals();
         report.writeln('✅ getFavoriteDeals returned: ${deals.length} items');
         if (deals.isNotEmpty) {
-           report.writeln('   First Item: ${deals.first.title}');
+          report.writeln('   First Item: ${deals.first.title}');
         }
       } catch (e) {
         report.writeln('❌ getFavoriteDeals FAILED:');
         report.writeln('   $e');
       }
       // ---------------------------------------------------------
-
     } catch (e) {
       report.writeln('❌ Error running diagnostics: $e');
     }
@@ -1082,4 +1095,35 @@ class SupabaseService {
     report.writeln('--------------------------');
     return report.toString();
   }
+
+  // ==================== App Settings (Social Links) ====================
+
+  /// جلب كل إعدادات التطبيق من جدول app_settings
+  Future<Map<String, String>> getAppSettings() async {
+    try {
+      final data = await _client.from('app_settings').select('key, value');
+      return {
+        for (final row in data as List)
+          row['key'] as String: (row['value'] as String?) ?? '',
+      };
+    } catch (e) {
+      debugPrint('❌ Error getting app settings: $e');
+      return {};
+    }
+  }
+
+  /// تحديث إعداد واحد في جدول app_settings
+  Future<void> updateAppSetting(String key, String value) async {
+    try {
+      await _client.from('app_settings').upsert({
+        'key': key,
+        'value': value,
+      }, onConflict: 'key');
+    } catch (e) {
+      debugPrint('❌ Error updating app setting $key: $e');
+      rethrow;
+    }
+  }
+
+  // ==================== End App Settings ====================
 }

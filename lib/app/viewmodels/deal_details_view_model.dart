@@ -45,7 +45,7 @@ class DealDetailsViewModel extends ChangeNotifier {
         loadDealStats(dealId),
         loadEmojiFeedbackStats(dealId),
       ]);
-      
+
       companyViews++;
       notifyListeners();
     } catch (e) {
@@ -88,7 +88,7 @@ class DealDetailsViewModel extends ChangeNotifier {
     // دمجنا التقييمات الإيجابية (happyCount) مع التفاعلات لزيادة دقة نسبة النجاح
     final interactions = copyCodeCount + openLinkCount + happyCount;
     if (interactions == 0) return 0.0; // لا يوجد تفاعل
-    
+
     // نسبة النجاح الحقيقية = (التحويلات / المشاهدات) * 100
     double rate = (interactions / dealViews) * 100;
     return rate > 100 ? 100 : rate;
@@ -99,12 +99,12 @@ class DealDetailsViewModel extends ChangeNotifier {
     if (totalEmojiCount == 0) return 0.0;
     return (happyCount / totalEmojiCount) * 100;
   }
-  
+
   double get emotionalNeutral {
     if (totalEmojiCount == 0) return 0.0;
     return (neutralCount / totalEmojiCount) * 100;
   }
-  
+
   double get emotionalSad {
     if (totalEmojiCount == 0) return 0.0;
     return (sadCount / totalEmojiCount) * 100;
@@ -116,12 +116,12 @@ class DealDetailsViewModel extends ChangeNotifier {
       dealId,
       emojiType: emojiType,
     );
-    
+
     if (success) {
       // Reload emoji stats after submission
       await loadEmojiFeedbackStats(dealId);
     }
-    
+
     return success;
   }
 
@@ -137,7 +137,7 @@ class DealDetailsViewModel extends ChangeNotifier {
         totalEmojiCount = stats['total_count'] ?? 0;
         notifyListeners();
       }
-      
+
       // Load user's selection
       userSelectedEmoji = await _analyticsService.getUserEmojiFeedback(dealId);
       notifyListeners();
@@ -146,15 +146,14 @@ class DealDetailsViewModel extends ChangeNotifier {
     }
   }
 
-
   // نسخ الكود
   Future<void> copyCode(BuildContext context, int dealId, String code) async {
     await Clipboard.setData(ClipboardData(text: code));
     copyCodeCount++;
-    
+
     // Track in analytics
     await _analyticsService.trackCodeCopy(dealId, code: code);
-    
+
     notifyListeners();
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -186,16 +185,14 @@ class DealDetailsViewModel extends ChangeNotifier {
       debugPrint('🌐 Launching URL: $cleaned');
       final uri = Uri.parse(cleaned);
 
+      // Update UI and trigger analytics immediately before app shifts to background
+      openLinkCount++;
+      notifyListeners();
+      _analyticsService.trackLinkOpen(dealId, url: cleaned);
+
       // 3) محاولة الإطلاق
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         debugPrint('❌ Cannot launch URL: $cleaned');
-      } else {
-        openLinkCount++;
-        
-        // Track in analytics
-        await _analyticsService.trackLinkOpen(dealId, url: cleaned);
-        
-        notifyListeners();
       }
     } catch (e) {
       debugPrint('❌ Error opening deal link: $e');

@@ -43,30 +43,40 @@ class YellowScaffold extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      child: titleWidget ?? Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                          height: 1.1,
-                        ),
-                      ),
+                      child:
+                          titleWidget ??
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 24.sp,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
+                              height: 1.1,
+                            ),
+                          ),
                     ),
 
                     if (actions != null) ...actions!,
 
                     if (showBackButton) ...[
-                      SizedBox(width: 8.w), // Spacing before back text/icon if needed
+                      SizedBox(
+                        width: 8.w,
+                      ), // Spacing before back text/icon if needed
                       IconButton(
-                        icon: Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 28.sp),
-                        onPressed: onBackTap ?? () {
-                           if (Navigator.canPop(context)) {
-                             Navigator.pop(context);
-                           } else {
-                             Navigator.of(context).pop(); 
-                           }
-                        },
+                        icon: Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: Colors.black,
+                          size: 28.sp,
+                        ),
+                        onPressed:
+                            onBackTap ??
+                            () {
+                              if (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              } else {
+                                Navigator.of(context).pop();
+                              }
+                            },
                       ),
                     ],
                   ],
@@ -74,11 +84,9 @@ class YellowScaffold extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Body Content (Directly on Dark Background)
-          Expanded(
-            child: body,
-          ),
+          Expanded(child: body),
         ],
       ),
     );

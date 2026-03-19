@@ -108,8 +108,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -401,8 +399,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     SizedBox(height: 16.h),
 
-
-
                     SizedBox(height: 16.h),
 
                     // Social Buttons
@@ -434,7 +430,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                          'تسجيل الدخول عبر أبل متاح قريباً'),
+                                        'تسجيل الدخول عبر أبل متاح قريباً',
+                                      ),
                                     ),
                                   );
                                 },
@@ -466,7 +463,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: TextStyle(
                               color: Colors.white54,
                               fontSize: 14.sp,
-                              fontFamily: 'Cairo',
                             ),
                             children: [
                               TextSpan(

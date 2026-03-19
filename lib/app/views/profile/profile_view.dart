@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kodio_app/app/views/profile/settings_view.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../main_layout.dart';
 import '../widgets/yellow_scaffold.dart';
 
+import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user_model.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
 import '../auth/login_screen.dart';
 import 'favorite_deals_view.dart';
-
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -22,6 +24,18 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   bool _initialized = false;
+  Map<String, String> _socialLinks = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSocialLinks();
+  }
+
+  Future<void> _loadSocialLinks() async {
+    final data = await SupabaseService().getAppSettings();
+    if (mounted) setState(() => _socialLinks = data);
+  }
 
   @override
   void didChangeDependencies() {
@@ -74,7 +88,7 @@ class _ProfileViewState extends State<ProfileView> {
             style: TextStyle(
               color: Colors.white70,
               fontSize: 16.sp,
-                                // fontFamily: 'Cairo', // Inherited
+              //  // Inherited
             ),
           ),
           SizedBox(height: 32.h),
@@ -103,7 +117,7 @@ class _ProfileViewState extends State<ProfileView> {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
-                                    // fontFamily: 'Cairo', // Inherited
+                  //  // Inherited
                 ),
               ),
             ),
@@ -121,7 +135,10 @@ class _ProfileViewState extends State<ProfileView> {
     AuthViewModel authVm,
   ) {
     return RefreshIndicator(
-      onRefresh: profileVm.loadProfileData,
+      onRefresh: () async {
+        await profileVm.loadProfileData();
+        await _loadSocialLinks();
+      },
       color: AppTheme.kElectricLime,
       child: ListView(
         padding: EdgeInsets.all(24.w),
@@ -143,16 +160,11 @@ class _ProfileViewState extends State<ProfileView> {
                     'العروض المفضّلة',
                     style: TextStyle(color: Colors.white),
                   ),
-                  // subtitle: Text(
-                  //   '${profileVm.favoriteDealIds.length} عرض',
-                  //   style: const TextStyle(color: Colors.white54),
-                  // ),
                   trailing: const Icon(
                     Icons.chevron_right,
                     color: Colors.white54,
                   ),
                   onTap: () {
-                    // await profileVm.loadFavoriteDeals();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -185,6 +197,11 @@ class _ProfileViewState extends State<ProfileView> {
 
           SizedBox(height: 24.h),
 
+          // قسم التواصل الاجتماعي
+          _buildSocialLinksCard(),
+
+          SizedBox(height: 24.h),
+
           ElevatedButton.icon(
             onPressed: () async {
               await authVm.signOut();
@@ -209,6 +226,117 @@ class _ProfileViewState extends State<ProfileView> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSocialLinksCard() {
+    // تعريف كل منصة: key في Supabase | label | icon | color
+    final platforms = [
+      _SocialLink(
+        key: 'whatsapp_url',
+        label: 'تواصل معنا عبر واتساب',
+        icon: FontAwesomeIcons.whatsapp,
+        color: const Color(0xFF25D366),
+      ),
+      _SocialLink(
+        key: 'instagram_url',
+        label: 'تابعنا على إنستقرام',
+        icon: FontAwesomeIcons.instagram,
+        color: const Color(0xFFE1306C),
+      ),
+      _SocialLink(
+        key: 'telegram_url',
+        label: 'تابعنا على تيليجرام',
+        icon: FontAwesomeIcons.telegram,
+        color: const Color(0xFF0088CC),
+      ),
+      _SocialLink(
+        key: 'facebook_url',
+        label: 'تابعنا على فيسبوك',
+        icon: FontAwesomeIcons.facebook,
+        color: const Color(0xFF1877F2),
+      ),
+      _SocialLink(
+        key: 'tiktok_url',
+        label: 'تابعنا على تيك توك',
+        icon: FontAwesomeIcons.tiktok,
+        color: Colors.white,
+      ),
+      _SocialLink(
+        key: 'linkedin_url',
+        label: 'تابعنا على لينكد إن',
+        icon: FontAwesomeIcons.linkedin,
+        color: const Color(0xFF0A66C2),
+      ),
+    ];
+
+    // لو عايزة تشوفي كل الزراير حتى لو اللينك فاضي
+    final activeLinks = platforms;
+
+    if (activeLinks.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'تواصل معنا',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Card(
+          color: AppTheme.kLightBackground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Column(
+            children: [
+              for (int i = 0; i < activeLinks.length; i++) ...[
+                _buildSocialTile(activeLinks[i]),
+                if (i < activeLinks.length - 1)
+                  const Divider(height: 1, color: Colors.white12),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialTile(_SocialLink link) {
+    final url = _socialLinks[link.key] ?? '';
+    return ListTile(
+      leading: Container(
+        width: 38.w,
+        height: 38.w,
+        decoration: BoxDecoration(
+          color: link.color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Center(
+          child: FaIcon(link.icon, color: link.color, size: 20.sp),
+        ),
+      ),
+      title: Text(
+        link.label,
+        style: TextStyle(color: Colors.white, fontSize: 14.sp),
+      ),
+      trailing: Icon(Icons.open_in_new, color: Colors.white38, size: 18.sp),
+      onTap: () async {
+        final uri = Uri.tryParse(url);
+        if (uri != null && await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('تعذّر فتح الرابط')));
+          }
+        }
+      },
     );
   }
 
@@ -288,4 +416,19 @@ class _ProfileViewState extends State<ProfileView> {
     }
     return fullName.isNotEmpty ? fullName[0].toUpperCase() : '?';
   }
+}
+
+// Helper data class for social links
+class _SocialLink {
+  final String key;
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _SocialLink({
+    required this.key,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
 }

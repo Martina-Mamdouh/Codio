@@ -9,7 +9,7 @@ class DashboardViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> companyPerformance = [];
   List<Map<String, dynamic>> bannerPerformance = [];
   List<Map<String, dynamic>> socialBreakdown = [];
-  
+
   // Aggregate stats
   int totalViews = 0;
   int totalCopies = 0;
@@ -39,24 +39,38 @@ class DashboardViewModel extends ChangeNotifier {
       socialBreakdown = results[3];
 
       // Calculate simple totals from performance if needed
-      totalViews = companyPerformance.fold(0, (sum, item) => sum + (item['page_views'] as int? ?? 0));
-      
-      // Total Clicks includes all types of company level clicks
-      int companyClicks = companyPerformance.fold(0, (sum, item) => 
-        sum + (item['social_clicks'] as int? ?? 0) + 
-        (item['website_click_count'] as int? ?? 0) + 
-        (item['phone_click_count'] as int? ?? 0)
+      totalViews = companyPerformance.fold(
+        0,
+        (sum, item) => sum + (item['page_views'] as int? ?? 0),
       );
-      
-      int bannerClicks = bannerPerformance.fold(0, (sum, item) => sum + (item['clicks'] as int? ?? 0));
-      
+
+      // Total Clicks includes all types of company level clicks
+      int companyClicks = companyPerformance.fold(
+        0,
+        (sum, item) =>
+            sum +
+            (item['social_clicks'] as int? ?? 0) +
+            (item['website_click_count'] as int? ?? 0) +
+            (item['phone_click_count'] as int? ?? 0),
+      );
+
+      int bannerClicks = bannerPerformance.fold(
+        0,
+        (sum, item) => sum + (item['clicks'] as int? ?? 0),
+      );
+
       totalClicks = companyClicks + bannerClicks;
 
-      totalMapClicks = companyPerformance.fold(0, (sum, item) => sum + (item['map_click_count'] as int? ?? 0));
-      
-      // Get copy totals from top deals (as an approximation or better query)
-      totalCopies = topDeals.fold(0, (sum, item) => sum + (item['code_copies'] as int? ?? 0));
+      totalMapClicks = companyPerformance.fold(
+        0,
+        (sum, item) => sum + (item['map_click_count'] as int? ?? 0),
+      );
 
+      // Get copy totals from top deals (as an approximation or better query)
+      totalCopies = topDeals.fold(
+        0,
+        (sum, item) => sum + (item['code_copies'] as int? ?? 0),
+      );
     } catch (e) {
       debugPrint('❌ Error loading dashboard analytics: $e');
     } finally {

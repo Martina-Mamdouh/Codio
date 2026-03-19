@@ -34,7 +34,7 @@ class PrivacyPolicyView extends StatelessWidget {
             ),
           ),
           SizedBox(height: 24.h),
-          
+
           Text(
             'هذه سياسة خصوصية مبسّطة ومبدئية لتطبيق كوديو، وتحتاج إلى مراجعة قانونية قبل اعتمادها بشكل نهائي.',
             style: TextStyle(color: Colors.white70, fontSize: 14.sp),

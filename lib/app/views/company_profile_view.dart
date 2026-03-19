@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
+import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/company_profile_view_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/services/analytics_service.dart';
@@ -19,17 +20,14 @@ import '../../core/models/company_model.dart';
 class CompanyProfileView extends StatelessWidget {
   final int companyId;
   final CompanyModel? company; // Instant Load Data
-  
-  const CompanyProfileView({
-    super.key, 
-    required this.companyId, 
-    this.company,
-  });
+
+  const CompanyProfileView({super.key, required this.companyId, this.company});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => CompanyProfileViewModel(companyId, initialCompany: company),
+      create: (_) =>
+          CompanyProfileViewModel(companyId, initialCompany: company),
       child: const _CompanyProfileScaffold(),
     );
   }
@@ -50,9 +48,7 @@ class _CompanyProfileScaffold extends StatelessWidget {
           builder: (context, vm, _) {
             if (vm.isLoading) {
               return const Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.kElectricLime,
-                ),
+                child: CircularProgressIndicator(color: AppTheme.kElectricLime),
               );
             }
             if (vm.errorMessage != null || vm.company == null) {
@@ -65,12 +61,14 @@ class _CompanyProfileScaffold extends StatelessWidget {
             }
 
             WidgetsBinding.instance.addPostFrameCallback((_) {
-               // Sync with global user profile state
-               final userVm = context.read<UserProfileViewModel>();
-               if (vm.company != null) {
-                  final isGlobalFollowed = userVm.followedCompanies.any((c) => c.id == vm.companyId);
-                  vm.checkFollowStatus(isGlobalFollowed);
-               }
+              // Sync with global user profile state
+              final userVm = context.read<UserProfileViewModel>();
+              if (vm.company != null) {
+                final isGlobalFollowed = userVm.followedCompanies.any(
+                  (c) => c.id == vm.companyId,
+                );
+                vm.checkFollowStatus(isGlobalFollowed);
+              }
             });
 
             return NestedScrollView(
@@ -87,29 +85,37 @@ class _CompanyProfileScaffold extends StatelessWidget {
                             child: Stack(
                               children: [
                                 // Cover Image
-                                  AspectRatio(
-                                    aspectRatio: 1280 / 700,
-                                    child: Container(
-                                      width: double.infinity,
-                                      color: Colors.white,
-                                      child: vm.company!.coverImageUrl != null &&
-                                              vm.company!.coverImageUrl!.isNotEmpty
-                                          ? Image.network(
-                                              vm.company!.coverImageUrl!,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stack) =>
-                                                  Container(color: Colors.white),
-                                            )
-                                          : null,
-                                    ),
+                                AspectRatio(
+                                  aspectRatio: 1280 / 700,
+                                  child: Container(
+                                    width: double.infinity,
+                                    color: Colors.white,
+                                    child:
+                                        vm.company!.coverImageUrl != null &&
+                                            vm
+                                                .company!
+                                                .coverImageUrl!
+                                                .isNotEmpty
+                                        ? Image.network(
+                                            vm.company!.coverImageUrl!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stack) =>
+                                                    Container(
+                                                      color: Colors.white,
+                                                    ),
+                                          )
+                                        : null,
                                   ),
+                                ),
                                 // Back Button
                                 Positioned(
                                   top: 40.h,
                                   right: 16.w,
                                   child: CircleAvatar(
-                                    backgroundColor:
-                                        Colors.black.withOpacity(0.6),
+                                    backgroundColor: Colors.black.withOpacity(
+                                      0.6,
+                                    ),
                                     radius: 20.w,
                                     child: IconButton(
                                       padding: EdgeInsets.zero,
@@ -140,21 +146,26 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                       height: 60.w,
                                       decoration: BoxDecoration(
                                         color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12.r),
+                                        borderRadius: BorderRadius.circular(
+                                          12.r,
+                                        ),
                                       ),
-                                      child: vm.company!.logoUrl != null &&
+                                      child:
+                                          vm.company!.logoUrl != null &&
                                               vm.company!.logoUrl!.isNotEmpty
                                           ? ClipRRect(
-                                              borderRadius: BorderRadius.circular(12.r),
+                                              borderRadius:
+                                                  BorderRadius.circular(12.r),
                                               child: Image.network(
                                                 vm.company!.logoUrl!,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (context, error, stack) =>
-                                                    Icon(
-                                                  Icons.business,
-                                                  color: Colors.grey,
-                                                  size: 30.w,
-                                                ),
+                                                errorBuilder:
+                                                    (context, error, stack) =>
+                                                        Icon(
+                                                          Icons.business,
+                                                          color: Colors.grey,
+                                                          size: 30.w,
+                                                        ),
                                               ),
                                             )
                                           : Icon(
@@ -167,7 +178,8 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                     // Name and Followers
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             vm.company!.name,
@@ -175,7 +187,7 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                               color: Colors.white,
                                               fontSize: 16.sp,
                                               fontWeight: FontWeight.bold,
-                                                                          // fontFamily: 'Cairo', // Inherited
+                                              //  // Inherited
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -186,7 +198,7 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                             style: TextStyle(
                                               color: Colors.white60,
                                               fontSize: 12.sp,
-                                                                          // fontFamily: 'Cairo', // Inherited
+                                              //  // Inherited
                                             ),
                                           ),
                                         ],
@@ -199,40 +211,50 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                           : () async {
                                               if (auth.currentUser != null) {
                                                 // 1. Calculate Optimistic State
-                                                final bool isCurrentlyFollowed = vm.isFollowed;
-                                                final bool willBeFollowed = !isCurrentlyFollowed;
+                                                final bool isCurrentlyFollowed =
+                                                    vm.isFollowed;
+                                                final bool willBeFollowed =
+                                                    !isCurrentlyFollowed;
 
                                                 // 2. Update Global State IMMEDIATELY (Optimistic)
-                                                // This ensures "Following" page is updated instantly
                                                 if (context.mounted &&
                                                     vm.company != null) {
                                                   context
                                                       .read<
-                                                          UserProfileViewModel>()
+                                                        UserProfileViewModel
+                                                      >()
                                                       .updateFollowStatusLocal(
-                                                          vm.company!,
-                                                          willBeFollowed);
+                                                        vm.company!,
+                                                        willBeFollowed,
+                                                      );
                                                 }
 
                                                 // 3. Perform Network Request & Local State Update
-                                                final success = await vm.toggleFollow();
+                                                final success = await vm
+                                                    .toggleFollow();
 
-                                                // 4. Revert if failed (Optional safety)
-                                                if (!success && context.mounted && vm.company != null) {
-                                                   context
+                                                // 4. Revert if failed
+                                                if (!success &&
+                                                    context.mounted &&
+                                                    vm.company != null) {
+                                                  context
                                                       .read<
-                                                          UserProfileViewModel>()
+                                                        UserProfileViewModel
+                                                      >()
                                                       .updateFollowStatusLocal(
-                                                          vm.company!,
-                                                          isCurrentlyFollowed); // Revert to old state
+                                                        vm.company!,
+                                                        isCurrentlyFollowed,
+                                                      );
                                                 }
                                               } else {
+                                                // No user (guest or not logged in)
                                                 _showLoginSnackBar(context);
                                               }
                                             },
                                       child: AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 300),
+                                        duration: const Duration(
+                                          milliseconds: 300,
+                                        ),
                                         padding: EdgeInsets.symmetric(
                                           horizontal: 20.w,
                                           vertical: 8.h,
@@ -244,55 +266,71 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                           border: vm.isFollowed
                                               ? null
                                               : Border.all(
-                                                  color:
-                                                      AppTheme.kElectricLime,
+                                                  color: AppTheme.kElectricLime,
                                                   width: 1.5,
                                                 ),
-                                          borderRadius:
-                                              BorderRadius.circular(20.r),
+                                          borderRadius: BorderRadius.circular(
+                                            20.r,
+                                          ),
                                         ),
                                         child: Row(
-                                                mainAxisSize:
-                                                    MainAxisSize.min,
-                                                children: [
-                                                  FaIcon(
-                                                    vm.isFollowed
-                                                        ? FontAwesomeIcons
-                                                            .check
-                                                        : FontAwesomeIcons
-                                                            .plus,
-                                                    size: 14.sp,
-                                                    color: vm.isFollowed
-                                                        ? Colors.black
-                                                        : AppTheme
-                                                            .kElectricLime,
-                                                  ),
-                                                  SizedBox(width: 8.w),
-                                                  Text(
-                                                    vm.isFollowed
-                                                        ? 'متابَع'
-                                                        : 'متابعة',
-                                                    style: TextStyle(
-                                                      color: vm.isFollowed
-                                                          ? Colors.black
-                                                          : AppTheme
-                                                              .kElectricLime,
-                                                      fontSize: 13.sp,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                                                  // fontFamily: 'Cairo', // Inherited
-                                                    ),
-                                                  ),
-                                                ],
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            FaIcon(
+                                              vm.isFollowed
+                                                  ? FontAwesomeIcons.check
+                                                  : FontAwesomeIcons.plus,
+                                              size: 14.sp,
+                                              color: vm.isFollowed
+                                                  ? Colors.black
+                                                  : AppTheme.kElectricLime,
+                                            ),
+                                            SizedBox(width: 8.w),
+                                            Text(
+                                              vm.isFollowed
+                                                  ? 'متابَع'
+                                                  : 'متابعة',
+                                              style: TextStyle(
+                                                color: vm.isFollowed
+                                                    ? Colors.black
+                                                    : AppTheme.kElectricLime,
+                                                fontSize: 13.sp,
+                                                fontWeight: FontWeight.bold,
+                                                //  // Inherited
                                               ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
+                                if (vm.company!.description != null &&
+                                    vm.company!.description!.isNotEmpty) ...[
+                                  SizedBox(height: 16.h),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.all(12.w),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.kLightBackground,
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      border: Border.all(color: Colors.white10),
+                                    ),
+                                    child: Text(
+                                      vm.company!.description!,
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12.sp,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                                 SizedBox(height: 24.h),
                                 // 3 Action Buttons
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: [
                                     _ActionButton(
                                       icon: Icons.share_outlined,
@@ -307,14 +345,22 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                       label: 'اتصال',
                                       onTap: () {
                                         if ((vm.company!.phone ?? '').isEmpty) {
-                                          _showNotAvailable(context, 'رقم الهاتف');
+                                          _showNotAvailable(
+                                            context,
+                                            'رقم الهاتف',
+                                          );
                                         } else {
                                           try {
-                                            context.read<AnalyticsService>().trackPhoneClick(
-                                                vm.companyId,
-                                                phone: vm.company!.phone);
+                                            context
+                                                .read<AnalyticsService>()
+                                                .trackPhoneClick(
+                                                  vm.companyId,
+                                                  phone: vm.company!.phone,
+                                                );
                                           } catch (e) {
-                                            debugPrint('⚠️ Analytics Error (Phone): $e');
+                                            debugPrint(
+                                              '⚠️ Analytics Error (Phone): $e',
+                                            );
                                           }
                                           _callPhone(vm.company!.phone);
                                         }
@@ -324,15 +370,24 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                       icon: Icons.language,
                                       label: 'الموقع الالكتروني',
                                       onTap: () {
-                                        if ((vm.company!.website ?? '').isEmpty) {
-                                          _showNotAvailable(context, 'الموقع الإلكتروني');
+                                        if ((vm.company!.website ?? '')
+                                            .isEmpty) {
+                                          _showNotAvailable(
+                                            context,
+                                            'الموقع الإلكتروني',
+                                          );
                                         } else {
                                           try {
-                                            context.read<AnalyticsService>().trackWebsiteClick(
-                                                vm.companyId,
-                                                url: vm.company!.website);
+                                            context
+                                                .read<AnalyticsService>()
+                                                .trackWebsiteClick(
+                                                  vm.companyId,
+                                                  url: vm.company!.website,
+                                                );
                                           } catch (e) {
-                                            debugPrint('⚠️ Analytics Error (Website): $e');
+                                            debugPrint(
+                                              '⚠️ Analytics Error (Website): $e',
+                                            );
                                           }
                                           _openWebsite(vm.company!.website);
                                         }
@@ -364,7 +419,7 @@ class _CompanyProfileScaffold extends StatelessWidget {
                         labelStyle: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w700,
-                                                      // fontFamily: 'Cairo', // Inherited
+                          //  // Inherited
                         ),
                         tabs: const [
                           Tab(text: 'العروض'),
@@ -402,7 +457,6 @@ class _CompanyProfileScaffold extends StatelessWidget {
               child: Text(
                 'يجب تسجيل الدخول لمتابعة الشركات',
                 style: TextStyle(
-                  fontFamily: 'Cairo',
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w500,
                   color: Colors.white,
@@ -427,11 +481,7 @@ class _CompanyProfileScaffold extends StatelessWidget {
               },
               child: Text(
                 'تسجيل الدخول',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.bold,
-                  ),
+                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -518,11 +568,7 @@ void _showNotAvailable(BuildContext context, String item) {
     SnackBar(
       content: Text(
         '$item غير متوفر',
-        style: TextStyle(
-          fontFamily: 'Cairo',
-          fontSize: 13.sp,
-          color: AppTheme.kLightText,
-        ),
+        style: TextStyle(fontSize: 13.sp, color: AppTheme.kLightText),
         textAlign: TextAlign.center,
       ),
       backgroundColor: Colors.red.shade700,
@@ -557,11 +603,7 @@ class _ActionButton extends StatelessWidget {
           SizedBox(height: 4.h),
           Text(
             label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 10.sp,
-              fontFamily: 'Cairo',
-            ),
+            style: TextStyle(color: Colors.white, fontSize: 10.sp),
           ),
         ],
       ),
@@ -585,10 +627,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(
-      color: AppTheme.kDarkBackground,
-      child: _tabBar,
-    );
+    return Container(color: AppTheme.kDarkBackground, child: _tabBar);
   }
 
   @override

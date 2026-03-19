@@ -42,24 +42,41 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
           child: Consumer<UserProfileViewModel>(
             builder: (context, profileVm, child) {
               // Show loading ONLY if initial load and empty (to avoid empty state flash)
-              if (profileVm.isLoadingProfile && profileVm.followedCompanies.isEmpty) {
-                return const Center(child: CircularProgressIndicator(color: AppTheme.kElectricLime));
+              if (profileVm.isLoadingProfile &&
+                  profileVm.followedCompanies.isEmpty) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.kElectricLime,
+                  ),
+                );
               }
-          
+
               // If truly empty
               if (profileVm.followedCompanies.isEmpty) {
-                return Center(child: Text('لا يوجد شركات متابعة بعد', style: TextStyle(color: Colors.white70)));
+                return Center(
+                  child: Text(
+                    'لا يوجد شركات متابعة بعد',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                );
               }
-          
+
               final companies = profileVm.followedCompanies;
               final filteredCompanies = companies.where((c) {
-                 return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
+                return c.name.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                );
               }).toList();
-          
+
               if (filteredCompanies.isEmpty) {
-                 return Center(child: Text('لا توجد نتائج بحث', style: TextStyle(color: Colors.white70)));
+                return Center(
+                  child: Text(
+                    'لا توجد نتائج بحث',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                );
               }
-          
+
               final width = MediaQuery.of(context).size.width;
               final crossAxisCount = width < 340 ? 1 : 2;
 
@@ -69,7 +86,9 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
                 },
                 color: AppTheme.kElectricLime,
                 child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
                   slivers: [
                     SliverPadding(
                       padding: EdgeInsets.only(
@@ -83,33 +102,37 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
                           crossAxisCount: crossAxisCount,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
-                          childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.73 : 1.1,
+                          childAspectRatio:
+                              MediaQuery.of(context).orientation ==
+                                  Orientation.portrait
+                              ? 0.73
+                              : 1.1,
                         ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final company = filteredCompanies[index];
-                            return CompanyCard(
-                              company: company,
-                              isFollowed: true, 
-                              isFollowLoading: false,
-                              onToggleFollow: () async {
-                                 await profileVm.toggleCompanyFollow(company.id, company: company);
-                              },
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => CompanyProfileView(
-                                      companyId: company.id, 
-                                      company: company,
-                                    ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final company = filteredCompanies[index];
+                          return CompanyCard(
+                            company: company,
+                            isFollowed: true,
+                            isFollowLoading: false,
+                            onToggleFollow: () async {
+                              await profileVm.toggleCompanyFollow(
+                                company.id,
+                                company: company,
+                              );
+                            },
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CompanyProfileView(
+                                    companyId: company.id,
+                                    company: company,
                                   ),
-                                );
-                              },
-                            );
-                          },
-                          childCount: filteredCompanies.length,
-                        ),
+                                ),
+                              );
+                            },
+                          );
+                        }, childCount: filteredCompanies.length),
                       ),
                     ),
                   ],

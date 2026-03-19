@@ -6,6 +6,7 @@ import 'companies_management_view.dart';
 import 'banners_management_view.dart';
 import 'categories_management_view.dart';
 import 'dashboard_home_view.dart';
+import 'social_links_management_view.dart';
 
 class AdminDashboardView extends StatefulWidget {
   const AdminDashboardView({super.key});
@@ -32,6 +33,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       ReviewsManagementView(),
       CategoriesManagementView(),
       BannersManagementView(),
+      const SocialLinksManagementView(),
     ];
 
     final List<String> pageTitles = [
@@ -41,6 +43,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       'إدارة التقييمات',
       'إدارة الفئات',
       'إدارة البانرات',
+      'روابط التواصل',
     ];
 
     return PopScope(
@@ -131,6 +134,11 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                           icon: Icon(Icons.image_outlined),
                           selectedIcon: Icon(Icons.image),
                           label: Text('البانرات'),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.share_outlined),
+                          selectedIcon: Icon(Icons.share),
+                          label: Text('التواصل'),
                         ),
                       ],
                     ),

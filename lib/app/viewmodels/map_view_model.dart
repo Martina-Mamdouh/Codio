@@ -96,12 +96,18 @@ class MapViewModel extends ChangeNotifier {
       categories = results[2] as List<CategoryModel>;
 
       if (kDebugMode) {
-        print('🗺️ MapVM loaded: ${companies.length} companies, ${deals.length} deals, ${categories.length} categories');
+        print(
+          '🗺️ MapVM loaded: ${companies.length} companies, ${deals.length} deals, ${categories.length} categories',
+        );
         if (deals.isNotEmpty) {
-          print('🗺️ First deal: id=${deals.first.id}, companyId=${deals.first.companyId}, title=${deals.first.title}');
+          print(
+            '🗺️ First deal: id=${deals.first.id}, companyId=${deals.first.companyId}, title=${deals.first.title}',
+          );
         }
         if (companies.isNotEmpty) {
-          print('🗺️ First company: id=${companies.first.id}, name=${companies.first.name}');
+          print(
+            '🗺️ First company: id=${companies.first.id}, name=${companies.first.name}',
+          );
         }
       }
 
@@ -316,7 +322,9 @@ class MapViewModel extends ChangeNotifier {
   List<DealModel> dealsForCompany(int companyId) {
     final result = deals.where((d) => d.companyId == companyId).toList();
     if (kDebugMode) {
-      print('🗺️ dealsForCompany($companyId): found ${result.length} out of ${deals.length} total deals');
+      print(
+        '🗺️ dealsForCompany($companyId): found ${result.length} out of ${deals.length} total deals',
+      );
     }
     return result;
   }

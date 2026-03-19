@@ -31,7 +31,7 @@ class CompaniesViewModel extends ChangeNotifier {
       // Reverting to sequential loading to avoid saturating network on low-end devices
       companies = await _supabaseService.getCompanies();
       await _getInitialFollowStatus();
-      
+
       // Subscribe to Realtime after loading
       _subscribeToCompanies();
       _subscribeToFollowing();

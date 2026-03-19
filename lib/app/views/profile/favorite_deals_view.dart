@@ -55,7 +55,10 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
                       children: [
                         Text(
                           'لا توجد عروض مفضّلة حالياً',
-                          style: TextStyle(color: Colors.white70, fontSize: 16.sp),
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16.sp,
+                          ),
                         ),
                         if (profileVm.errorMessage != null)
                           Padding(
@@ -63,7 +66,10 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
                             child: Text(
                               profileVm.errorMessage!,
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.redAccent, fontSize: 14.sp),
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 14.sp,
+                              ),
                             ),
                           ),
                       ],
@@ -82,7 +88,10 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
               itemCount: profileVm.favoriteDeals.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.85 : 0.9,
+                childAspectRatio:
+                    MediaQuery.of(context).orientation == Orientation.portrait
+                    ? 0.85
+                    : 0.9,
                 crossAxisSpacing: 12.w,
                 mainAxisSpacing: 12.h,
               ),

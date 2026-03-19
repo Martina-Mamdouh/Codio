@@ -76,7 +76,10 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.refresh, color: AppTheme.kElectricLime),
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: AppTheme.kElectricLime,
+                  ),
                   onPressed: () => dashboardVM.loadDashboardData(),
                   tooltip: 'تحديث البيانات',
                 ),
@@ -85,7 +88,13 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
             const SizedBox(height: 32),
 
             // Stat Cards (Live Aggregates)
-            _buildStatCards(dealsVM, companiesVM, bannersVM, categoriesVM, dashboardVM),
+            _buildStatCards(
+              dealsVM,
+              companiesVM,
+              bannersVM,
+              categoriesVM,
+              dashboardVM,
+            ),
             const SizedBox(height: 32),
 
             _buildTopDealsTable(context, dashboardVM),
@@ -133,7 +142,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         ),
         _StatCard(
           title: 'إجمالي الشركات',
-          value: companiesVM.isLoading ? '...' : companiesVM.companies.length.toString(),
+          value: companiesVM.isLoading
+              ? '...'
+              : companiesVM.companies.length.toString(),
           icon: Icons.business_center_rounded,
           color: Colors.cyanAccent,
           gradient: LinearGradient(
@@ -145,7 +156,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         ),
         _StatCard(
           title: 'إجمالي البنرات',
-          value: bannersVM.isLoading ? '...' : bannersVM.banners.length.toString(),
+          value: bannersVM.isLoading
+              ? '...'
+              : bannersVM.banners.length.toString(),
           icon: Icons.view_carousel_rounded,
           color: Colors.pinkAccent,
           gradient: LinearGradient(
@@ -157,7 +170,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         ),
         _StatCard(
           title: 'إجمالي الفئات',
-          value: categoriesVM.isLoading ? '...' : categoriesVM.categories.length.toString(),
+          value: categoriesVM.isLoading
+              ? '...'
+              : categoriesVM.categories.length.toString(),
           icon: Icons.category_rounded,
           color: Colors.amberAccent,
           gradient: LinearGradient(
@@ -169,7 +184,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         ),
         _StatCard(
           title: 'إجمالي الزيارات',
-          value: dashboardVM.isLoading ? '...' : dashboardVM.totalViews.toString(),
+          value: dashboardVM.isLoading
+              ? '...'
+              : dashboardVM.totalViews.toString(),
           icon: Icons.visibility_rounded,
           color: Colors.blueAccent,
           gradient: LinearGradient(
@@ -181,7 +198,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         ),
         _StatCard(
           title: 'نقرات الخريطة',
-          value: dashboardVM.isLoading ? '...' : dashboardVM.totalMapClicks.toString(),
+          value: dashboardVM.isLoading
+              ? '...'
+              : dashboardVM.totalMapClicks.toString(),
           icon: Icons.map_rounded,
           color: Colors.tealAccent,
           gradient: LinearGradient(
@@ -193,7 +212,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         ),
         _StatCard(
           title: 'عمليات النسخ',
-          value: dashboardVM.isLoading ? '...' : dashboardVM.totalCopies.toString(),
+          value: dashboardVM.isLoading
+              ? '...'
+              : dashboardVM.totalCopies.toString(),
           icon: Icons.content_copy_rounded,
           color: Colors.orangeAccent,
           gradient: LinearGradient(
@@ -205,7 +226,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         ),
         _StatCard(
           title: 'نقرات التواصل',
-          value: dashboardVM.isLoading ? '...' : dashboardVM.totalClicks.toString(),
+          value: dashboardVM.isLoading
+              ? '...'
+              : dashboardVM.totalClicks.toString(),
           icon: Icons.touch_app_rounded,
           color: Colors.purpleAccent,
           gradient: LinearGradient(
@@ -223,7 +246,7 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
     // Ensure all platforms exist in the display list, even with 0 clicks
     final platforms = ['whatsapp', 'facebook', 'instagram'];
     final Map<String, int> counts = {for (var p in platforms) p: 0};
-    
+
     for (var item in vm.socialBreakdown) {
       final p = item['platform']?.toString().toLowerCase();
       if (p != null && counts.containsKey(p)) {
@@ -236,7 +259,11 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
       children: [
         Row(
           children: [
-            const Icon(Icons.pie_chart_rounded, color: AppTheme.kElectricLime, size: 28),
+            const Icon(
+              Icons.pie_chart_rounded,
+              color: AppTheme.kElectricLime,
+              size: 28,
+            ),
             const SizedBox(width: 8),
             Text(
               'توزيع منصات التواصل الاجتماعي',
@@ -262,11 +289,11 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
               if (p == 'whatsapp') name = 'واتساب';
               if (p == 'facebook') name = 'فيسبوك';
               if (p == 'instagram') name = 'انستجرام';
-              
+
               final count = counts[p] ?? 0;
               final total = vm.totalClicks > 0 ? vm.totalClicks : 1;
               final percentage = (count / total);
-              
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Column(
@@ -275,15 +302,30 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                        Text('$count نقرة', style: const TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold)),
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        Text(
+                          '$count نقرة',
+                          style: const TextStyle(
+                            color: AppTheme.kElectricLime,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(
                       value: percentage,
                       backgroundColor: Colors.white.withAlpha(26),
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.kElectricLime),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppTheme.kElectricLime,
+                      ),
                       minHeight: 12,
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -298,7 +340,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
   }
 
   Widget _buildTopDealsTable(BuildContext context, DashboardViewModel vm) {
-    final displayDeals = _showAllTopDeals ? vm.topDeals : vm.topDeals.take(5).toList();
+    final displayDeals = _showAllTopDeals
+        ? vm.topDeals
+        : vm.topDeals.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,7 +352,11 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
           children: [
             Row(
               children: [
-                const Icon(Icons.star_rounded, color: AppTheme.kElectricLime, size: 28),
+                const Icon(
+                  Icons.star_rounded,
+                  color: AppTheme.kElectricLime,
+                  size: 28,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'أفضل العروض أداءً (إحصائيات النجاح)',
@@ -331,66 +379,191 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
             border: Border.all(color: AppTheme.kSubtleText.withAlpha(26)),
           ),
           child: vm.isLoading
-              ? const Center(child: Padding(padding: EdgeInsets.all(48.0), child: CircularProgressIndicator(color: AppTheme.kElectricLime)))
-              : vm.topDeals.isEmpty
-                  ? _buildEmptyState('لا توجد بيانات للعروض حالياً')
-                  : Column(
-                      children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            headingRowColor: WidgetStateProperty.all(AppTheme.kDarkBackground.withAlpha(51)),
-                            columns: const [
-                              DataColumn(label: Text('العرض', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('الشركة', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('المشاهدات', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('النسخ', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('الروابط', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('شغّال', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('تقييم المستخدمين', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                            ],
-                            rows: displayDeals.map((deal) {
-                              final successRate = (deal['success_rate'] as num? ?? 0).toDouble();
-                              
-                              // Extract emoji feedback data if available
-                              final happyCount = deal['emoji_happy_count'] as int? ?? 0;
-                              final neutralCount = deal['emoji_neutral_count'] as int? ?? 0;
-                              final sadCount = deal['emoji_sad_count'] as int? ?? 0;
-                              final totalEmoji = happyCount + neutralCount + sadCount;
-                              
-                              return DataRow(cells: [
-                                DataCell(Text(deal['title'] ?? '', style: const TextStyle(color: AppTheme.kLightText, fontWeight: FontWeight.bold))),
-                                DataCell(Text(deal['company_name'] ?? '', style: const TextStyle(color: AppTheme.kSubtleText))),
-                                DataCell(Text(deal['views']?.toString() ?? '0', style: const TextStyle(color: Colors.blueAccent))),
-                                DataCell(Text(deal['code_copies']?.toString() ?? '0', style: const TextStyle(color: Colors.orangeAccent))),
-                                DataCell(Text(deal['link_opens']?.toString() ?? '0', style: const TextStyle(color: Colors.tealAccent))),
-                                DataCell(_buildSuccessBadge(successRate)),
-                                DataCell(_buildEmojiBreakdown(happyCount, neutralCount, sadCount, totalEmoji)),
-                              ]);
-                            }).toList(),
-                          ),
-                        ),
-                        if (vm.topDeals.length > 5)
-                          _buildShowMoreButton(
-                            isExpanded: _showAllTopDeals,
-                            onToggle: () => setState(() => _showAllTopDeals = !_showAllTopDeals),
-                          ),
-                      ],
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48.0),
+                    child: CircularProgressIndicator(
+                      color: AppTheme.kElectricLime,
                     ),
+                  ),
+                )
+              : vm.topDeals.isEmpty
+              ? _buildEmptyState('لا توجد بيانات للعروض حالياً')
+              : Column(
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor: WidgetStateProperty.all(
+                          AppTheme.kDarkBackground.withAlpha(51),
+                        ),
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              'العرض',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'الشركة',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'المشاهدات',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'النسخ',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'الروابط',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'شغّال (تقييم)',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'تقييم المستخدمين',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: displayDeals.map((deal) {
+                          final successRate =
+                              (deal['success_rate'] as num? ?? 0).toDouble();
+
+                          // Extract emoji feedback data if available
+                          final happyCount =
+                              deal['emoji_happy_count'] as int? ?? 0;
+                          final neutralCount =
+                              deal['emoji_neutral_count'] as int? ?? 0;
+                          final sadCount = deal['emoji_sad_count'] as int? ?? 0;
+                          final totalEmoji =
+                              happyCount + neutralCount + sadCount;
+
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Text(
+                                  deal['title'] ?? '',
+                                  style: const TextStyle(
+                                    color: AppTheme.kLightText,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  deal['company_name'] ?? '',
+                                  style: const TextStyle(
+                                    color: AppTheme.kSubtleText,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  deal['views']?.toString() ?? '0',
+                                  style: const TextStyle(
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  deal['code_copies']?.toString() ?? '0',
+                                  style: const TextStyle(
+                                    color: Colors.orangeAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  deal['link_opens']?.toString() ?? '0',
+                                  style: const TextStyle(
+                                    color: Colors.tealAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(_buildStarRatingBadge(successRate)),
+                              DataCell(
+                                _buildEmojiBreakdown(
+                                  happyCount,
+                                  neutralCount,
+                                  sadCount,
+                                  totalEmoji,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    if (vm.topDeals.length > 5)
+                      _buildShowMoreButton(
+                        isExpanded: _showAllTopDeals,
+                        onToggle: () => setState(
+                          () => _showAllTopDeals = !_showAllTopDeals,
+                        ),
+                      ),
+                  ],
+                ),
         ),
       ],
     );
   }
 
-  Widget _buildCompanyPerformanceTable(BuildContext context, DashboardViewModel vm) {
-    final displayCompanies = _showAllCompanyPerformance ? vm.companyPerformance : vm.companyPerformance.take(5).toList();
+  Widget _buildCompanyPerformanceTable(
+    BuildContext context,
+    DashboardViewModel vm,
+  ) {
+    final displayCompanies = _showAllCompanyPerformance
+        ? vm.companyPerformance
+        : vm.companyPerformance.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.business_center_rounded, color: AppTheme.kElectricLime, size: 28),
+            const Icon(
+              Icons.business_center_rounded,
+              color: AppTheme.kElectricLime,
+              size: 28,
+            ),
             const SizedBox(width: 8),
             Text(
               'أداء الشركات بالتفصيل',
@@ -410,56 +583,172 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
             border: Border.all(color: AppTheme.kSubtleText.withAlpha(26)),
           ),
           child: vm.isLoading
-              ? const Center(child: Padding(padding: EdgeInsets.all(48.0), child: CircularProgressIndicator(color: AppTheme.kElectricLime)))
-              : vm.companyPerformance.isEmpty
-                  ? _buildEmptyState('لا توجد بيانات للشركات حالياً')
-                  : Column(
-                      children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            headingRowColor: WidgetStateProperty.all(AppTheme.kDarkBackground.withAlpha(51)),
-                            columns: const [
-                              DataColumn(label: Text('الشركة', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('زيارات الصفحة', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('نقرات التواصل', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('نقرات الخريطة', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('نقرات الموقع', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('نقرات الهاتف', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                            ],
-                            rows: displayCompanies.map((company) {
-                              return DataRow(cells: [
-                                DataCell(Text(company['name'] ?? '', style: const TextStyle(color: AppTheme.kLightText, fontWeight: FontWeight.bold))),
-                                DataCell(Text(company['page_views']?.toString() ?? '0', style: const TextStyle(color: Colors.blueAccent))),
-                                DataCell(Text(company['social_clicks']?.toString() ?? '0', style: const TextStyle(color: Colors.purpleAccent))),
-                                DataCell(Text(company['map_click_count']?.toString() ?? '0', style: const TextStyle(color: Colors.tealAccent))),
-                                DataCell(Text(company['website_click_count']?.toString() ?? '0', style: const TextStyle(color: Colors.amberAccent))),
-                                DataCell(Text(company['phone_click_count']?.toString() ?? '0', style: const TextStyle(color: Colors.greenAccent))),
-                              ]);
-                            }).toList(),
-                          ),
-                        ),
-                        if (vm.companyPerformance.length > 5)
-                           _buildShowMoreButton(
-                            isExpanded: _showAllCompanyPerformance,
-                            onToggle: () => setState(() => _showAllCompanyPerformance = !_showAllCompanyPerformance),
-                          ),
-                      ],
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48.0),
+                    child: CircularProgressIndicator(
+                      color: AppTheme.kElectricLime,
                     ),
+                  ),
+                )
+              : vm.companyPerformance.isEmpty
+              ? _buildEmptyState('لا توجد بيانات للشركات حالياً')
+              : Column(
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor: WidgetStateProperty.all(
+                          AppTheme.kDarkBackground.withAlpha(51),
+                        ),
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              'الشركة',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'زيارات الصفحة',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'نقرات التواصل',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'نقرات الخريطة',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'نقرات الموقع',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'نقرات الهاتف',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: displayCompanies.map((company) {
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Text(
+                                  company['name'] ?? '',
+                                  style: const TextStyle(
+                                    color: AppTheme.kLightText,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  company['page_views']?.toString() ?? '0',
+                                  style: const TextStyle(
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  company['social_clicks']?.toString() ?? '0',
+                                  style: const TextStyle(
+                                    color: Colors.purpleAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  company['map_click_count']?.toString() ?? '0',
+                                  style: const TextStyle(
+                                    color: Colors.tealAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  company['website_click_count']?.toString() ??
+                                      '0',
+                                  style: const TextStyle(
+                                    color: Colors.amberAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  company['phone_click_count']?.toString() ??
+                                      '0',
+                                  style: const TextStyle(
+                                    color: Colors.greenAccent,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    if (vm.companyPerformance.length > 5)
+                      _buildShowMoreButton(
+                        isExpanded: _showAllCompanyPerformance,
+                        onToggle: () => setState(
+                          () => _showAllCompanyPerformance =
+                              !_showAllCompanyPerformance,
+                        ),
+                      ),
+                  ],
+                ),
         ),
       ],
     );
   }
 
-  Widget _buildBannerManagementTable(BuildContext context, DashboardViewModel vm) {
-    final displayBanners = _showAllBanners ? vm.bannerPerformance : vm.bannerPerformance.take(5).toList();
+  Widget _buildBannerManagementTable(
+    BuildContext context,
+    DashboardViewModel vm,
+  ) {
+    final displayBanners = _showAllBanners
+        ? vm.bannerPerformance
+        : vm.bannerPerformance.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.ads_click_rounded, color: AppTheme.kElectricLime, size: 28),
+            const Icon(
+              Icons.ads_click_rounded,
+              color: AppTheme.kElectricLime,
+              size: 28,
+            ),
             const SizedBox(width: 8),
             Text(
               'تحليل أداء البانرات الإعلانية',
@@ -479,81 +768,175 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
             border: Border.all(color: AppTheme.kSubtleText.withAlpha(26)),
           ),
           child: vm.isLoading
-              ? const Center(child: Padding(padding: EdgeInsets.all(48.0), child: CircularProgressIndicator(color: AppTheme.kElectricLime)))
-              : vm.bannerPerformance.isEmpty
-                  ? _buildEmptyState('لا توجد بيانات للبانرات حالياً')
-                  : Column(
-                      children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            headingRowColor: WidgetStateProperty.all(AppTheme.kDarkBackground.withAlpha(51)),
-                            columns: const [
-                              DataColumn(label: Text('البانر (ID)', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('المشاهدات', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('النقرات', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('CTR %', style: TextStyle(color: AppTheme.kElectricLime, fontWeight: FontWeight.bold))),
-                            ],
-                            rows: displayBanners.map((banner) {
-                              return DataRow(cells: [
-                                DataCell(Text('#${banner['banner_id']}', style: const TextStyle(color: AppTheme.kLightText))),
-                                DataCell(Text(banner['impressions']?.toString() ?? '0', style: const TextStyle(color: Colors.blueAccent))),
-                                DataCell(Text(banner['clicks']?.toString() ?? '0', style: const TextStyle(color: Colors.orangeAccent))),
-                                DataCell(Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(color: Colors.blue.withAlpha(51), borderRadius: BorderRadius.circular(10)),
-                                  child: Text('${banner['ctr_percentage']}%', style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
-                                )),
-                              ]);
-                            }).toList(),
-                          ),
-                        ),
-                        if (vm.bannerPerformance.length > 5)
-                           _buildShowMoreButton(
-                            isExpanded: _showAllBanners,
-                            onToggle: () => setState(() => _showAllBanners = !_showAllBanners),
-                          ),
-                      ],
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48.0),
+                    child: CircularProgressIndicator(
+                      color: AppTheme.kElectricLime,
                     ),
+                  ),
+                )
+              : vm.bannerPerformance.isEmpty
+              ? _buildEmptyState('لا توجد بيانات للبانرات حالياً')
+              : Column(
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor: WidgetStateProperty.all(
+                          AppTheme.kDarkBackground.withAlpha(51),
+                        ),
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              'البانر (ID)',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'المشاهدات',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'النقرات',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'CTR %',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: displayBanners.map((banner) {
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Text(
+                                  '#${banner['banner_id']}',
+                                  style: const TextStyle(
+                                    color: AppTheme.kLightText,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  banner['impressions']?.toString() ?? '0',
+                                  style: const TextStyle(
+                                    color: Colors.blueAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  banner['clicks']?.toString() ?? '0',
+                                  style: const TextStyle(
+                                    color: Colors.orangeAccent,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withAlpha(51),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '${banner['ctr_percentage']}%',
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    if (vm.bannerPerformance.length > 5)
+                      _buildShowMoreButton(
+                        isExpanded: _showAllBanners,
+                        onToggle: () =>
+                            setState(() => _showAllBanners = !_showAllBanners),
+                      ),
+                  ],
+                ),
         ),
       ],
     );
   }
 
-  Widget _buildSuccessBadge(double rate) {
-    Color color = Colors.greenAccent;
-    if (rate < 85) color = Colors.orangeAccent;
-    if (rate < 75) color = Colors.redAccent;
-    
+  Widget _buildStarRatingBadge(double rate) {
+    // Calculate stars from 0 to 5 based on percentage
+    final double rating = (rate / 100) * 5;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withAlpha(51),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withAlpha(128)),
+        color: Colors.amber.withAlpha(26),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.amber.withAlpha(128)),
       ),
-      child: Text(
-        '${rate.toInt()}%',
-        style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+          const SizedBox(width: 4),
+          Text(
+            rating.toStringAsFixed(1),
+            style: const TextStyle(
+              color: Colors.amber,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  Widget _buildSentimentIcon(double rate) {
-    if (rate > 90) return const Icon(Icons.sentiment_very_satisfied_rounded, color: Colors.greenAccent);
-    if (rate > 80) return const Icon(Icons.sentiment_satisfied_alt_rounded, color: Colors.blueAccent);
-    if (rate > 70) return const Icon(Icons.sentiment_neutral_rounded, color: Colors.orangeAccent);
-    return const Icon(Icons.sentiment_very_dissatisfied_rounded, color: Colors.redAccent);
   }
 
   Widget _buildSentimentLegend() {
     return Row(
       children: [
-        _legendItem('ممتاز', Icons.sentiment_very_satisfied_rounded, Colors.greenAccent),
+        _legendItem(
+          'ممتاز',
+          Icons.sentiment_very_satisfied_rounded,
+          Colors.greenAccent,
+        ),
         const SizedBox(width: 12),
-        _legendItem('جيد', Icons.sentiment_satisfied_alt_rounded, Colors.blueAccent),
+        _legendItem(
+          'جيد',
+          Icons.sentiment_satisfied_alt_rounded,
+          Colors.blueAccent,
+        ),
         const SizedBox(width: 12),
-        _legendItem('متوسط', Icons.sentiment_neutral_rounded, Colors.orangeAccent),
+        _legendItem(
+          'متوسط',
+          Icons.sentiment_neutral_rounded,
+          Colors.orangeAccent,
+        ),
       ],
     );
   }
@@ -563,16 +946,28 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
       children: [
         Icon(icon, size: 16, color: color),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 12),
+        ),
       ],
     );
   }
 
-  Widget _buildEmojiBreakdown(int happyCount, int neutralCount, int sadCount, int total) {
+  Widget _buildEmojiBreakdown(
+    int happyCount,
+    int neutralCount,
+    int sadCount,
+    int total,
+  ) {
     if (total == 0) {
       return const Text(
         'لا توجد تقييمات',
-        style: TextStyle(color: AppTheme.kSubtleText, fontSize: 12, fontStyle: FontStyle.italic),
+        style: TextStyle(
+          color: AppTheme.kSubtleText,
+          fontSize: 12,
+          fontStyle: FontStyle.italic,
+        ),
       );
     }
 
@@ -586,18 +981,42 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (happyCount > 0) ...[
-            Text('😊 $happyPct%', style: const TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(
+              '😊 $happyPct%',
+              style: const TextStyle(
+                color: Colors.greenAccent,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(width: 4),
           ],
           if (neutralCount > 0) ...[
-            Text('😐 $neutralPct%', style: const TextStyle(color: Colors.orangeAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(
+              '😐 $neutralPct%',
+              style: const TextStyle(
+                color: Colors.orangeAccent,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(width: 4),
           ],
           if (sadCount > 0) ...[
-            Text('😞 $sadPct%', style: const TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(
+              '😞 $sadPct%',
+              style: const TextStyle(
+                color: Colors.redAccent,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
           const SizedBox(width: 4),
-          Text('($total)', style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 11)),
+          Text(
+            '($total)',
+            style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 11),
+          ),
         ],
       ),
     );
@@ -609,9 +1028,16 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         padding: const EdgeInsets.all(48.0),
         child: Column(
           children: [
-            const Icon(Icons.analytics_outlined, size: 48, color: AppTheme.kSubtleText),
+            const Icon(
+              Icons.analytics_outlined,
+              size: 48,
+              color: AppTheme.kSubtleText,
+            ),
             const SizedBox(height: 12),
-            Text(message, style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 16)),
+            Text(
+              message,
+              style: const TextStyle(color: AppTheme.kSubtleText, fontSize: 16),
+            ),
           ],
         ),
       ),
@@ -620,7 +1046,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
 
   Widget _buildRecentDeals(BuildContext context, DealsManagementViewModel vm) {
     // Determine the list to show based on state
-    final displayList = _showAllRecentDeals ? vm.deals : vm.deals.take(5).toList();
+    final displayList = _showAllRecentDeals
+        ? vm.deals
+        : vm.deals.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -731,7 +1159,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                     if (vm.deals.length > 5)
                       _buildShowMoreButton(
                         isExpanded: _showAllRecentDeals,
-                        onToggle: () => setState(() => _showAllRecentDeals = !_showAllRecentDeals),
+                        onToggle: () => setState(
+                          () => _showAllRecentDeals = !_showAllRecentDeals,
+                        ),
                       ),
                   ],
                 ),
@@ -741,7 +1171,10 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
   }
 
   // ✨ زرار عرض المزيد / الأقل
-  Widget _buildShowMoreButton({required bool isExpanded, required VoidCallback onToggle}) {
+  Widget _buildShowMoreButton({
+    required bool isExpanded,
+    required VoidCallback onToggle,
+  }) {
     return InkWell(
       onTap: onToggle,
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
@@ -750,7 +1183,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: AppTheme.kDarkBackground.withAlpha(26),
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(16),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -765,7 +1200,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
             ),
             const SizedBox(width: 4),
             Icon(
-              isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+              isExpanded
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.keyboard_arrow_down_rounded,
               color: AppTheme.kElectricLime,
               size: 20,
             ),

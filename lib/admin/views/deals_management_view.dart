@@ -318,7 +318,11 @@ class _DealsTable extends StatelessWidget {
                     ? Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.link, color: Colors.blueAccent, size: 16),
+                          const Icon(
+                            Icons.link,
+                            color: Colors.blueAccent,
+                            size: 16,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'رابط العرض',

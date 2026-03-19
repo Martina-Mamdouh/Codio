@@ -162,6 +162,12 @@ class _BannersTable extends StatelessWidget {
             child: Center(child: Text('العرض المرتبط', style: headerStyle)),
           ),
         ),
+        // ✨ عمود الرابط الخارجي
+        DataColumn(
+          label: Expanded(
+            child: Center(child: Text('الرابط الخارجي', style: headerStyle)),
+          ),
+        ),
         DataColumn(
           label: Expanded(
             child: Center(child: Text('إجراءات', style: headerStyle)),
@@ -262,6 +268,33 @@ class _BannersTable extends StatelessWidget {
                           color: vm.getDealNameById(banner.dealId!) != null
                               ? AppTheme.kLightText
                               : Colors.redAccent,
+                        ),
+                      )
+                    : Text(
+                        '-',
+                        style: cellStyle.copyWith(color: AppTheme.kSubtleText),
+                      ),
+              ),
+            ),
+            // ✨ الرابط الخارجي
+            DataCell(
+              Center(
+                child: banner.linkUrl != null && banner.linkUrl!.isNotEmpty
+                    ? Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent.withAlpha(51),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'يوجد رابط',
+                          style: TextStyle(
+                            color: Colors.blueAccent,
+                            fontSize: 13,
+                          ),
                         ),
                       )
                     : Text(

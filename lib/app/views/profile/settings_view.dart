@@ -35,7 +35,7 @@ class _SettingsViewState extends State<SettingsView> {
     final os = OneSignalService();
     // Check Permission/Subscription
     final isPush = os.isPushEnabled;
-    
+
     // Check Tag for Offers Only
     final tags = await os.getTags();
     final isOffersOnly = tags['notification_preference'] == 'offers_only';
@@ -120,9 +120,14 @@ class _SettingsViewState extends State<SettingsView> {
                       ? (value) async {
                           setState(() => offersOnlyEnabled = value);
                           if (value) {
-                            OneSignalService().sendTag('notification_preference', 'offers_only');
+                            OneSignalService().sendTag(
+                              'notification_preference',
+                              'offers_only',
+                            );
                           } else {
-                            OneSignalService().deleteTag('notification_preference');
+                            OneSignalService().deleteTag(
+                              'notification_preference',
+                            );
                           }
                         }
                       : null,
@@ -306,19 +311,20 @@ class _SettingsViewState extends State<SettingsView> {
                         // Capture navigator and messenger before async gap
                         final navigator = Navigator.of(context);
                         final messenger = ScaffoldMessenger.of(context);
-                        
+
                         final success = await authVm.deleteAccount();
-                        
+
                         // Use captured variables
                         if (navigator.mounted) {
                           navigator.pop(); // Close dialog
-                          
+
                           if (success) {
                             // Clean navigation to Splash Screen (which loads AuthWrapper)
                             // This ensures AuthWrapper is in the tree to handle re-login
                             navigator.pushAndRemoveUntil(
                               MaterialPageRoute(
-                                  builder: (_) => const SplashScreen()),
+                                builder: (_) => const SplashScreen(),
+                              ),
                               (route) => false,
                             );
                           } else {
@@ -333,8 +339,11 @@ class _SettingsViewState extends State<SettingsView> {
                     ),
                   );
                 },
-                icon: Icon(Icons.delete_forever,
-                    color: Colors.redAccent.withOpacity(0.8), size: 20.sp),
+                icon: Icon(
+                  Icons.delete_forever,
+                  color: Colors.redAccent.withOpacity(0.8),
+                  size: 20.sp,
+                ),
                 label: Text(
                   'حذف الحساب',
                   style: TextStyle(
@@ -345,7 +354,10 @@ class _SettingsViewState extends State<SettingsView> {
                 ),
                 style: TextButton.styleFrom(
                   alignment: AlignmentDirectional.centerEnd,
-                  padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 12.h,
+                    horizontal: 12.w,
+                  ),
                 ),
               ),
             ),
@@ -369,164 +381,165 @@ class _SettingsViewState extends State<SettingsView> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-            backgroundColor: AppTheme.kLightBackground,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            title: Text(
-              'تعديل البيانات الشخصية',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: Form(
-              key: formKey,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Name Field
-                    TextFormField(
-                      controller: nameController,
-                      enabled: !isLoading,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: 'الاسم الكامل',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        prefixIcon: const Icon(
-                          Icons.person,
-                          color: AppTheme.kElectricLime,
-                        ),
-                        filled: true,
-                        fillColor: AppTheme.kDarkBackground,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Colors.white12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: AppTheme.kElectricLime,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'الرجاء إدخال الاسم';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 16.h),
-                    // Profession Field
-                    TextFormField(
-                      controller: professionController,
-                      enabled: !isLoading,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        labelText: 'المهنة',
-                        labelStyle: const TextStyle(color: Colors.white70),
-                        prefixIcon: const Icon(
-                          Icons.work_outline,
-                          color: AppTheme.kElectricLime,
-                        ),
-                        filled: true,
-                        fillColor: AppTheme.kDarkBackground,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(color: Colors.white12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: AppTheme.kElectricLime,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading ? null : () => Navigator.pop(context),
-                child: Text(
-                  'إلغاء',
-                  style: TextStyle(
-                    color: isLoading ? Colors.white30 : Colors.white70,
-                    fontSize: 14.sp,
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: isLoading
-                    ? null
-                    : () async {
-                        if (!formKey.currentState!.validate()) return;
-
-                        setState(() => isLoading = true);
-
-                        final success = await authVm.updateProfile(
-                          fullName: nameController.text.trim(),
-                          profession: professionController.text.trim(),
-                        );
-
-                        if (context.mounted) {
-                          Navigator.pop(context);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                success
-                                    ? 'تم تحديث البيانات بنجاح'
-                                    : 'حدث خطأ أثناء التحديث',
-                              ),
-                              backgroundColor:
-                                  success ? Colors.green : Colors.redAccent,
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.kElectricLime,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ),
-                child: isLoading
-                    ? SizedBox(
-                        height: 20.h,
-                        width: 20.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.black,
-                        ),
-                      )
-                    : Text(
-                        'حفظ',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-            ],
+          backgroundColor: AppTheme.kLightBackground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
           ),
+          title: Text(
+            'تعديل البيانات الشخصية',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Name Field
+                  TextFormField(
+                    controller: nameController,
+                    enabled: !isLoading,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'الاسم الكامل',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      prefixIcon: const Icon(
+                        Icons.person,
+                        color: AppTheme.kElectricLime,
+                      ),
+                      filled: true,
+                      fillColor: AppTheme.kDarkBackground,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: Colors.white12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(
+                          color: AppTheme.kElectricLime,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'الرجاء إدخال الاسم';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16.h),
+                  // Profession Field
+                  TextFormField(
+                    controller: professionController,
+                    enabled: !isLoading,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'المهنة',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      prefixIcon: const Icon(
+                        Icons.work_outline,
+                        color: AppTheme.kElectricLime,
+                      ),
+                      filled: true,
+                      fillColor: AppTheme.kDarkBackground,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(color: Colors.white12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                        borderSide: const BorderSide(
+                          color: AppTheme.kElectricLime,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(context),
+              child: Text(
+                'إلغاء',
+                style: TextStyle(
+                  color: isLoading ? Colors.white30 : Colors.white70,
+                  fontSize: 14.sp,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+
+                      setState(() => isLoading = true);
+
+                      final success = await authVm.updateProfile(
+                        fullName: nameController.text.trim(),
+                        profession: professionController.text.trim(),
+                      );
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              success
+                                  ? 'تم تحديث البيانات بنجاح'
+                                  : 'حدث خطأ أثناء التحديث',
+                            ),
+                            backgroundColor: success
+                                ? Colors.green
+                                : Colors.redAccent,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.kElectricLime,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              child: isLoading
+                  ? SizedBox(
+                      height: 20.h,
+                      width: 20.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.black,
+                      ),
+                    )
+                  : Text(
+                      'حفظ',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

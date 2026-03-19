@@ -23,7 +23,7 @@ class CategoryModel {
         name: json['name'] as String? ?? 'No Category',
         iconName: json['icon_name'] as String?,
         imageUrl: UrlUtils.constructFullUrl(json['image_url'] as String?),
-        createdAt: json['created_at'] != null 
+        createdAt: json['created_at'] != null
             ? DateTime.tryParse(json['created_at']) ?? DateTime.now()
             : DateTime.now(),
       );

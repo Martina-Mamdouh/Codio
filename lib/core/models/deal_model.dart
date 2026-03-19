@@ -78,27 +78,32 @@ class DealModel {
         isForStudents: json['is_for_students'] ?? false,
         companyName: json['companies'] != null
             ? (json['companies'] is List
-                ? (json['companies'] as List).isNotEmpty 
-                    ? (json['companies'] as List).first['name'] 
-                    : null
-                : json['companies']['name'])
+                  ? (json['companies'] as List).isNotEmpty
+                        ? (json['companies'] as List).first['name']
+                        : null
+                  : json['companies']['name'])
             : null,
         companyLogo: json['companies'] != null
             ? (json['companies'] is List
-                ? (json['companies'] as List).isNotEmpty 
-                    ? UrlUtils.constructFullUrl((json['companies'] as List).first['logo_url'] as String?)
-                    : null
-                : UrlUtils.constructFullUrl(json['companies']['logo_url'] as String?))
+                  ? (json['companies'] as List).isNotEmpty
+                        ? UrlUtils.constructFullUrl(
+                            (json['companies'] as List).first['logo_url']
+                                as String?,
+                          )
+                        : null
+                  : UrlUtils.constructFullUrl(
+                      json['companies']['logo_url'] as String?,
+                    ))
             : null,
 
         // ✨ الحقول الجديدة
         categoryId: (json['category_id'] as num?)?.toInt(),
         categoryName: json['categories'] != null
             ? (json['categories'] is List
-                ? (json['categories'] as List).isNotEmpty 
-                    ? (json['categories'] as List).first['name'] 
-                    : null
-                : json['categories']['name'])
+                  ? (json['categories'] as List).isNotEmpty
+                        ? (json['categories'] as List).first['name']
+                        : null
+                  : json['categories']['name'])
             : json['category_name'] as String?,
 
         // Dynamic feedback and success rate

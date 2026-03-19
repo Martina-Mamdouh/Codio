@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/models/banner_model.dart';
 import '../../../core/models/deal_model.dart';
 import '../../../core/services/supabase_service.dart';
@@ -24,8 +25,8 @@ class HomeBannerSlider extends StatelessWidget {
     return CarouselSlider.builder(
       itemCount: banners.length,
       options: CarouselOptions(
-        height: MediaQuery.of(context).orientation == Orientation.portrait 
-            ? (MediaQuery.of(context).size.width > 600 ? 220.h : 180.h) 
+        height: MediaQuery.of(context).orientation == Orientation.portrait
+            ? (MediaQuery.of(context).size.width > 600 ? 220.h : 180.h)
             : 160.h,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 5),
@@ -34,9 +35,9 @@ class HomeBannerSlider extends StatelessWidget {
         viewportFraction: MediaQuery.of(context).size.width > 600 ? 0.7 : 0.9,
         onPageChanged: (index, reason) {
           // Track banner impression
-          if (index < banners.length && banners[index].id != null) {
+          if (index < banners.length) {
             context.read<AnalyticsService>().trackBannerImpression(
-              banners[index].id!,
+              banners[index].id,
               position: index,
             );
           }
@@ -48,18 +49,34 @@ class HomeBannerSlider extends StatelessWidget {
         return GestureDetector(
           onTap: () async {
             debugPrint('🖱️ Banner tapped: ${banner.id}');
-            if (banner.id != null) {
-              try {
-                // Track banner click (safe-guarded)
-                context.read<AnalyticsService>().trackBannerClick(
-                  banner.id!,
-                  position: index,
-                );
-              } catch (e) {
-                debugPrint('⚠️ Analytics Error in Banner: $e');
+            try {
+              // Track banner click (safe-guarded)
+              context.read<AnalyticsService>().trackBannerClick(
+                banner.id,
+                position: index,
+              );
+            } catch (e) {
+              debugPrint('⚠️ Analytics Error in Banner: $e');
+            }
+
+            // 1. Check for Link URL First
+            if (banner.linkUrl != null && banner.linkUrl!.trim().isNotEmpty) {
+              final uri = Uri.tryParse(banner.linkUrl!.trim());
+              if (uri != null && await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                return; // Stop here, link opened successfully
+              } else {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('تعذّر فتح الرابط المرفق بالبانر'),
+                    ),
+                  );
+                }
               }
             }
-            
+
+            // 2. Fallback to Deal ID if no link or link failed
             if (banner.dealId == null) return;
 
             final DealModel? deal = await SupabaseService().getDealById(
@@ -69,9 +86,7 @@ class HomeBannerSlider extends StatelessWidget {
             if (deal != null && context.mounted) {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => DealDetailsView(deal: deal),
-                ),
+                MaterialPageRoute(builder: (_) => DealDetailsView(deal: deal)),
               );
             }
           },
@@ -106,10 +121,7 @@ class HomeBannerSlider extends StatelessWidget {
                   print('❌ Banner Image Error: $error for URL: [$url]');
                   return Container(
                     color: AppTheme.kLightBackground,
-                    child: const Icon(
-                      Icons.broken_image,
-                      color: Colors.white,
-                    ),
+                    child: const Icon(Icons.broken_image, color: Colors.white),
                   );
                 },
               ),

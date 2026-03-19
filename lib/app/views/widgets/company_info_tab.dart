@@ -65,7 +65,7 @@ class CompanyInfoTab extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                                  // fontFamily: 'Cairo', // Inherited
+                  //  // Inherited
                 ),
               ),
               const SizedBox(height: 8),
@@ -106,20 +106,14 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                                // fontFamily: 'Cairo', // Inherited
+                //  // Inherited
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              (c.description ?? '').isNotEmpty
+            _CompactTextBox(
+              text: (c.description ?? '').isNotEmpty
                   ? c.description!
                   : 'لا يوجد وصف حالياً',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-                height: 1.6,
-                                // fontFamily: 'Cairo', // Inherited
-              ),
             ),
 
             const SizedBox(height: 20),
@@ -131,7 +125,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                                // fontFamily: 'Cairo', // Inherited
+                //  // Inherited
               ),
             ),
             const SizedBox(height: 12),
@@ -151,7 +145,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                                        // fontFamily: 'Cairo', // Inherited
+                        //  // Inherited
                       ),
                     ),
                   ),
@@ -175,7 +169,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                                        // fontFamily: 'Cairo', // Inherited
+                        //  // Inherited
                       ),
                     ),
                   ),
@@ -199,7 +193,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                                        // fontFamily: 'Cairo', // Inherited
+                        //  // Inherited
                       ),
                     ),
                   ),
@@ -223,7 +217,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                                        // fontFamily: 'Cairo', // Inherited
+                        //  // Inherited
                       ),
                     ),
                   ),
@@ -241,7 +235,7 @@ class CompanyInfoTab extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white54,
                   fontSize: 13,
-                                  // fontFamily: 'Cairo', // Inherited
+                  //  // Inherited
                 ),
               ),
 
@@ -254,20 +248,14 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                                // fontFamily: 'Cairo', // Inherited
+                //  // Inherited
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              (c.workingHours ?? '').isNotEmpty
+            _CompactTextBox(
+              text: (c.workingHours ?? '').isNotEmpty
                   ? c.workingHours!
                   : 'لا توجد ساعات عمل متاحة',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-                height: 1.6,
-                                // fontFamily: 'Cairo', // Inherited
-              ),
             ),
 
             const SizedBox(height: 20),
@@ -279,7 +267,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                                // fontFamily: 'Cairo', // Inherited
+                //  // Inherited
               ),
             ),
             const SizedBox(height: 8),
@@ -299,7 +287,7 @@ class CompanyInfoTab extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
-                                      // fontFamily: 'Cairo', // Inherited
+                      //  // Inherited
                     ),
                   ),
                 ),
@@ -316,7 +304,7 @@ class CompanyInfoTab extends StatelessWidget {
                     style: TextStyle(
                       color: AppTheme.kElectricLime,
                       fontSize: 13,
-                                      // fontFamily: 'Cairo', // Inherited
+                      //  // Inherited
                     ),
                   ),
                 ),
@@ -333,7 +321,7 @@ class CompanyInfoTab extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                                  // fontFamily: 'Cairo', // Inherited
+                  //  // Inherited
                 ),
               ),
               const SizedBox(height: 12),
@@ -418,7 +406,10 @@ class _SocialLinks extends StatelessWidget {
               viewModel.incrementSocialClicks(platform);
               final uri = Uri.parse(url.trim());
               try {
-                if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                if (!await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                )) {
                   debugPrint('Could not launch $uri');
                 }
               } catch (e) {
@@ -468,5 +459,31 @@ class _SocialLinks extends StatelessWidget {
     if (icons.isEmpty) return const SizedBox();
 
     return Wrap(spacing: 12, runSpacing: 12, children: icons);
+  }
+}
+
+class _CompactTextBox extends StatelessWidget {
+  final String text;
+  const _CompactTextBox({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.kLightBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 13,
+          height: 1.5, // Compact line height
+        ),
+      ),
+    );
   }
 }

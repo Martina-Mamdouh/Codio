@@ -36,7 +36,9 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
     setState(() {
       _deals = deals;
       _isLoading = false;
-      print('DEBUG: Loaded ${deals.length} deals for category ${widget.category.id}');
+      print(
+        'DEBUG: Loaded ${deals.length} deals for category ${widget.category.id}',
+      );
     });
   }
 
@@ -67,7 +69,11 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
                     ),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 0.85 : 0.9,
+                      childAspectRatio:
+                          MediaQuery.of(context).orientation ==
+                              Orientation.portrait
+                          ? 0.85
+                          : 0.9,
                       crossAxisSpacing: 12.w,
                       mainAxisSpacing: 12.h,
                     ),
@@ -84,14 +90,14 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  DealDetailsView(deal: deal),
+                              builder: (context) => DealDetailsView(deal: deal),
                             ),
                           );
                         },
                         onFavoriteToggle: () async {
-                          final success = await profileVm
-                              .toggleFavoriteForDeal(deal.id);
+                          final success = await profileVm.toggleFavoriteForDeal(
+                            deal.id,
+                          );
                           if (!success && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(

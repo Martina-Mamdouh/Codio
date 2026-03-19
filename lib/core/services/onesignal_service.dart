@@ -65,15 +65,17 @@ class OneSignalService {
                 body,
                 dealId: dealId,
               );
-              
+
               // Force UI update immediately (Waiting for Realtime can be slow)
               if (_navigatorKey?.currentState?.context != null) {
                 // ignore: use_build_context_synchronously
                 final context = _navigatorKey!.currentState!.context;
                 // Check if widget is mounted to be safe, though context check covers most
-                Provider.of<NotificationsViewModel>(context, listen: false).loadNotifications();
+                Provider.of<NotificationsViewModel>(
+                  context,
+                  listen: false,
+                ).loadNotifications();
               }
-
             } catch (e) {
               if (kDebugMode) {
                 print('Error logging notification: $e');
@@ -110,21 +112,27 @@ class OneSignalService {
 
         if (title.isNotEmpty || body.isNotEmpty) {
           // Guard: Prevent duplicate saves (foreground + click both fire)
-          if (!_isDuplicate(title, body) && !_isDuplicateInDatabase(title, body)) {
+          if (!_isDuplicate(title, body) &&
+              !_isDuplicateInDatabase(title, body)) {
             await SupabaseService().logNotificationForCurrentUser(
               title,
               body,
               dealId: dealId, // Pass optional deal_id
             );
-            
+
             // Force UI update
-             if (_navigatorKey?.currentState?.context != null) {
+            if (_navigatorKey?.currentState?.context != null) {
               // ignore: use_build_context_synchronously
               final context = _navigatorKey!.currentState!.context;
-               Provider.of<NotificationsViewModel>(context, listen: false).loadNotifications();
-             }
+              Provider.of<NotificationsViewModel>(
+                context,
+                listen: false,
+              ).loadNotifications();
+            }
           } else if (kDebugMode) {
-            print('OneSignal: Skipping duplicate notification (Found in recent cache or DB list)');
+            print(
+              'OneSignal: Skipping duplicate notification (Found in recent cache or DB list)',
+            );
           }
         }
 
@@ -285,8 +293,6 @@ class OneSignalService {
       (k, v) => now.difference(v).inSeconds > _duplicateWindowSeconds,
     );
 
-
-
     return false;
   }
 
@@ -297,7 +303,7 @@ class OneSignalService {
     try {
       final context = _navigatorKey!.currentState!.context;
       final vm = Provider.of<NotificationsViewModel>(context, listen: false);
-      
+
       // Combine lists to check everywhere
       final allNotifications = [...vm.newNotifications, ...vm.oldNotifications];
 
@@ -386,7 +392,7 @@ class OneSignalService {
   }
 
   // ==================== Push Control ====================
-  
+
   // Enable/Disable Push Notifications
   Future<void> setPushEnabled(bool enabled) async {
     try {

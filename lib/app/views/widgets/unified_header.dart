@@ -27,10 +27,12 @@ class UnifiedHeader extends StatelessWidget {
     // Search bar is positioned at top: 110.h (overlapping the edge)
     // Search bar height approx: 45.h + padding
     // We need to ensure the container below respects this overlap.
-    
-    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+    final bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     final double backgroundHeight = isLandscape ? 160.h : 130.h;
-    final double totalHeight = backgroundHeight + 30.h; // Account for search bar straddle
+    final double totalHeight =
+        backgroundHeight + 30.h; // Account for search bar straddle
 
     return SizedBox(
       height: totalHeight,
@@ -43,9 +45,7 @@ class UnifiedHeader extends StatelessWidget {
             height: backgroundHeight,
             decoration: const BoxDecoration(
               color: Color(0xFFE5FF17),
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(18),
-              ),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(18)),
             ),
           ),
 
@@ -89,8 +89,9 @@ class UnifiedHeader extends StatelessWidget {
                     ),
                     if (showBackButton)
                       IconButton(
-                        icon: Icon(Icons.arrow_forward_ios_rounded, 
-                          color: Colors.black, 
+                        icon: Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: Colors.black,
                           size: isLandscape ? 20.sp : 24.sp,
                           weight: 700,
                         ),
@@ -108,14 +109,21 @@ class UnifiedHeader extends StatelessWidget {
 
           // Search Bar
           Positioned(
-            top: backgroundHeight - (isLandscape ? 20.h : 25.h), // Positioned to straddle
+            top:
+                backgroundHeight -
+                (isLandscape ? 20.h : 25.h), // Positioned to straddle
             left: 0,
             right: 0,
             child: Align(
               alignment: Alignment.center,
               child: Container(
-                width: MediaQuery.of(context).size.width * (isLandscape ? 0.92 : 0.88),
-                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: isLandscape ? 6.h : 8.h),
+                width:
+                    MediaQuery.of(context).size.width *
+                    (isLandscape ? 0.92 : 0.88),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 14.w,
+                  vertical: isLandscape ? 6.h : 8.h,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.kLightBackground,
                   borderRadius: BorderRadius.circular(14.r),

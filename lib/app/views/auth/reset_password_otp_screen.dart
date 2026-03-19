@@ -64,8 +64,10 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
       }
     } on AuthException catch (e) {
       if (!mounted) return;
-      debugPrint('❌ Supabase OTP Verify Error: ${e.message}, Code: ${e.statusCode}');
-      
+      debugPrint(
+        '❌ Supabase OTP Verify Error: ${e.message}, Code: ${e.statusCode}',
+      );
+
       String errorMessage = 'رمز التحقق غير صحيح أو منتهي الصلاحية';
       if (e.statusCode == '429') {
         errorMessage = 'كثير من المحاولات. برجاء الانتظار قليلاً';
@@ -127,16 +129,15 @@ class _ResetPasswordOTPScreenState extends State<ResetPasswordOTPScreen> {
       }
     } on AuthException catch (e) {
       if (mounted) {
-        debugPrint('❌ Supabase OTP Resend Error: ${e.message}, Code: ${e.statusCode}');
+        debugPrint(
+          '❌ Supabase OTP Resend Error: ${e.message}, Code: ${e.statusCode}',
+        );
         String message = 'حدث خطأ في إعادة الإرسال';
         if (e.statusCode == '429') {
           message = 'برجاء الانتظار قليلاً قبل إعادة المحاولة';
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
         );
       }
     } catch (e) {

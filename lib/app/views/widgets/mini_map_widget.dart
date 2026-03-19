@@ -42,8 +42,7 @@ class _MiniMapWidgetState extends State<MiniMapWidget> {
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: const Center(
-                child:
-                    CircularProgressIndicator(color: AppTheme.kElectricLime),
+                child: CircularProgressIndicator(color: AppTheme.kElectricLime),
               ),
             );
           }
@@ -97,55 +96,57 @@ class _MiniMapWidgetState extends State<MiniMapWidget> {
                       markers: vm.filteredCompanies
                           .where((c) => c.lat != 0 && c.lng != 0)
                           .map((company) {
-                        return Marker(
-                          point: LatLng(company.lat, company.lng),
-                          width: 36,
-                          height: 36,
-                          child: GestureDetector(
-                            onTap: () => vm.selectCompany(company),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: ClipOval(
-                                child: company.logoUrl != null &&
-                                        company.logoUrl!.isNotEmpty
-                                    ? CachedNetworkImage(
-                                        imageUrl: company.logoUrl!,
-                                        fit: BoxFit.cover,
-                                        placeholder: (_, __) => const Icon(
-                                          Icons.store,
-                                          color: Colors.grey,
-                                          size: 16,
-                                        ),
-                                        errorWidget: (_, __, ___) =>
-                                            const Icon(
-                                          Icons.store,
-                                          color: Colors.grey,
-                                          size: 16,
-                                        ),
-                                      )
-                                    : const Icon(
-                                        Icons.store,
-                                        color: Colors.grey,
-                                        size: 16,
+                            return Marker(
+                              point: LatLng(company.lat, company.lng),
+                              width: 36,
+                              height: 36,
+                              child: GestureDetector(
+                                onTap: () => vm.selectCompany(company),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        blurRadius: 4,
                                       ),
+                                    ],
+                                  ),
+                                  child: ClipOval(
+                                    child:
+                                        company.logoUrl != null &&
+                                            company.logoUrl!.isNotEmpty
+                                        ? CachedNetworkImage(
+                                            imageUrl: company.logoUrl!,
+                                            fit: BoxFit.cover,
+                                            placeholder: (_, __) => const Icon(
+                                              Icons.store,
+                                              color: Colors.grey,
+                                              size: 16,
+                                            ),
+                                            errorWidget: (_, __, ___) =>
+                                                const Icon(
+                                                  Icons.store,
+                                                  color: Colors.grey,
+                                                  size: 16,
+                                                ),
+                                          )
+                                        : const Icon(
+                                            Icons.store,
+                                            color: Colors.grey,
+                                            size: 16,
+                                          ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          })
+                          .toList(),
                     ),
                   ],
                 ),
@@ -157,8 +158,7 @@ class _MiniMapWidgetState extends State<MiniMapWidget> {
                   child: FloatingActionButton.small(
                     heroTag: 'open_full_map',
                     backgroundColor: AppTheme.kElectricLime,
-                    child:
-                        const Icon(Icons.fullscreen, color: Colors.black),
+                    child: const Icon(Icons.fullscreen, color: Colors.black),
                     onPressed: () {
                       Navigator.push(
                         context,

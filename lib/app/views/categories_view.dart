@@ -47,7 +47,9 @@ class _CategoriesViewState extends State<CategoriesView> {
             builder: (context, vm, child) {
               if (vm.isLoading) {
                 return const Center(
-                  child: CircularProgressIndicator(color: AppTheme.kElectricLime),
+                  child: CircularProgressIndicator(
+                    color: AppTheme.kElectricLime,
+                  ),
                 );
               }
               if (vm.categories.isEmpty) {
@@ -58,9 +60,11 @@ class _CategoriesViewState extends State<CategoriesView> {
                   ),
                 );
               }
-              
+
               final filtered = vm.categories.where((c) {
-                 return c.name.toLowerCase().contains(_searchQuery.toLowerCase());
+                return c.name.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                );
               }).toList();
 
               if (filtered.isEmpty) {
@@ -84,7 +88,9 @@ class _CategoriesViewState extends State<CategoriesView> {
                 onRefresh: vm.loadCategories,
                 color: AppTheme.kElectricLime,
                 child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
                   slivers: [
                     SliverPadding(
                       padding: EdgeInsets.only(
@@ -100,13 +106,10 @@ class _CategoriesViewState extends State<CategoriesView> {
                           mainAxisSpacing: 16.h,
                           childAspectRatio: 3.5,
                         ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final category = filtered[index];
-                            return _CategoryCard(category: category);
-                          },
-                          childCount: filtered.length,
-                        ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final category = filtered[index];
+                          return _CategoryCard(category: category);
+                        }, childCount: filtered.length),
                       ),
                     ),
                   ],

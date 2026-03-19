@@ -268,7 +268,9 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
       'working_hours': workingHours,
       'category_ids': _selectedCategoryIds.toList(), // ✅
       'primary_category_id': _selectedPrimaryCategoryId, // ✅
-      'instagram_url': _igController.text.trim().isEmpty ? null : _igController.text.trim(), // ✅
+      'instagram_url': _igController.text.trim().isEmpty
+          ? null
+          : _igController.text.trim(), // ✅
       'social_links': {
         'facebook': _fbController.text.trim(),
         'whatsapp': _waController.text.trim(),

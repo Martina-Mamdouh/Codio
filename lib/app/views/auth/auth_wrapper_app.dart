@@ -21,8 +21,13 @@ class AuthWrapperApp extends StatelessWidget {
           );
         }
 
-        // Logged in
+        // Logged in as full user
         if (authViewModel.isAuthenticated) {
+          return const MainLayout();
+        }
+
+        // Guest mode — browsing without login
+        if (authViewModel.isGuestMode) {
           return const MainLayout();
         }
 

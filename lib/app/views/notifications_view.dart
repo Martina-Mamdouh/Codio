@@ -46,10 +46,7 @@ class _NotificationsViewState extends State<NotificationsView> {
               if (vm.newNotifications.isNotEmpty) ...[
                 SizedBox(width: 8.w),
                 Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 8.w,
-                    vertical: 4.h,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: Colors.grey[800],
                     borderRadius: BorderRadius.circular(12.r),
@@ -82,125 +79,125 @@ class _NotificationsViewState extends State<NotificationsView> {
           ],
           body: vm.isLoading
               ? const Center(
-                  child: CircularProgressIndicator(color: AppTheme.kElectricLime),
+                  child: CircularProgressIndicator(
+                    color: AppTheme.kElectricLime,
+                  ),
                 )
               : vm.errorMessage != null
-                  ? Center(
-                      child: Text(
-                        vm.errorMessage!,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    )
-                  : (vm.newNotifications.isEmpty && vm.oldNotifications.isEmpty)
-                      ? const Center(
+              ? Center(
+                  child: Text(
+                    vm.errorMessage!,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                )
+              : (vm.newNotifications.isEmpty && vm.oldNotifications.isEmpty)
+              ? const Center(
+                  child: Text(
+                    'لا توجد إشعارات حالياً',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: vm.loadNotifications,
+                  color: AppTheme.kElectricLime,
+                  child: ListView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 16.h,
+                    ),
+                    children: [
+                      // قسم "جديد"
+                      if (vm.newNotifications.isNotEmpty) ...[
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 8.h),
                           child: Text(
-                            'لا توجد إشعارات حالياً',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        )
-                      : RefreshIndicator(
-                          onRefresh: vm.loadNotifications,
-                          color: AppTheme.kElectricLime,
-                          child: ListView(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16.w,
-                              vertical: 16.h,
+                            'جديد',
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                              color: AppTheme.kElectricLime,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
                             ),
-                            children: [
-                              // قسم "جديد"
-                              if (vm.newNotifications.isNotEmpty) ...[
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: 8.h),
-                                  child: Text(
-                                    'جديد',
-                                    textAlign: TextAlign.end,
-                                    style: TextStyle(
-                                      color: AppTheme.kElectricLime,
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                ...vm.newNotifications.map(
-                                  (n) => NotificationCard(
-                                    notification: n,
-                                    accentColor: Colors.redAccent,
-                                    icon: Icons.error_outline,
-                                    onTap: () async {
-                                      // Mark as read
-                                      vm.markOneAsRead(n);
-
-                                      // Navigate to deal if linked
-                                      if (n.dealId != null && context.mounted) {
-                                        try {
-                                          final deal = await SupabaseService()
-                                              .getDealById(n.dealId!);
-                                          if (deal != null && context.mounted) {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    DealDetailsView(deal: deal),
-                                              ),
-                                            );
-                                          }
-                                        } catch (e) {
-                                          debugPrint(
-                                              'Error navigating to deal: $e');
-                                        }
-                                      }
-                                    },
-                                  ),
-                                ),
-                                SizedBox(height: 24.h), // Spacing between sections
-                              ],
-
-                              // قسم "في وقت سابق"
-                              if (vm.oldNotifications.isNotEmpty) ...[
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: 8.h),
-                                  child: Text(
-                                    'في وقت سابق',
-                                    textAlign: TextAlign.end,
-                                    style: TextStyle(
-                                      color: AppTheme.kElectricLime,
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                ...vm.oldNotifications.map(
-                                  (n) => NotificationCard(
-                                    notification: n,
-                                    accentColor: AppTheme.kElectricLime,
-                                    icon: Icons.local_offer_outlined,
-                                    onTap: () async {
-                                      // Navigate to deal if linked
-                                      if (n.dealId != null && context.mounted) {
-                                        try {
-                                          final deal = await SupabaseService()
-                                              .getDealById(n.dealId!);
-                                          if (deal != null && context.mounted) {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    DealDetailsView(deal: deal),
-                                              ),
-                                            );
-                                          }
-                                        } catch (e) {
-                                          debugPrint(
-                                              'Error navigating to deal: $e');
-                                        }
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ],
                           ),
                         ),
+                        ...vm.newNotifications.map(
+                          (n) => NotificationCard(
+                            notification: n,
+                            accentColor: Colors.redAccent,
+                            icon: Icons.error_outline,
+                            onTap: () async {
+                              // Mark as read
+                              vm.markOneAsRead(n);
+
+                              // Navigate to deal if linked
+                              if (n.dealId != null && context.mounted) {
+                                try {
+                                  final deal = await SupabaseService()
+                                      .getDealById(n.dealId!);
+                                  if (deal != null && context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            DealDetailsView(deal: deal),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  debugPrint('Error navigating to deal: $e');
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                        SizedBox(height: 24.h), // Spacing between sections
+                      ],
+
+                      // قسم "في وقت سابق"
+                      if (vm.oldNotifications.isNotEmpty) ...[
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 8.h),
+                          child: Text(
+                            'في وقت سابق',
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                              color: AppTheme.kElectricLime,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        ...vm.oldNotifications.map(
+                          (n) => NotificationCard(
+                            notification: n,
+                            accentColor: AppTheme.kElectricLime,
+                            icon: Icons.local_offer_outlined,
+                            onTap: () async {
+                              // Navigate to deal if linked
+                              if (n.dealId != null && context.mounted) {
+                                try {
+                                  final deal = await SupabaseService()
+                                      .getDealById(n.dealId!);
+                                  if (deal != null && context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            DealDetailsView(deal: deal),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  debugPrint('Error navigating to deal: $e');
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
         );
       },
     );

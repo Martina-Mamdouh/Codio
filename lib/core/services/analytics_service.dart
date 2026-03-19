@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Service for tracking user interactions and analytics
 class AnalyticsService {
   final _supabase = Supabase.instance.client;
-  
+
   // Queue for offline events
   final List<Map<String, dynamic>> _eventQueue = [];
   bool _isProcessing = false;
@@ -18,7 +18,7 @@ class AnalyticsService {
   }) async {
     try {
       final userId = _supabase.auth.currentUser?.id;
-      
+
       final event = {
         'event_type': eventType,
         'entity_type': entityType,
@@ -30,7 +30,7 @@ class AnalyticsService {
 
       // Try to insert immediately
       await _supabase.from('analytics_events').insert(event);
-      
+
       if (kDebugMode) {
         print('📊 Analytics: $eventType for $entityType #$entityId');
       }
@@ -53,9 +53,9 @@ class AnalyticsService {
   /// Process queued events
   Future<void> _processQueue() async {
     if (_isProcessing || _eventQueue.isEmpty) return;
-    
+
     _isProcessing = true;
-    
+
     try {
       if (_eventQueue.isNotEmpty) {
         await _supabase.from('analytics_events').insert(_eventQueue);
@@ -74,7 +74,7 @@ class AnalyticsService {
   }
 
   // ==================== DEAL TRACKING ====================
-  
+
   /// Track deal page view
   Future<void> trackDealView(int dealId) async {
     await trackEvent(
@@ -114,7 +114,10 @@ class AnalyticsService {
   }
 
   /// Track deal favorite
-  Future<void> trackDealFavorite(int dealId, {required bool isFavorited}) async {
+  Future<void> trackDealFavorite(
+    int dealId, {
+    required bool isFavorited,
+  }) async {
     await trackEvent(
       eventType: 'deal_favorite',
       entityType: 'deal',
@@ -133,10 +136,13 @@ class AnalyticsService {
   }
 
   /// Track emoji feedback (user satisfaction rating)
-  Future<bool> trackEmojiFeedback(int dealId, {required String emojiType}) async {
+  Future<bool> trackEmojiFeedback(
+    int dealId, {
+    required String emojiType,
+  }) async {
     try {
       final userId = _supabase.auth.currentUser?.id;
-      
+
       if (userId == null) {
         if (kDebugMode) {
           print('❌ Cannot track emoji feedback: User not logged in');
@@ -163,7 +169,7 @@ class AnalyticsService {
       if (kDebugMode) {
         print('😊 Emoji feedback tracked: $emojiType for deal #$dealId');
       }
-      
+
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -176,19 +182,21 @@ class AnalyticsService {
   /// Get emoji feedback statistics for a specific deal
   Future<Map<String, dynamic>?> getEmojiFeedbackStats(int dealId) async {
     try {
-      final response = await _supabase
-          .rpc('get_deal_emoji_stats', params: {'p_deal_id': dealId});
-      
+      final response = await _supabase.rpc(
+        'get_deal_emoji_stats',
+        params: {'p_deal_id': dealId},
+      );
+
       if (response != null && response is Map) {
         return Map<String, dynamic>.from(response);
       }
-      
+
       // Fallback: manual aggregation if RPC doesn't exist
       final feedbacks = await _supabase
           .from('deal_emoji_feedback')
           .select('emoji_type')
           .eq('deal_id', dealId);
-      
+
       if (feedbacks.isEmpty) {
         return {
           'happy_count': 0,
@@ -200,12 +208,16 @@ class AnalyticsService {
           'sad_percentage': 0.0,
         };
       }
-      
-      final happyCount = feedbacks.where((f) => f['emoji_type'] == 'happy').length;
-      final neutralCount = feedbacks.where((f) => f['emoji_type'] == 'neutral').length;
+
+      final happyCount = feedbacks
+          .where((f) => f['emoji_type'] == 'happy')
+          .length;
+      final neutralCount = feedbacks
+          .where((f) => f['emoji_type'] == 'neutral')
+          .length;
       final sadCount = feedbacks.where((f) => f['emoji_type'] == 'sad').length;
       final total = feedbacks.length;
-      
+
       return {
         'happy_count': happyCount,
         'neutral_count': neutralCount,
@@ -227,7 +239,7 @@ class AnalyticsService {
   Future<String?> getUserEmojiFeedback(int dealId) async {
     try {
       final userId = _supabase.auth.currentUser?.id;
-      
+
       if (userId == null) return null;
 
       final response = await _supabase
@@ -236,7 +248,7 @@ class AnalyticsService {
           .eq('deal_id', dealId)
           .eq('user_id', userId)
           .maybeSingle();
-      
+
       return response?['emoji_type'] as String?;
     } catch (e) {
       if (kDebugMode) {
@@ -246,9 +258,8 @@ class AnalyticsService {
     }
   }
 
-
   // ==================== COMPANY TRACKING ====================
-  
+
   /// Track company page view
   Future<void> trackCompanyView(int companyId) async {
     await trackEvent(
@@ -259,7 +270,10 @@ class AnalyticsService {
   }
 
   /// Track company follow
-  Future<void> trackCompanyFollow(int companyId, {required bool isFollowed}) async {
+  Future<void> trackCompanyFollow(
+    int companyId, {
+    required bool isFollowed,
+  }) async {
     await trackEvent(
       eventType: 'company_follow',
       entityType: 'company',
@@ -318,7 +332,7 @@ class AnalyticsService {
   }
 
   // ==================== BANNER TRACKING ====================
-  
+
   /// Track banner impression
   Future<void> trackBannerImpression(int bannerId, {int? position}) async {
     await trackEvent(
@@ -330,7 +344,11 @@ class AnalyticsService {
   }
 
   /// Track banner click
-  Future<void> trackBannerClick(int bannerId, {int? position, String? targetUrl}) async {
+  Future<void> trackBannerClick(
+    int bannerId, {
+    int? position,
+    String? targetUrl,
+  }) async {
     await trackEvent(
       eventType: 'banner_click',
       entityType: 'banner',
@@ -343,7 +361,7 @@ class AnalyticsService {
   }
 
   // ==================== DASHBOARD QUERIES ====================
-  
+
   /// Get deal analytics (for dashboard)
   Future<Map<String, dynamic>?> getDealAnalytics(int dealId) async {
     try {
@@ -352,7 +370,7 @@ class AnalyticsService {
           .select()
           .eq('deal_id', dealId)
           .maybeSingle();
-      
+
       return response;
     } catch (e) {
       if (kDebugMode) {
@@ -370,7 +388,7 @@ class AnalyticsService {
           .select()
           .eq('company_id', companyId)
           .maybeSingle();
-      
+
       return response;
     } catch (e) {
       if (kDebugMode) {
@@ -381,13 +399,15 @@ class AnalyticsService {
   }
 
   /// Get top deals by views (for dashboard)
-  Future<List<Map<String, dynamic>>> getTopDealsByViews({int limit = 10}) async {
+  Future<List<Map<String, dynamic>>> getTopDealsByViews({
+    int limit = 10,
+  }) async {
     try {
       final response = await _supabase
           .from('top_deals_by_views')
           .select()
           .limit(limit);
-      
+
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       if (kDebugMode) {
@@ -398,14 +418,16 @@ class AnalyticsService {
   }
 
   /// Get company performance summary (for dashboard)
-  Future<List<Map<String, dynamic>>> getCompanyPerformance({int? companyId}) async {
+  Future<List<Map<String, dynamic>>> getCompanyPerformance({
+    int? companyId,
+  }) async {
     try {
       var query = _supabase.from('company_performance').select();
-      
+
       if (companyId != null) {
         query = query.eq('id', companyId);
       }
-      
+
       final response = await query;
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -419,10 +441,8 @@ class AnalyticsService {
   /// Get banner performance stats (for dashboard)
   Future<List<Map<String, dynamic>>> getBannerPerformance() async {
     try {
-      final response = await _supabase
-          .from('banner_analytics')
-          .select();
-      
+      final response = await _supabase.from('banner_analytics').select();
+
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       if (kDebugMode) {
@@ -438,7 +458,7 @@ class AnalyticsService {
       final response = await _supabase
           .from('social_platform_breakdown')
           .select();
-      
+
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       if (kDebugMode) {

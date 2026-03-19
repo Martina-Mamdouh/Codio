@@ -37,7 +37,7 @@ class UserProfileViewModel extends ChangeNotifier {
   /// تحميل بيانات البروفايل (المفضلات + الشركات المتابعة)
   Future<void> loadProfileData() async {
     if (_isLoadingProfile) return; // Prevent concurrent loads
-    
+
     if (!isAuthenticated) {
       _favoriteDealIds.clear();
       favoriteDeals = [];
@@ -91,22 +91,22 @@ class UserProfileViewModel extends ChangeNotifier {
   /// تحميل الشركات المتابعة من Supabase
   Future<void> loadFollowedCompanies() async {
     if (!isAuthenticated) {
-       followedCompanies = [];
-       followedCompaniesCount = 0;
-       notifyListeners();
-       return;
+      followedCompanies = [];
+      followedCompaniesCount = 0;
+      notifyListeners();
+      return;
     }
 
     try {
       // Load full company objects
       var fetched = await _supabaseService.getFollowedCompanies();
-      
+
       // Merge with pending optimistic changes
       // 1. Remove what was locally removed
       if (_pendingRemovals.isNotEmpty) {
         fetched.removeWhere((c) => _pendingRemovals.contains(c.id));
       }
-      
+
       // 2. Add what was locally added (if not already in fetch)
       if (_pendingAdds.isNotEmpty) {
         for (final pending in _pendingAdds.values) {
@@ -115,10 +115,10 @@ class UserProfileViewModel extends ChangeNotifier {
           }
         }
       }
-      
+
       // Clear pending queues now that we've synced?
       // Actually, to be safe against very fast subsequent loads, keep them until we are sure?
-      // For now, clearing them is standard "Sync complete" logic. 
+      // For now, clearing them is standard "Sync complete" logic.
       // But if the server fetch didn't catch the latest insert yet, clearing them might lose the optimistic state on NEXT load?
       // No, because NEXT load will catch it. The race is usually against the *first* in-flight load.
       _pendingAdds.clear();
@@ -170,17 +170,18 @@ class UserProfileViewModel extends ChangeNotifier {
     } else {
       _favoriteDealIds.add(dealId);
       notifyListeners();
-      
+
       // Attempt to fetch the deal to add to the list
       try {
-         final deal = await _supabaseService.getDealById(dealId);
-         if (deal != null) {
-           // check if still favorited (user might have toggled back quickly)
-           if (_favoriteDealIds.contains(dealId) && !favoriteDeals.any((d) => d.id == dealId)) {
-             favoriteDeals.add(deal);
-             notifyListeners();
-           }
-         }
+        final deal = await _supabaseService.getDealById(dealId);
+        if (deal != null) {
+          // check if still favorited (user might have toggled back quickly)
+          if (_favoriteDealIds.contains(dealId) &&
+              !favoriteDeals.any((d) => d.id == dealId)) {
+            favoriteDeals.add(deal);
+            notifyListeners();
+          }
+        }
       } catch (e) {
         debugPrint('⚠️ Error fetching deal for favorite list sync: $e');
       }
@@ -192,9 +193,9 @@ class UserProfileViewModel extends ChangeNotifier {
       // Revert if DB fail
       if (wasFavorite) {
         _favoriteDealIds.add(dealId);
-        // We can't easily restore the deleted deal object unless we cached it. 
+        // We can't easily restore the deleted deal object unless we cached it.
         // For now, load whole list.
-        await loadFavoriteDeals(); 
+        await loadFavoriteDeals();
       } else {
         _favoriteDealIds.remove(dealId);
         favoriteDeals.removeWhere((d) => d.id == dealId);
@@ -206,7 +207,10 @@ class UserProfileViewModel extends ChangeNotifier {
   }
 
   /// Toggle لمتابعة شركة
-  Future<bool> toggleCompanyFollow(int companyId, {CompanyModel? company}) async {
+  Future<bool> toggleCompanyFollow(
+    int companyId, {
+    CompanyModel? company,
+  }) async {
     if (!isAuthenticated) return false;
 
     final exists = followedCompanies.any((c) => c.id == companyId);
@@ -215,52 +219,54 @@ class UserProfileViewModel extends ChangeNotifier {
       // Unfollow
       followedCompanies.removeWhere((c) => c.id == companyId);
       followedCompaniesCount = followedCompanies.length;
-      
+
       _pendingAdds.remove(companyId);
       _pendingRemovals.add(companyId);
-      
+
       notifyListeners();
     } else {
       // Follow
       if (company != null) {
         followedCompanies.add(company);
         followedCompaniesCount = followedCompanies.length;
-        
+
         _pendingRemovals.remove(companyId);
         _pendingAdds[companyId] = company;
-        
+
         notifyListeners();
       }
     }
 
     try {
-      final isFollowedNow = await _supabaseService.toggleCompanyFollow(companyId);
+      final isFollowedNow = await _supabaseService.toggleCompanyFollow(
+        companyId,
+      );
       return isFollowedNow;
     } catch (e) {
-       await loadFollowedCompanies(); 
-       return exists;
+      await loadFollowedCompanies();
+      return exists;
     }
   }
 
-  /// تحديث الحالة محلياً فقط 
+  /// تحديث الحالة محلياً فقط
   void updateFollowStatusLocal(CompanyModel company, bool isFollowing) {
     final exists = followedCompanies.any((c) => c.id == company.id);
 
     if (isFollowing && !exists) {
       followedCompanies.add(company);
       followedCompaniesCount = followedCompanies.length;
-      
+
       _pendingRemovals.remove(company.id);
       _pendingAdds[company.id] = company;
-      
+
       notifyListeners();
     } else if (!isFollowing && exists) {
       followedCompanies.removeWhere((c) => c.id == company.id);
       followedCompaniesCount = followedCompanies.length;
-      
+
       _pendingAdds.remove(company.id);
       _pendingRemovals.add(company.id);
-      
+
       notifyListeners();
     }
   }

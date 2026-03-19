@@ -31,7 +31,8 @@ class DealCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final formattedDate = DateFormat('dd/MM/yyyy').format(deal.expiresAt);
     final AuthService authService = AuthService();
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
 
     return GestureDetector(
       onTap: () {
@@ -68,7 +69,9 @@ class DealCard extends StatelessWidget {
             Stack(
               children: [
                 AspectRatio(
-                  aspectRatio: isLandscape ? 2.2 : (1280 / 700), // Requested 1280x700
+                  aspectRatio: isLandscape
+                      ? 2.2
+                      : (1280 / 700), // Requested 1280x700
                   child: ClipRRect(
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(12.r),
@@ -88,12 +91,18 @@ class DealCard extends StatelessWidget {
                             ),
                             errorWidget: (context, url, error) => Container(
                               color: AppTheme.kDarkBackground,
-                              child: const Icon(Icons.broken_image, color: Colors.white24),
+                              child: const Icon(
+                                Icons.broken_image,
+                                color: Colors.white24,
+                              ),
                             ),
                           )
                         : Container(
                             color: Colors.grey[900],
-                            child: const Icon(Icons.image_not_supported, color: Colors.white24),
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.white24,
+                            ),
                           ),
                   ),
                 ),
@@ -166,10 +175,10 @@ class DealCard extends StatelessWidget {
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: isLandscape ? 9.sp : 10.sp,
-                                                  // fontFamily: 'Cairo', // Inherited
+                        //  // Inherited
                       ),
                     ),
-                  
+
                   SizedBox(height: 2.h),
 
                   // Title
@@ -184,14 +193,18 @@ class DealCard extends StatelessWidget {
                       height: 1.2,
                     ),
                   ),
-                  
+
                   SizedBox(height: isLandscape ? 2.h : 4.h),
 
                   // Expiry
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.access_time, size: isLandscape ? 10.w : 12.w, color: Colors.redAccent),
+                      Icon(
+                        Icons.access_time,
+                        size: isLandscape ? 10.w : 12.w,
+                        color: Colors.redAccent,
+                      ),
                       SizedBox(width: 4.w),
                       Text(
                         formattedDate,
@@ -203,9 +216,11 @@ class DealCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                   
+
                   // Category (Only show if space helps, or keep it but ensure no overflow)
-                  if (showCategory && deal.categoryName != null && deal.categoryName!.isNotEmpty) ...[
+                  if (showCategory &&
+                      deal.categoryName != null &&
+                      deal.categoryName!.isNotEmpty) ...[
                     SizedBox(height: 2.h),
                     Text(
                       deal.categoryName!,
@@ -238,7 +253,7 @@ class DealCard extends StatelessWidget {
               child: Text(
                 'يجب تسجيل الدخول لإضافة المفضلات',
                 style: TextStyle(
-                  // fontFamily: 'Cairo', // Inherited
+                  //  // Inherited
                   color: Colors.white,
                 ),
               ),
@@ -258,7 +273,9 @@ class DealCard extends StatelessWidget {
         backgroundColor: AppTheme.kDarkBackground.withOpacity(0.9),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.all(16.w),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
+        ),
       ),
     );
   }

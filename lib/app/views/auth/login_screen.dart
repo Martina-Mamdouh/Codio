@@ -55,18 +55,25 @@ class _LoginScreenState extends State<LoginScreen> {
     _handleAuthResult(success, authViewModel.errorMessage);
   }
 
+  void _handleGuestMode() {
+    context.read<AuthViewModel>().enterGuestMode();
+  }
+
   void _handleAuthResult(bool success, String? errorMessage) {
     if (!mounted) return;
-    
+
     // Success is handled by AuthWrapperApp listening to AuthViewModel
     // which will rebuild and show MainLayout automatically.
-    
+
     if (!success) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: Colors.black87,
-          title: const Text('خطأ في تسجيل الدخول', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'خطأ في تسجيل الدخول',
+            style: TextStyle(color: Colors.white),
+          ),
           content: Text(
             errorMessage ?? 'فشل تسجيل الدخول',
             style: const TextStyle(color: Colors.white70),
@@ -74,7 +81,10 @@ class _LoginScreenState extends State<LoginScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('حسناً', style: TextStyle(color: Color(0xFFE5FF17))), // AppTheme.kElectricLime
+              child: const Text(
+                'حسناً',
+                style: TextStyle(color: Color(0xFFE5FF17)),
+              ), // AppTheme.kElectricLime
             ),
           ],
         ),
@@ -313,7 +323,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
-                                            'تسجيل الدخول عبر أبل متاح قريباً'),
+                                          'تسجيل الدخول عبر أبل متاح قريباً',
+                                        ),
                                       ),
                                     );
                                   },
@@ -357,6 +368,33 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ],
+                      ),
+
+                      // Skip Button
+                      SizedBox(height: 8.h),
+                      GestureDetector(
+                        onTap: _handleGuestMode,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.h),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'تخطي — تصفح بدون تسجيل دخول',
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 13.sp,
+                                ),
+                              ),
+                              SizedBox(width: 4.w),
+                              Icon(
+                                Icons.arrow_forward,
+                                color: Colors.white38,
+                                size: 14.sp,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                       SizedBox(height: 16.h),
                     ],

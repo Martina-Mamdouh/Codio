@@ -137,7 +137,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final authVm = context.read<AuthViewModel>();
     _wasAuthenticated = authVm.isAuthenticated;
     authVm.addListener(_onAuthChange);
-    
+
     // Initial load check
     if (_wasAuthenticated) {
       _loadUserData();
@@ -150,10 +150,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     // Trigger only on transition from false -> true
     if (isAuth && !_wasAuthenticated) {
-       _loadUserData();
+      _loadUserData();
     } else if (!isAuth && _wasAuthenticated) {
-       // User logged out
-       context.read<UserProfileViewModel>().clearFavorites();
+      // User logged out
+      context.read<UserProfileViewModel>().clearFavorites();
     }
 
     _wasAuthenticated = isAuth;
@@ -165,9 +165,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // This prevents the "Post-Login Slowness" caused by 5+ concurrent network requests
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
-         debugPrint('🚀 Triggering background load: Profile & Notifications');
-         context.read<UserProfileViewModel>().loadProfileData();
-         context.read<NotificationsViewModel>().loadNotifications();
+        debugPrint('🚀 Triggering background load: Profile & Notifications');
+        context.read<UserProfileViewModel>().loadProfileData();
+        context.read<NotificationsViewModel>().loadNotifications();
       }
     });
   }

@@ -23,7 +23,7 @@ class NotificationsViewModel extends ChangeNotifier {
       // 1. جلب البيانات فوراً لضمان ظهورها (حتى لو الـ Stream فيه مشكلة)
       final all = await _supabaseService.getNotifications();
       _updateLists(all);
-      
+
       // 2. بدء الاستماع للتحديثات
       startListening();
     } catch (e) {
@@ -52,7 +52,7 @@ class NotificationsViewModel extends ChangeNotifier {
   void _updateLists(List<NotificationModel> all) {
     // فرز الإشعارات حسب التاريخ (الأحدث أولاً)
     all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    
+
     newNotifications = all.where((n) => !n.isRead).toList();
     oldNotifications = all.where((n) => n.isRead).toList();
   }

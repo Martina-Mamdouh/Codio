@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/models/company_model.dart';
 import '../../core/models/deal_model.dart';
@@ -132,9 +133,7 @@ class _MapViewState extends State<MapView> {
                             ],
                           ),
                         // Company markers
-                        MarkerLayer(
-                          markers: _buildCompanyMarkers(vm),
-                        ),
+                        MarkerLayer(markers: _buildCompanyMarkers(vm)),
                       ],
                     ),
                     // Control buttons
@@ -191,9 +190,9 @@ class _MapViewState extends State<MapView> {
   }
 
   List<Marker> _buildCompanyMarkers(MapViewModel vm) {
-    return vm.filteredCompanies
-        .where((c) => c.lat != 0 && c.lng != 0)
-        .map((company) {
+    return vm.filteredCompanies.where((c) => c.lat != 0 && c.lng != 0).map((
+      company,
+    ) {
       final discount = vm.discountLabelFor(company.id);
       final isSelected = vm.selectedCompany?.id == company.id;
 
@@ -272,16 +271,10 @@ class _CompanyMarkerWidget extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: company.logoUrl!,
                     fit: BoxFit.cover,
-                    placeholder: (_, __) => const Icon(
-                      Icons.store,
-                      color: Colors.grey,
-                      size: 24,
-                    ),
-                    errorWidget: (_, __, ___) => const Icon(
-                      Icons.store,
-                      color: Colors.grey,
-                      size: 24,
-                    ),
+                    placeholder: (_, __) =>
+                        const Icon(Icons.store, color: Colors.grey, size: 24),
+                    errorWidget: (_, __, ___) =>
+                        const Icon(Icons.store, color: Colors.grey, size: 24),
                   )
                 : const Icon(Icons.store, color: Colors.grey, size: 24),
           ),
@@ -422,6 +415,9 @@ class _SelectedCompanyCard extends StatelessWidget {
 
     final distance = viewModel.distanceKmFor(company);
     final companyDeals = viewModel.dealsForCompany(company.id);
+    final hasPhone = (company.phone ?? '').isNotEmpty;
+    final hasAddress = (company.address ?? '').isNotEmpty;
+    final hasWorkingHours = (company.workingHours ?? '').isNotEmpty;
 
     return Container(
       width: double.infinity,
@@ -434,7 +430,7 @@ class _SelectedCompanyCard extends StatelessWidget {
         children: [
           // Company header
           Padding(
-            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 4.h),
             child: Row(
               children: [
                 Container(
@@ -479,23 +475,61 @@ class _SelectedCompanyCard extends StatelessWidget {
                             Text(
                               company.categoryName!,
                               style: TextStyle(
-                                  color: Colors.white60, fontSize: 11.sp),
+                                color: Colors.white60,
+                                fontSize: 11.sp,
+                              ),
                             ),
                           if (company.categoryName != null && distance != null)
-                            Text(' · ',
-                                style: TextStyle(
-                                    color: Colors.white38, fontSize: 11.sp)),
+                            Text(
+                              ' · ',
+                              style: TextStyle(
+                                color: Colors.white38,
+                                fontSize: 11.sp,
+                              ),
+                            ),
                           if (distance != null)
                             Text(
                               '${distance.toStringAsFixed(1)} كم',
                               style: TextStyle(
-                                  color: Colors.white70, fontSize: 11.sp),
+                                color: Colors.white70,
+                                fontSize: 11.sp,
+                              ),
                             ),
                         ],
                       ),
                     ],
                   ),
                 ),
+                // Call button
+                if (hasPhone)
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(end: 4.w),
+                    child: InkWell(
+                      onTap: () {
+                        final uri = Uri(
+                          scheme: 'tel',
+                          path: company.phone!.trim(),
+                        );
+                        launchUrl(uri, mode: LaunchMode.externalApplication);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.green.withOpacity(0.4),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.phone,
+                          color: Colors.green,
+                          size: 20.w,
+                        ),
+                      ),
+                    ),
+                  ),
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -515,6 +549,64 @@ class _SelectedCompanyCard extends StatelessWidget {
               ],
             ),
           ),
+          // Quick info row (address, working hours)
+          if (hasAddress || hasWorkingHours)
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
+              child: Row(
+                children: [
+                  if (hasAddress) ...[
+                    Icon(
+                      Icons.location_on_outlined,
+                      color: AppTheme.kElectricLime,
+                      size: 14.w,
+                    ),
+                    SizedBox(width: 4.w),
+                    Flexible(
+                      child: Text(
+                        company.address!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (hasAddress && hasWorkingHours)
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w),
+                      child: Text(
+                        '·',
+                        style: TextStyle(
+                          color: Colors.white24,
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                    ),
+                  if (hasWorkingHours) ...[
+                    Icon(
+                      Icons.access_time_rounded,
+                      color: AppTheme.kElectricLime,
+                      size: 14.w,
+                    ),
+                    SizedBox(width: 4.w),
+                    Flexible(
+                      child: Text(
+                        company.workingHours!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           // Deals list
           if (companyDeals.isEmpty)
             Padding(
@@ -549,16 +641,15 @@ class _DealMiniCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final discount =
-        deal.discountValue.isNotEmpty ? deal.discountValue : deal.dealValue;
+    final discount = deal.discountValue.isNotEmpty
+        ? deal.discountValue
+        : deal.dealValue;
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => DealDetailsView(deal: deal),
-          ),
+          MaterialPageRoute(builder: (_) => DealDetailsView(deal: deal)),
         );
       },
       child: Container(
@@ -586,23 +677,32 @@ class _DealMiniCard extends StatelessWidget {
                             placeholder: (_, __) => Container(
                               color: Colors.white10,
                               child: const Center(
-                                child: Icon(Icons.local_offer,
-                                    color: Colors.white24, size: 24),
+                                child: Icon(
+                                  Icons.local_offer,
+                                  color: Colors.white24,
+                                  size: 24,
+                                ),
                               ),
                             ),
                             errorWidget: (_, __, ___) => Container(
                               color: Colors.white10,
                               child: const Center(
-                                child: Icon(Icons.local_offer,
-                                    color: Colors.white24, size: 24),
+                                child: Icon(
+                                  Icons.local_offer,
+                                  color: Colors.white24,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           )
                         : Container(
                             color: Colors.white10,
                             child: const Center(
-                              child: Icon(Icons.local_offer,
-                                  color: Colors.white24, size: 24),
+                              child: Icon(
+                                Icons.local_offer,
+                                color: Colors.white24,
+                                size: 24,
+                              ),
                             ),
                           ),
                   ),
@@ -612,7 +712,9 @@ class _DealMiniCard extends StatelessWidget {
                       right: 4,
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 6.w, vertical: 2.h),
+                          horizontal: 6.w,
+                          vertical: 2.h,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.redAccent,
                           borderRadius: BorderRadius.circular(6.r),

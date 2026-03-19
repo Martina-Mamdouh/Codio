@@ -495,27 +495,69 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                                 ),
                               ),
                               DataCell(
-                                Text(
-                                  deal['views']?.toString() ?? '0',
-                                  style: const TextStyle(
-                                    color: Colors.blueAccent,
-                                  ),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      deal['views']?.toString() ?? '0',
+                                      style: const TextStyle(
+                                        color: Colors.blueAccent,
+                                      ),
+                                    ),
+                                    if (deal['unique_viewers'] != null)
+                                      Text(
+                                        '(${deal['unique_viewers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               DataCell(
-                                Text(
-                                  deal['code_copies']?.toString() ?? '0',
-                                  style: const TextStyle(
-                                    color: Colors.orangeAccent,
-                                  ),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      deal['code_copies']?.toString() ?? '0',
+                                      style: const TextStyle(
+                                        color: Colors.orangeAccent,
+                                      ),
+                                    ),
+                                    if (deal['unique_copiers'] != null)
+                                      Text(
+                                        '(${deal['unique_copiers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               DataCell(
-                                Text(
-                                  deal['link_opens']?.toString() ?? '0',
-                                  style: const TextStyle(
-                                    color: Colors.tealAccent,
-                                  ),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      deal['link_opens']?.toString() ?? '0',
+                                      style: const TextStyle(
+                                        color: Colors.tealAccent,
+                                      ),
+                                    ),
+                                    if (deal['unique_link_openers'] != null)
+                                      Text(
+                                        '(${deal['unique_link_openers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               DataCell(_buildStarRatingBadge(successRate)),
@@ -670,11 +712,25 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                                 ),
                               ),
                               DataCell(
-                                Text(
-                                  company['page_views']?.toString() ?? '0',
-                                  style: const TextStyle(
-                                    color: Colors.blueAccent,
-                                  ),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      company['page_views']?.toString() ?? '0',
+                                      style: const TextStyle(
+                                        color: Colors.blueAccent,
+                                      ),
+                                    ),
+                                    if (company['unique_page_viewers'] != null)
+                                      Text(
+                                        '(${company['unique_page_viewers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               DataCell(

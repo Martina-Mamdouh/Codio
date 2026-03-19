@@ -31,12 +31,69 @@ class DashboardViewModel extends ChangeNotifier {
         _analyticsService.getCompanyPerformance(),
         _analyticsService.getBannerPerformance(),
         _analyticsService.getSocialPlatformBreakdown(),
+        _analyticsService.getUniqueAnalytics(),
       ]);
 
-      topDeals = results[0];
-      companyPerformance = results[1];
-      bannerPerformance = results[2];
-      socialBreakdown = results[3];
+      final rawTopDeals = results[0] as List<Map<String, dynamic>>;
+      final rawCompanyPerformance = results[1] as List<Map<String, dynamic>>;
+      bannerPerformance = results[2] as List<Map<String, dynamic>>;
+      socialBreakdown = results[3] as List<Map<String, dynamic>>;
+      final uniqueStats = results[4] as List<Map<String, dynamic>>;
+
+      // Merge unique stats dynamically to avoid breaking existing DB schemas via dropped views
+      topDeals = rawTopDeals.map((rawDeal) {
+        final deal = Map<String, dynamic>.from(rawDeal);
+        final dealId = deal['deal_id'] ?? deal['id'];
+        if (dealId != null) {
+          final viewStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'deal' &&
+                s['entity_id'] == dealId &&
+                s['event_type'] == 'deal_view',
+          );
+          deal['unique_viewers'] = viewStats.isNotEmpty
+              ? viewStats.first['unique_users']
+              : 0;
+
+          final copyStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'deal' &&
+                s['entity_id'] == dealId &&
+                s['event_type'] == 'code_copy',
+          );
+          deal['unique_copiers'] = copyStats.isNotEmpty
+              ? copyStats.first['unique_users']
+              : 0;
+
+          final linkStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'deal' &&
+                s['entity_id'] == dealId &&
+                s['event_type'] == 'link_open',
+          );
+          deal['unique_link_openers'] = linkStats.isNotEmpty
+              ? linkStats.first['unique_users']
+              : 0;
+        }
+        return deal;
+      }).toList();
+
+      companyPerformance = rawCompanyPerformance.map((rawCompany) {
+        final company = Map<String, dynamic>.from(rawCompany);
+        final companyId = company['id'];
+        if (companyId != null) {
+          final viewStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'company' &&
+                s['entity_id'] == companyId &&
+                s['event_type'] == 'company_view',
+          );
+          company['unique_page_viewers'] = viewStats.isNotEmpty
+              ? viewStats.first['unique_users']
+              : 0;
+        }
+        return company;
+      }).toList();
 
       // Calculate simple totals from performance if needed
       totalViews = companyPerformance.fold(

@@ -30,12 +30,14 @@ class CompaniesManagementViewModel extends ChangeNotifier {
     _selectedCompany = null;
     _isEditorVisible = true;
     notifyListeners();
+    fetchCategories(); // 🔥 Refresh dynamic categories list
   }
 
   void selectCompanyForEdit(CompanyModel company) {
     _selectedCompany = company;
     _isEditorVisible = true;
     notifyListeners();
+    fetchCategories(); // 🔥 Refresh dynamic categories list
   }
 
   void hideEditor() {

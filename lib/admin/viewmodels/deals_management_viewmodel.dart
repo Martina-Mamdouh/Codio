@@ -32,12 +32,14 @@ class DealsManagementViewModel extends ChangeNotifier {
     _selectedDeal = null;
     _isEditorVisible = true;
     notifyListeners();
+    fetchCategories(); // 🔥 Refresh dynamic categories list
   }
 
   void selectDealForEdit(DealModel deal) {
     _selectedDeal = deal;
     _isEditorVisible = true;
     notifyListeners();
+    fetchCategories(); // 🔥 Refresh dynamic categories list
   }
 
   void hideEditor() {

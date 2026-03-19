@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math' as math;
 
 /// Service for tracking user interactions and analytics
 class AnalyticsService {
@@ -8,6 +10,22 @@ class AnalyticsService {
   // Queue for offline events
   final List<Map<String, dynamic>> _eventQueue = [];
   bool _isProcessing = false;
+  static String? _deviceId;
+
+  Future<String> _getOrCreateDeviceId() async {
+    if (_deviceId != null) return _deviceId!;
+
+    final prefs = await SharedPreferences.getInstance();
+    _deviceId = prefs.getString('analytics_device_id');
+
+    if (_deviceId == null) {
+      _deviceId =
+          'dev_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(99999)}';
+      await prefs.setString('analytics_device_id', _deviceId!);
+    }
+
+    return _deviceId!;
+  }
 
   /// Track a generic analytics event
   Future<void> trackEvent({
@@ -18,13 +36,17 @@ class AnalyticsService {
   }) async {
     try {
       final userId = _supabase.auth.currentUser?.id;
+      final deviceId = await _getOrCreateDeviceId();
+
+      final Map<String, dynamic> finalMetadata = Map.from(metadata ?? {});
+      finalMetadata['device_id'] = deviceId;
 
       final event = {
         'event_type': eventType,
         'entity_type': entityType,
         'entity_id': entityId,
         'user_id': userId,
-        'metadata': metadata ?? {},
+        'metadata': finalMetadata,
         'created_at': DateTime.now().toIso8601String(),
       };
 
@@ -32,19 +54,26 @@ class AnalyticsService {
       await _supabase.from('analytics_events').insert(event);
 
       if (kDebugMode) {
-        print('📊 Analytics: $eventType for $entityType #$entityId');
+        print(
+          '📊 Analytics: $eventType for $entityType #$entityId (Device: $deviceId)',
+        );
       }
     } catch (e) {
       if (kDebugMode) {
         print('❌ Analytics error: $e');
       }
+
+      final deviceId = _deviceId ?? '';
+      final Map<String, dynamic> finalMetadata = Map.from(metadata ?? {});
+      finalMetadata['device_id'] = deviceId;
+
       // Queue for retry if offline
       _eventQueue.add({
         'event_type': eventType,
         'entity_type': entityType,
         'entity_id': entityId,
         'user_id': _supabase.auth.currentUser?.id,
-        'metadata': metadata ?? {},
+        'metadata': finalMetadata,
       });
       _processQueue();
     }
@@ -361,6 +390,19 @@ class AnalyticsService {
   }
 
   // ==================== DASHBOARD QUERIES ====================
+
+  /// Get unique analytics from the isolated view
+  Future<List<Map<String, dynamic>>> getUniqueAnalytics() async {
+    try {
+      final response = await _supabase.from('unique_analytics_view').select();
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error fetching unique analytics: $e');
+      }
+      return [];
+    }
+  }
 
   /// Get deal analytics (for dashboard)
   Future<Map<String, dynamic>?> getDealAnalytics(int dealId) async {

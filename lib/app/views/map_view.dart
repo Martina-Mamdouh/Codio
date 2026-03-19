@@ -181,7 +181,28 @@ class _MapViewState extends State<MapView> {
                   ],
                 ),
               ),
-              _SelectedCompanyCard(viewModel: vm),
+              SafeArea(
+                bottom: true,
+                maintainBottomViewPadding: true,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 320),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) {
+                    final offset = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
+                        .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+                    return SlideTransition(position: offset, child: FadeTransition(opacity: animation, child: child));
+                  },
+                  child: AnimatedSize(
+                    duration: const Duration(milliseconds: 320),
+                    curve: Curves.easeOutCubic,
+                    child: _SelectedCompanyCard(
+                      key: ValueKey(vm.selectedCompany?.id ?? -1),
+                      viewModel: vm,
+                    ),
+                  ),
+                ),
+              ),
             ],
           );
         },
@@ -308,6 +329,7 @@ class _CategoryFilterRow extends StatelessWidget {
                 await viewModel.clearFilters();
               },
             ),
+            Padding(padding:  EdgeInsetsDirectional.only(end: 6.w)),
             ...viewModel.categories.map(
               (c) => Padding(
                 padding: EdgeInsetsDirectional.only(end: 6.w),
@@ -371,7 +393,7 @@ class _MapIconButton extends StatelessWidget {
       children: [
         InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(42),
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -384,7 +406,7 @@ class _MapIconButton extends StatelessWidget {
             child: Icon(
               icon,
               color: isActive ? Colors.black : Colors.white,
-              size: 22,
+              size: 33,
             ),
           ),
         ),
@@ -404,7 +426,7 @@ class _MapIconButton extends StatelessWidget {
 
 class _SelectedCompanyCard extends StatelessWidget {
   final MapViewModel viewModel;
-  const _SelectedCompanyCard({required this.viewModel});
+  const _SelectedCompanyCard({Key? key, required this.viewModel}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

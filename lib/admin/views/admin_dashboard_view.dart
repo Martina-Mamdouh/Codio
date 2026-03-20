@@ -5,6 +5,7 @@ import 'package:kodio_app/core/theme/app_theme.dart';
 import 'companies_management_view.dart';
 import 'banners_management_view.dart';
 import 'categories_management_view.dart';
+import 'map_management_view.dart';
 import 'dashboard_home_view.dart';
 import 'social_links_management_view.dart';
 
@@ -34,6 +35,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       CategoriesManagementView(),
       BannersManagementView(),
       const SocialLinksManagementView(),
+      const MapManagementView(),
     ];
 
     final List<String> pageTitles = [
@@ -44,6 +46,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       'إدارة الفئات',
       'إدارة البانرات',
       'روابط التواصل',
+      'إدارة المواقع',
     ];
 
     return PopScope(
@@ -139,6 +142,11 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                           icon: Icon(Icons.share_outlined),
                           selectedIcon: Icon(Icons.share),
                           label: Text('التواصل'),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.map_outlined),
+                          selectedIcon: Icon(Icons.map),
+                          label: Text('المواقع'),
                         ),
                       ],
                     ),

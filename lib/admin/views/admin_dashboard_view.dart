@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:kodio_app/admin/views/deals_management_view.dart';
 import 'package:kodio_app/admin/views/reviews_management_view.dart';
@@ -86,18 +87,26 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        return SingleChildScrollView(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: constraints.maxHeight,
-                            ),
-                            child: IntrinsicHeight(
-                              child: NavigationRail(
-                                selectedIndex: _selectedIndex,
-                                onDestinationSelected: _onDestinationSelected,
-                                labelType: NavigationRailLabelType.all,
-                                backgroundColor: Colors.transparent,
-                                indicatorColor: AppTheme.kElectricLime.withAlpha(51),
+                        return ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            dragDevices: {
+                              PointerDeviceKind.touch,
+                              PointerDeviceKind.mouse,
+                              PointerDeviceKind.trackpad,
+                            },
+                          ),
+                          child: SingleChildScrollView(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight,
+                              ),
+                              child: IntrinsicHeight(
+                                child: NavigationRail(
+                                  selectedIndex: _selectedIndex,
+                                  onDestinationSelected: _onDestinationSelected,
+                                  labelType: NavigationRailLabelType.all,
+                                  backgroundColor: Colors.transparent,
+                                  indicatorColor: AppTheme.kElectricLime.withAlpha(51),
                                 selectedLabelTextStyle: const TextStyle(
                                   color: AppTheme.kElectricLime,
                                   fontWeight: FontWeight.bold,

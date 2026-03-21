@@ -8,6 +8,8 @@ class BranchModel {
   final String? phone;
   final String? workingHours;
   final String? imageUrl;
+  final String? description;
+  final Map<String, dynamic>? socialLinks; // ✅ Social Links
 
   BranchModel({
     this.id,
@@ -19,6 +21,8 @@ class BranchModel {
     this.phone,
     this.workingHours,
     this.imageUrl,
+    this.description,
+    this.socialLinks,
   });
 
   factory BranchModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +36,8 @@ class BranchModel {
       phone: json['phone'] as String?,
       workingHours: json['working_hours'] as String?,
       imageUrl: json['image_url'] as String?,
+      description: json['description'] as String?,
+      socialLinks: json['social_links'] as Map<String, dynamic>?,
     );
   }
 
@@ -46,6 +52,8 @@ class BranchModel {
       'phone': phone,
       'working_hours': workingHours,
       'image_url': imageUrl,
+      'description': description,
+      'social_links': socialLinks,
     };
   }
 
@@ -59,6 +67,8 @@ class BranchModel {
     String? phone,
     String? workingHours,
     String? imageUrl,
+    String? description,
+    Map<String, dynamic>? socialLinks,
   }) {
     return BranchModel(
       id: id ?? this.id,
@@ -70,6 +80,8 @@ class BranchModel {
       phone: phone ?? this.phone,
       workingHours: workingHours ?? this.workingHours,
       imageUrl: imageUrl ?? this.imageUrl,
+      description: description ?? this.description,
+      socialLinks: socialLinks ?? this.socialLinks,
     );
   }
 }

@@ -12,6 +12,7 @@ import '../../core/theme/app_theme.dart';
 import '../viewmodels/map_view_model.dart';
 import 'company_profile_view.dart';
 import 'deal_details_view.dart';
+import 'widgets/deal_card.dart';
 
 class MapView extends StatefulWidget {
   final bool startNearby;
@@ -189,9 +190,20 @@ class _MapViewState extends State<MapView> {
                   switchInCurve: Curves.easeOutCubic,
                   switchOutCurve: Curves.easeInCubic,
                   transitionBuilder: (child, animation) {
-                    final offset = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
-                        .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
-                    return SlideTransition(position: offset, child: FadeTransition(opacity: animation, child: child));
+                    final offset =
+                        Tween<Offset>(
+                          begin: const Offset(0, 0.08),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOutCubic,
+                          ),
+                        );
+                    return SlideTransition(
+                      position: offset,
+                      child: FadeTransition(opacity: animation, child: child),
+                    );
                   },
                   child: AnimatedSize(
                     duration: const Duration(milliseconds: 320),
@@ -329,7 +341,7 @@ class _CategoryFilterRow extends StatelessWidget {
                 await viewModel.clearFilters();
               },
             ),
-            Padding(padding:  EdgeInsetsDirectional.only(end: 6.w)),
+            Padding(padding: EdgeInsetsDirectional.only(end: 6.w)),
             ...viewModel.categories.map(
               (c) => Padding(
                 padding: EdgeInsetsDirectional.only(end: 6.w),
@@ -426,7 +438,8 @@ class _MapIconButton extends StatelessWidget {
 
 class _SelectedCompanyCard extends StatelessWidget {
   final MapViewModel viewModel;
-  const _SelectedCompanyCard({Key? key, required this.viewModel}) : super(key: key);
+  const _SelectedCompanyCard({Key? key, required this.viewModel})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -640,14 +653,28 @@ class _SelectedCompanyCard extends StatelessWidget {
             )
           else
             SizedBox(
-              height: 120.h,
+              height: 230.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
                 itemCount: companyDeals.length,
                 separatorBuilder: (_, __) => SizedBox(width: 10.w),
                 itemBuilder: (context, index) {
-                  return _DealMiniCard(deal: companyDeals[index]);
+                  final deal = companyDeals[index];
+                  return SizedBox(
+                    width: 220.w,
+                    child: DealCard(
+                      deal: deal,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => DealDetailsView(deal: deal),
+                          ),
+                        );
+                      },
+                    ),
+                  );
                 },
               ),
             ),

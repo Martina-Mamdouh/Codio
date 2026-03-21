@@ -864,6 +864,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
     final existing = isEditing
         ? Map<String, dynamic>.from(_branches[index] as Map)
         : <String, dynamic>{};
+
     final nameCtrl = TextEditingController(text: existing['name'] ?? '');
     final latCtrl = TextEditingController(
       text: existing['lat']?.toString() ?? '',
@@ -873,165 +874,498 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
     );
     final addressCtrl = TextEditingController(text: existing['address'] ?? '');
     final phoneCtrl = TextEditingController(text: existing['phone'] ?? '');
-    final hoursCtrl = TextEditingController(
-      text: existing['working_hours'] ?? '',
+    final descCtrl = TextEditingController(text: existing['description'] ?? '');
+    final hoursFromCtrl = TextEditingController();
+    final hoursToCtrl = TextEditingController();
+
+    // Social Media controllers
+    final existingSocial =
+        (existing['social_links'] as Map<String, dynamic>?) ?? {};
+    final fbCtrl = TextEditingController(
+      text: existingSocial['facebook'] ?? '',
     );
+    final waCtrl = TextEditingController(
+      text: existingSocial['whatsapp'] ?? '',
+    );
+    final tgCtrl = TextEditingController(
+      text: existingSocial['telegram'] ?? '',
+    );
+    final liCtrl = TextEditingController(
+      text: existingSocial['linkedin'] ?? '',
+    );
+    final ttCtrl = TextEditingController(text: existingSocial['tiktok'] ?? '');
+    final igCtrl = TextEditingController(
+      text: existingSocial['instagram'] ?? '',
+    );
+
+    // تقسيم ساعات العمل إن وجدت
+    final rawHours = existing['working_hours'] as String? ?? '';
+    if (rawHours.contains('-')) {
+      final parts = rawHours.split('-');
+      hoursFromCtrl.text = parts[0].trim();
+      hoursToCtrl.text = parts.length > 1 ? parts[1].trim() : '';
+    } else {
+      hoursFromCtrl.text = rawHours;
+    }
+
     Uint8List? pickedImageBytes;
+    String? existingImageUrl = existing['image_url'] as String?;
 
     await showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: AppTheme.kLightBackground,
-          title: Text(
-            isEditing ? 'تعديل الفرع' : 'إضافة فرع جديد',
-            style: const TextStyle(color: AppTheme.kLightText),
-          ),
-          content: SingleChildScrollView(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 560, maxHeight: 700),
+            decoration: BoxDecoration(
+              color: AppTheme.kDarkBackground,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.kSubtleText.withAlpha(50)),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'اسم الفرع *',
-                    labelStyle: TextStyle(color: AppTheme.kSubtleText),
+                // Header
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
                   ),
-                  style: const TextStyle(color: AppTheme.kLightText),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: latCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'خط العرض (Lat)',
-                          labelStyle: TextStyle(color: AppTheme.kSubtleText),
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                          signed: true,
-                        ),
-                        style: const TextStyle(color: AppTheme.kLightText),
-                      ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.kLightBackground,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: lngCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'خط الطول (Lng)',
-                          labelStyle: TextStyle(color: AppTheme.kSubtleText),
-                        ),
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                          signed: true,
-                        ),
-                        style: const TextStyle(color: AppTheme.kLightText),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: AppTheme.kElectricLime,
+                        size: 24,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: addressCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'العنوان',
-                    labelStyle: TextStyle(color: AppTheme.kSubtleText),
-                  ),
-                  style: const TextStyle(color: AppTheme.kLightText),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: phoneCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'رقم الهاتف',
-                    labelStyle: TextStyle(color: AppTheme.kSubtleText),
-                  ),
-                  style: const TextStyle(color: AppTheme.kLightText),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: hoursCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'ساعات العمل (مثال: 9AM-11PM)',
-                    labelStyle: TextStyle(color: AppTheme.kSubtleText),
-                  ),
-                  style: const TextStyle(color: AppTheme.kLightText),
-                ),
-                const SizedBox(height: 12),
-                // صورة الفرع
-                Row(
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final result = await FilePicker.platform.pickFiles(
-                          type: FileType.image,
-                          withData: true,
-                        );
-                        if (result != null &&
-                            result.files.first.bytes != null) {
-                          setDialogState(
-                            () => pickedImageBytes = result.files.first.bytes,
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.image),
-                      label: const Text('صورة الفرع'),
-                    ),
-                    if (pickedImageBytes != null)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Icon(Icons.check_circle, color: Colors.green),
+                      const SizedBox(width: 12),
+                      Text(
+                        isEditing ? 'تعديل الفرع' : 'إضافة فرع جديد',
+                        style: const TextStyle(
+                          color: AppTheme.kLightText,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                  ],
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppTheme.kSubtleText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Form Fields
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // صورة الفرع
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await FilePicker.platform.pickFiles(
+                              type: FileType.image,
+                              withData: true,
+                            );
+                            if (result != null &&
+                                result.files.first.bytes != null) {
+                              setDialogState(() {
+                                pickedImageBytes = result.files.first.bytes;
+                                existingImageUrl = null;
+                              });
+                            }
+                          },
+                          child: Container(
+                            height: 140,
+                            decoration: BoxDecoration(
+                              color: AppTheme.kLightBackground,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppTheme.kSubtleText.withAlpha(80),
+                                style: BorderStyle.solid,
+                              ),
+                            ),
+                            child: pickedImageBytes != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.memory(
+                                      pickedImageBytes!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                    ),
+                                  )
+                                : existingImageUrl != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      existingImageUrl!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      errorBuilder: (_, __, ___) =>
+                                          _imagePlaceholder(),
+                                    ),
+                                  )
+                                : _imagePlaceholder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // اسم الفرع
+                        _buildStyledField(
+                          controller: nameCtrl,
+                          label: 'اسم الفرع *',
+                          hint: 'مثال: فرع العليا',
+                          icon: Icons.store_outlined,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // الوصف
+                        _buildStyledField(
+                          controller: descCtrl,
+                          label: 'وصف الفرع',
+                          hint: 'وصف مختصر للفرع...',
+                          icon: Icons.description_outlined,
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // الهاتف
+                        _buildStyledField(
+                          controller: phoneCtrl,
+                          label: 'رقم الهاتف',
+                          hint: '+966 5xxxxxxxx',
+                          icon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // العنوان
+                        _buildStyledField(
+                          controller: addressCtrl,
+                          label: 'العنوان',
+                          hint: 'عنوان الفرع التفصيلي',
+                          icon: Icons.map_outlined,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // ساعات العمل
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStyledField(
+                                controller: hoursFromCtrl,
+                                label: 'يفتح من',
+                                hint: '9AM',
+                                icon: Icons.access_time,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildStyledField(
+                                controller: hoursToCtrl,
+                                label: 'يغلق في',
+                                hint: '11PM',
+                                icon: Icons.access_time_filled,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // الموقع - Lat/Lng
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStyledField(
+                                controller: latCtrl,
+                                label: 'خط العرض (Lat)',
+                                hint: '24.7136',
+                                icon: Icons.my_location,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                      signed: true,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildStyledField(
+                                controller: lngCtrl,
+                                label: 'خط الطول (Lng)',
+                                hint: '46.6753',
+                                icon: Icons.location_on_outlined,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                      signed: true,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // زر اختيار الموقع من الخريطة
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            final initialLat =
+                                double.tryParse(latCtrl.text) ?? 24.7136;
+                            final initialLng =
+                                double.tryParse(lngCtrl.text) ?? 46.6753;
+                            Navigator.of(ctx).pop();
+                            await _openLocationPickerForBranch(
+                              initialLat: initialLat,
+                              initialLng: initialLng,
+                              onSelected: (lat, lng) {
+                                latCtrl.text = lat.toStringAsFixed(6);
+                                lngCtrl.text = lng.toStringAsFixed(6);
+                              },
+                            );
+                            // Re-open dialog with updated values
+                            if (mounted) {
+                              await _showBranchDialog(index: index);
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                              color: AppTheme.kElectricLime,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          icon: const Icon(
+                            Icons.map,
+                            color: AppTheme.kElectricLime,
+                          ),
+                          label: const Text(
+                            'اختيار الموقع من الخريطة',
+                            style: TextStyle(color: AppTheme.kElectricLime),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // ✅ مواقع التواصل الاجتماعي
+                        const Text(
+                          'مواقع التواصل الاجتماعي',
+                          style: TextStyle(
+                            color: AppTheme.kElectricLime,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildStyledField(
+                          controller: fbCtrl,
+                          label: 'Facebook',
+                          hint: 'https://facebook.com/...',
+                          icon: Icons.facebook,
+                        ),
+                        const SizedBox(height: 10),
+                        _buildStyledField(
+                          controller: waCtrl,
+                          label: 'WhatsApp',
+                          hint: '+966 5xxxxxxxx',
+                          icon: Icons.chat,
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: 10),
+                        _buildStyledField(
+                          controller: tgCtrl,
+                          label: 'Telegram',
+                          hint: 'https://t.me/...',
+                          icon: Icons.send,
+                        ),
+                        const SizedBox(height: 10),
+                        _buildStyledField(
+                          controller: liCtrl,
+                          label: 'LinkedIn',
+                          hint: 'https://linkedin.com/...',
+                          icon: Icons.business,
+                        ),
+                        const SizedBox(height: 10),
+                        _buildStyledField(
+                          controller: ttCtrl,
+                          label: 'TikTok',
+                          hint: 'https://tiktok.com/@...',
+                          icon: Icons.music_note,
+                        ),
+                        const SizedBox(height: 10),
+                        _buildStyledField(
+                          controller: igCtrl,
+                          label: 'Instagram',
+                          hint: 'https://instagram.com/...',
+                          icon: Icons.camera_alt,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Action Buttons
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppTheme.kSubtleText),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: const Text(
+                            'إلغاء',
+                            style: TextStyle(color: AppTheme.kSubtleText),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            if (nameCtrl.text.trim().isEmpty) return;
+                            final workingHours =
+                                hoursFromCtrl.text.trim().isNotEmpty
+                                ? '${hoursFromCtrl.text.trim()} - ${hoursToCtrl.text.trim()}'
+                                : null;
+                            final branchData = <String, dynamic>{
+                              'name': nameCtrl.text.trim(),
+                              'lat': double.tryParse(latCtrl.text) ?? 0.0,
+                              'lng': double.tryParse(lngCtrl.text) ?? 0.0,
+                              'address': addressCtrl.text.trim().isEmpty
+                                  ? null
+                                  : addressCtrl.text.trim(),
+                              'phone': phoneCtrl.text.trim().isEmpty
+                                  ? null
+                                  : phoneCtrl.text.trim(),
+                              'description': descCtrl.text.trim().isEmpty
+                                  ? null
+                                  : descCtrl.text.trim(),
+                              'working_hours': workingHours,
+                              'image_url': pickedImageBytes != null
+                                  ? null
+                                  : existingImageUrl,
+                              if (pickedImageBytes != null)
+                                '_imageBytes': pickedImageBytes,
+                              'social_links': {
+                                'facebook': fbCtrl.text.trim(),
+                                'whatsapp': waCtrl.text.trim(),
+                                'telegram': tgCtrl.text.trim(),
+                                'linkedin': liCtrl.text.trim(),
+                                'tiktok': ttCtrl.text.trim(),
+                                'instagram': igCtrl.text.trim(),
+                              },
+                            };
+                            setState(() {
+                              if (isEditing) {
+                                _branches[index!] = branchData;
+                              } else {
+                                _branches.add(branchData);
+                              }
+                            });
+                            Navigator.of(ctx).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.kElectricLime,
+                            foregroundColor: AppTheme.kDarkBackground,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          icon: Icon(isEditing ? Icons.save : Icons.add),
+                          label: Text(
+                            isEditing ? 'حفظ التعديلات' : 'إضافة الفرع',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text(
-                'إلغاء',
-                style: TextStyle(color: AppTheme.kSubtleText),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (nameCtrl.text.trim().isEmpty) return;
-                final branchData = <String, dynamic>{
-                  'name': nameCtrl.text.trim(),
-                  'lat': double.tryParse(latCtrl.text) ?? 0.0,
-                  'lng': double.tryParse(lngCtrl.text) ?? 0.0,
-                  'address': addressCtrl.text.trim().isEmpty
-                      ? null
-                      : addressCtrl.text.trim(),
-                  'phone': phoneCtrl.text.trim().isEmpty
-                      ? null
-                      : phoneCtrl.text.trim(),
-                  'working_hours': hoursCtrl.text.trim().isEmpty
-                      ? null
-                      : hoursCtrl.text.trim(),
-                  'image_url': existing['image_url'],
-                  if (pickedImageBytes != null) '_imageBytes': pickedImageBytes,
-                };
-                setState(() {
-                  if (isEditing) {
-                    _branches[index!] = branchData;
-                  } else {
-                    _branches.add(branchData);
-                  }
-                });
-                Navigator.of(ctx).pop();
-              },
-              child: Text(isEditing ? 'حفظ' : 'إضافة'),
-            ),
-          ],
         ),
       ),
     );
+  }
+
+  Widget _imagePlaceholder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        Icon(
+          Icons.add_photo_alternate_outlined,
+          color: AppTheme.kSubtleText,
+          size: 40,
+        ),
+        SizedBox(height: 8),
+        Text(
+          'اضغط لإضافة صورة الفرع',
+          style: TextStyle(color: AppTheme.kSubtleText, fontSize: 13),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStyledField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: AppTheme.kLightText),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        labelStyle: const TextStyle(color: AppTheme.kSubtleText),
+        hintStyle: TextStyle(color: AppTheme.kSubtleText.withAlpha(128)),
+        prefixIcon: Icon(icon, color: AppTheme.kElectricLime, size: 20),
+        filled: true,
+        fillColor: AppTheme.kLightBackground,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.kElectricLime),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openLocationPickerForBranch({
+    required double initialLat,
+    required double initialLng,
+    required void Function(double lat, double lng) onSelected,
+  }) async {
+    await _openLocationPicker();
+    // After picker closes, we update the branch coords from the main controllers
+    final lat = double.tryParse(_latController.text);
+    final lng = double.tryParse(_lngController.text);
+    if (lat != null && lng != null) {
+      onSelected(lat, lng);
+    }
   }
 
   Widget _buildTextField({

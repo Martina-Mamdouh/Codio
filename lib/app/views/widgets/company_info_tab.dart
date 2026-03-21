@@ -327,9 +327,190 @@ class CompanyInfoTab extends StatelessWidget {
               const SizedBox(height: 12),
               _SocialLinks(socialLinks: c.socialLinks!, viewModel: viewModel),
             ],
+
+            // ✅ الفروع
+            if ((c.branches ?? []).isNotEmpty) ...[
+              const SizedBox(height: 20),
+              const Text(
+                'الفروع',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ...c.branches!.map(
+                (branch) => Card(
+                  color: AppTheme.kLightBackground,
+                  margin: const EdgeInsets.only(bottom: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // اسم الفرع
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              color: AppTheme.kElectricLime,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                branch.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if ((branch.address ?? '').isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.map_outlined,
+                                color: AppTheme.kSubtleText,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  branch.address!,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if ((branch.phone ?? '').isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          GestureDetector(
+                            onTap: () =>
+                                launchUrl(Uri.parse('tel:${branch.phone}')),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.phone_outlined,
+                                  color: AppTheme.kSubtleText,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  branch.phone!,
+                                  style: const TextStyle(
+                                    color: AppTheme.kElectricLime,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        if ((branch.workingHours ?? '').isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.access_time,
+                                color: AppTheme.kSubtleText,
+                                size: 14,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                branch.workingHours!,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        // مواقع التواصل الاجتماعي للفرع
+                        if (branch.socialLinks != null &&
+                            branch.socialLinks!.values.any(
+                              (v) => (v as String? ?? '').isNotEmpty,
+                            )) ...[
+                          const SizedBox(height: 10),
+                          const Divider(color: Colors.white10),
+                          const SizedBox(height: 6),
+                          _BranchSocialLinks(socialLinks: branch.socialLinks!),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+// ✅ Branch Social Links Widget
+class _BranchSocialLinks extends StatelessWidget {
+  final Map<String, dynamic> socialLinks;
+  const _BranchSocialLinks({required this.socialLinks});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <({IconData icon, Color color, String url})>[];
+
+    void add(String key, IconData icon, Color color) {
+      final v = socialLinks[key] as String? ?? '';
+      if (v.isNotEmpty) items.add((icon: icon, color: color, url: v));
+    }
+
+    add('facebook', FontAwesomeIcons.facebook, const Color(0xFF1877F2));
+    add('whatsapp', FontAwesomeIcons.whatsapp, const Color(0xFF25D366));
+    add('telegram', FontAwesomeIcons.telegram, const Color(0xFF0088CC));
+    add('linkedin', FontAwesomeIcons.linkedin, const Color(0xFF0A66C2));
+    add('tiktok', FontAwesomeIcons.tiktok, Colors.white);
+    add('instagram', FontAwesomeIcons.instagram, const Color(0xFFE4405F));
+
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: items.map((item) {
+        return InkWell(
+          onTap: () async {
+            try {
+              final uri = Uri.parse(item.url.trim());
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } catch (_) {}
+          },
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.kDarkBackground,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Center(
+              child: FaIcon(item.icon, color: item.color, size: 18),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

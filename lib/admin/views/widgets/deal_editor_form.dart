@@ -20,13 +20,15 @@ class DealEditorFormState extends State<DealEditorForm> {
 
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  final _dealTypeController = TextEditingController();
   final _dealValueController = TextEditingController();
   final _startsAtController = TextEditingController();
   final _expiresAtController = TextEditingController();
   final _companyNameController = TextEditingController();
   final _termsController = TextEditingController();
   final _discountValueController = TextEditingController();
+  final _linkUrlController = TextEditingController();
+
+  String _selectedDealType = 'code'; // code, link, both
 
   Uint8List? _selectedImageBytes;
   String? _existingImageUrl;
@@ -36,6 +38,10 @@ class DealEditorFormState extends State<DealEditorForm> {
   int? _selectedCategoryId;
   int? _selectedCompanyId;
   DealModel? _currentDeal;
+
+  // Multi-image support
+  List<Uint8List> _additionalImageBytesList = [];
+  List<String> _existingAdditionalImageUrls = [];
 
   @override
   void didChangeDependencies() {
@@ -59,7 +65,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _titleController.text = deal.title;
       _descController.text = deal.description;
       _existingImageUrl = deal.imageUrl;
-      _dealTypeController.text = deal.dealType;
+      _selectedDealType = deal.dealType;
       _dealValueController.text = deal.dealValue;
       _startsAtController.text = deal.startsAt
           .toIso8601String()
@@ -73,15 +79,18 @@ class DealEditorFormState extends State<DealEditorForm> {
       _selectedCompanyId = deal.companyId;
       _termsController.text = deal.termsConditions;
       _discountValueController.text = deal.discountValue;
+      _linkUrlController.text = deal.linkUrl ?? '';
       _isFeatured = deal.isFeatured;
       _isForStudents = deal.isForStudents;
       _selectedCategoryId = deal.categoryId;
+      _additionalImageBytesList = [];
+      _existingAdditionalImageUrls = List<String>.from(deal.imageUrls);
     } else {
       _isEditing = false;
       _titleController.clear();
       _descController.clear();
       _existingImageUrl = null;
-      _dealTypeController.clear();
+      _selectedDealType = 'code';
       _dealValueController.clear();
       _startsAtController.clear();
       _expiresAtController.clear();
@@ -89,10 +98,13 @@ class DealEditorFormState extends State<DealEditorForm> {
       _selectedCompanyId = null;
       _termsController.clear();
       _discountValueController.clear();
+      _linkUrlController.clear();
       _isFeatured = false;
       _isForStudents = false;
       _selectedCategoryId = null;
       _selectedImageBytes = null;
+      _additionalImageBytesList = [];
+      _existingAdditionalImageUrls = [];
     }
   }
 
@@ -100,12 +112,12 @@ class DealEditorFormState extends State<DealEditorForm> {
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
-    _dealTypeController.dispose();
     _dealValueController.dispose();
     _startsAtController.dispose();
     _expiresAtController.dispose();
     _companyNameController.dispose();
     _termsController.dispose();
+    _linkUrlController.dispose();
     _discountValueController.dispose();
     super.dispose();
   }
@@ -189,7 +201,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       'title': _titleController.text.trim(),
       'description': _descController.text.trim(),
       'image_url': _existingImageUrl,
-      'deal_type': _dealTypeController.text.trim(),
+      'deal_type': _selectedDealType,
       'deal_value': _dealValueController.text.trim(),
       'starts_at': _startsAtController.text,
       'expires_at': _expiresAtController.text,
@@ -200,13 +212,31 @@ class DealEditorFormState extends State<DealEditorForm> {
       'is_featured': _isFeatured,
       'is_for_students': _isForStudents,
       'category_id': _selectedCategoryId,
+      'link_url': (_selectedDealType == 'both' || _selectedDealType == 'link')
+          ? _linkUrlController.text.trim()
+          : null,
     };
 
     try {
       if (_isEditing) {
-        await vm.updateDeal(vm.selectedDeal!.id, dealData, _selectedImageBytes);
+        await vm.updateDeal(
+          vm.selectedDeal!.id,
+          dealData,
+          _selectedImageBytes,
+          additionalImages: _additionalImageBytesList.isNotEmpty
+              ? _additionalImageBytesList
+              : null,
+          existingAdditionalUrls: _existingAdditionalImageUrls,
+        );
       } else {
-        await vm.addDeal(dealData, _selectedImageBytes);
+        await vm.addDeal(
+          dealData,
+          _selectedImageBytes,
+          additionalImages: _additionalImageBytesList.isNotEmpty
+              ? _additionalImageBytesList
+              : null,
+          existingAdditionalUrls: _existingAdditionalImageUrls,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -247,8 +277,12 @@ class DealEditorFormState extends State<DealEditorForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // صورة العرض
+              // صورة العرض الأساسية
               _buildImagePicker(),
+              const SizedBox(height: 16),
+
+              // صور إضافية
+              _buildAdditionalImagesPicker(),
               const SizedBox(height: 24),
 
               // عنوان العرض
@@ -302,31 +336,46 @@ class DealEditorFormState extends State<DealEditorForm> {
               ),
               const SizedBox(height: 16),
 
-              // نوع العرض
+              // نوع العرض (Dropdown)
+              _buildDealTypeDropdown(),
+              const SizedBox(height: 16),
+
+              // قيمة العرض (كود أو رابط حسب النوع)
               _buildTextField(
-                controller: _dealTypeController,
-                label: 'نوع العرض',
-                hint: 'code أو link',
-                icon: Icons.category,
-                validator: (val) {
-                  if (val!.isEmpty) return 'نوع العرض مطلوب';
-                  if (val != 'code' && val != 'link') {
-                    return 'يجب أن يكون code أو link';
-                  }
-                  return null;
-                },
+                controller: _dealValueController,
+                label: _selectedDealType == 'link'
+                    ? 'رابط العرض'
+                    : 'كود الخصم',
+                hint: _selectedDealType == 'link'
+                    ? 'مثال: https://example.com'
+                    : 'مثال: DISCOUNT50',
+                icon: _selectedDealType == 'link'
+                    ? Icons.link
+                    : Icons.vpn_key,
+                keyboardType: _selectedDealType == 'link'
+                    ? TextInputType.url
+                    : TextInputType.text,
+                validator: (val) => val!.isEmpty ? 'هذا الحقل مطلوب' : null,
               ),
               const SizedBox(height: 16),
 
-              // قيمة العرض (كود أو رابط)
-              _buildTextField(
-                controller: _dealValueController,
-                label: 'قيمة العرض',
-                hint: 'الكود أو الرابط',
-                icon: Icons.vpn_key,
-                validator: (val) => val!.isEmpty ? 'قيمة العرض مطلوبة' : null,
-              ),
-              const SizedBox(height: 16),
+              // رابط العرض (يظهر فقط عند اختيار both)
+              if (_selectedDealType == 'both') ...[
+                _buildTextField(
+                  controller: _linkUrlController,
+                  label: 'رابط العرض',
+                  hint: 'مثال: https://example.com/offer',
+                  icon: Icons.link,
+                  keyboardType: TextInputType.url,
+                  validator: (val) {
+                    if (val == null || val.isEmpty) {
+                      return 'رابط العرض مطلوب عند اختيار كود + رابط';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // تاريخ البداية والنهاية
               Row(
@@ -654,6 +703,53 @@ class DealEditorFormState extends State<DealEditorForm> {
     );
   }
 
+  Widget _buildDealTypeDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedDealType,
+      decoration: InputDecoration(
+        labelText: 'نوع العرض *',
+        prefixIcon: const Icon(Icons.category, color: AppTheme.kElectricLime),
+        filled: true,
+        fillColor: AppTheme.kDarkBackground,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.kElectricLime, width: 2),
+        ),
+        labelStyle: const TextStyle(color: AppTheme.kSubtleText),
+      ),
+      dropdownColor: AppTheme.kDarkBackground,
+      style: const TextStyle(color: AppTheme.kLightText),
+      items: const [
+        DropdownMenuItem(
+          value: 'code',
+          child: Text('كود خصم'),
+        ),
+        DropdownMenuItem(
+          value: 'link',
+          child: Text('رابط العرض'),
+        ),
+        DropdownMenuItem(
+          value: 'both',
+          child: Text('كود خصم + رابط'),
+        ),
+      ],
+      onChanged: (value) {
+        if (value != null) {
+          setState(() => _selectedDealType = value);
+        }
+      },
+      validator: (val) => val == null ? 'نوع العرض مطلوب' : null,
+    );
+  }
+
   Widget _buildSwitchTile({
     required String title,
     required bool value,
@@ -761,6 +857,246 @@ class DealEditorFormState extends State<DealEditorForm> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _pickAdditionalImage() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        withData: true,
+        allowMultiple: true,
+      );
+
+      if (result != null) {
+        setState(() {
+          for (final file in result.files) {
+            if (file.bytes != null) {
+              _additionalImageBytesList.add(file.bytes!);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('خطأ في اختيار الصور: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  Widget _buildAdditionalImagesPicker() {
+    final int totalAdditional =
+        _existingAdditionalImageUrls.length + _additionalImageBytesList.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text(
+              'صور إضافية',
+              style: TextStyle(
+                color: AppTheme.kLightText,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '($totalAdditional)',
+              style: const TextStyle(
+                color: AppTheme.kSubtleText,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'أضف صور إضافية للعرض (اختياري) - ستظهر في سلايدر تلقائي',
+          style: TextStyle(color: AppTheme.kSubtleText, fontSize: 12),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 120,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              // Existing additional images from DB
+              ..._existingAdditionalImageUrls.asMap().entries.map((entry) {
+                final index = entry.key;
+                final url = entry.value;
+                return Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.kSubtleText.withAlpha(51),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            url,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.broken_image,
+                              color: AppTheme.kSubtleText,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _existingAdditionalImageUrls.removeAt(index);
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.redAccent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+
+              // Newly picked images (not yet uploaded)
+              ..._additionalImageBytesList.asMap().entries.map((entry) {
+                final index = entry.key;
+                final bytes = entry.value;
+                return Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.kElectricLime.withAlpha(100),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.memory(
+                            bytes,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      // "New" badge
+                      Positioned(
+                        bottom: 4,
+                        left: 4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.kElectricLime,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'جديدة',
+                            style: TextStyle(
+                              color: AppTheme.kDarkBackground,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _additionalImageBytesList.removeAt(index);
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.redAccent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+
+              // Add button
+              GestureDetector(
+                onTap: _pickAdditionalImage,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: AppTheme.kDarkBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppTheme.kElectricLime.withAlpha(80),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_photo_alternate,
+                        color: AppTheme.kElectricLime,
+                        size: 32,
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'إضافة صور',
+                        style: TextStyle(
+                          color: AppTheme.kElectricLime,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

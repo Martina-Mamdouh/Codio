@@ -84,14 +84,20 @@ class DealDetailsViewModel extends ChangeNotifier {
 
   // الحسابات الديناميكية للواجهة
   double get calculatedSuccessRate {
-    if (dealViews == 0) return 100.0; // افتراضي للعروض الجديدة
-    // دمجنا التقييمات الإيجابية (happyCount) مع التفاعلات لزيادة دقة نسبة النجاح
-    final interactions = copyCodeCount + openLinkCount + happyCount;
-    if (interactions == 0) return 0.0; // لا يوجد تفاعل
+    // عرض جديد بدون تقييمات = 5 نجوم (100%)
+    if (totalEmojiCount == 0) return 100.0;
 
-    // نسبة النجاح الحقيقية = (التحويلات / المشاهدات) * 100
-    double rate = (interactions / dealViews) * 100;
-    return rate > 100 ? 100 : rate;
+    // الأساس: متوسط الإيموجي (😊=5, 😐=3, 😞=1)
+    final avg = ((happyCount * 5) + (neutralCount * 3) + (sadCount * 1)) / totalEmojiCount;
+
+    // البونص: نسخ الكود / فتح الرابط يرفع التقييم لو ناقص (بحد أقصى +1 نجمة)
+    double bonus = 0.0;
+    if (avg < 5.0 && dealViews > 0) {
+      bonus = ((copyCodeCount + openLinkCount) / dealViews).clamp(0.0, 1.0);
+    }
+
+    final finalRating = (avg + bonus).clamp(0.0, 5.0);
+    return (finalRating / 5) * 100;
   }
 
   // توزيع الإيموجي من البيانات الفعلية

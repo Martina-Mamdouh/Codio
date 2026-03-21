@@ -75,8 +75,10 @@ class DealsManagementViewModel extends ChangeNotifier {
 
   Future<void> addDeal(
     Map<String, dynamic> dealData,
-    Uint8List? imageBytes,
-  ) async {
+    Uint8List? imageBytes, {
+    List<Uint8List>? additionalImages,
+    List<String>? existingAdditionalUrls,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -93,6 +95,20 @@ class DealsManagementViewModel extends ChangeNotifier {
       );
       dealData['image_url'] = imageUrl;
 
+      // Upload additional images
+      final List<String> allAdditionalUrls = [...?existingAdditionalUrls];
+      if (additionalImages != null) {
+        for (int i = 0; i < additionalImages.length; i++) {
+          final path = 'deals/${DateTime.now().millisecondsSinceEpoch}_extra_$i.png';
+          final url = await _supabaseService.uploadImageBytes(
+            additionalImages[i],
+            path,
+          );
+          allAdditionalUrls.add(url);
+        }
+      }
+      dealData['image_urls'] = allAdditionalUrls;
+
       await _supabaseService.addDeal(dealData);
       _deals = await _supabaseService.getDeals();
       hideEditor();
@@ -107,8 +123,10 @@ class DealsManagementViewModel extends ChangeNotifier {
   Future<void> updateDeal(
     int id,
     Map<String, dynamic> dealData,
-    Uint8List? imageBytes,
-  ) async {
+    Uint8List? imageBytes, {
+    List<Uint8List>? additionalImages,
+    List<String>? existingAdditionalUrls,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -122,6 +140,20 @@ class DealsManagementViewModel extends ChangeNotifier {
         );
         dealData['image_url'] = imageUrl;
       }
+
+      // Upload additional images
+      final List<String> allAdditionalUrls = [...?existingAdditionalUrls];
+      if (additionalImages != null) {
+        for (int i = 0; i < additionalImages.length; i++) {
+          final path = 'deals/${DateTime.now().millisecondsSinceEpoch}_extra_$i.png';
+          final url = await _supabaseService.uploadImageBytes(
+            additionalImages[i],
+            path,
+          );
+          allAdditionalUrls.add(url);
+        }
+      }
+      dealData['image_urls'] = allAdditionalUrls;
 
       await _supabaseService.updateDeal(id, dealData);
       _deals = await _supabaseService.getDeals();

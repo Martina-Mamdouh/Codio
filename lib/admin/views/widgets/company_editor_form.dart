@@ -56,6 +56,9 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
   Set<int> _selectedCategoryIds = {}; // ✅ Multi-select
   int? _selectedPrimaryCategoryId; // ✅ Primary category
 
+  // ✅ Branches
+  List<Map<String, dynamic>> _branches = [];
+
   bool _isEditing = false;
   CompanyModel? _currentCompany;
 
@@ -120,6 +123,8 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
       // Reset selection bytes as we are loading existing
       _selectedLogoBytes = null;
       _selectedCoverBytes = null;
+      // Load existing branches
+      _branches = (company.branches ?? []).map((b) => b.toJson()).toList();
     } else {
       _isEditing = false;
       _nameController.clear();
@@ -146,6 +151,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
       _selectedCoverBytes = null; // ✅
       _selectedCategoryIds = {}; // ✅
       _selectedPrimaryCategoryId = null; // ✅
+      _branches = []; // ✅ Branches
     }
   }
 
@@ -289,13 +295,15 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
           vm.selectedCompany!.id,
           companyData,
           _selectedLogoBytes,
-          _selectedCoverBytes, // ✅ أضف الـ cover
+          _selectedCoverBytes,
+          _branches, // ✅
         );
       } else {
         await vm.addCompany(
           companyData,
           _selectedLogoBytes,
-          _selectedCoverBytes, // ✅ أضف الـ cover
+          _selectedCoverBytes,
+          _branches, // ✅
         );
       }
     } catch (e) {
@@ -403,10 +411,10 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                           child: ElevatedButton.icon(
                             onPressed: () {
                               setState(() {
-                                _latController.text =
-                                    selectedPoint.latitude.toStringAsFixed(6);
-                                _lngController.text =
-                                    selectedPoint.longitude.toStringAsFixed(6);
+                                _latController.text = selectedPoint.latitude
+                                    .toStringAsFixed(6);
+                                _lngController.text = selectedPoint.longitude
+                                    .toStringAsFixed(6);
                               });
                               Navigator.of(sheetContext).pop();
                             },
@@ -725,6 +733,10 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
               ),
               const SizedBox(height: 24),
 
+              // ✅ قسم الفروع
+              _buildBranchesSection(),
+              const SizedBox(height: 24),
+
               // زر الحفظ
               ElevatedButton.icon(
                 onPressed: vm.isLoading ? null : () => _submit(vmRead),
@@ -751,6 +763,272 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBranchesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'الفروع',
+              style: TextStyle(
+                color: AppTheme.kElectricLime,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => _showBranchDialog(),
+              icon: const Icon(Icons.add, color: AppTheme.kElectricLime),
+              label: const Text(
+                'إضافة فرع',
+                style: TextStyle(color: AppTheme.kElectricLime),
+              ),
+            ),
+          ],
+        ),
+        if (_branches.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              'لا يوجد فروع حالياً، اضغط على "إضافة فرع" لإضافة فرع للشركة.',
+              style: TextStyle(color: AppTheme.kSubtleText, fontSize: 13),
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _branches.length,
+            itemBuilder: (context, index) {
+              final branch = _branches[index];
+              return Card(
+                color: AppTheme.kDarkBackground,
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.location_on,
+                    color: AppTheme.kElectricLime,
+                  ),
+                  title: Text(
+                    branch['name'] ?? 'فرع بدون اسم',
+                    style: const TextStyle(color: AppTheme.kLightText),
+                  ),
+                  subtitle: Text(
+                    branch['address'] ?? '${branch['lat']}, ${branch['lng']}',
+                    style: const TextStyle(
+                      color: AppTheme.kSubtleText,
+                      fontSize: 12,
+                    ),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.edit,
+                          color: Colors.blueAccent,
+                          size: 20,
+                        ),
+                        onPressed: () => _showBranchDialog(index: index),
+                        tooltip: 'تعديل الفرع',
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setState(() => _branches.removeAt(index)),
+                        tooltip: 'حذف الفرع',
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Future<void> _showBranchDialog({int? index}) async {
+    final isEditing = index != null;
+    final existing = isEditing
+        ? Map<String, dynamic>.from(_branches[index] as Map)
+        : <String, dynamic>{};
+    final nameCtrl = TextEditingController(text: existing['name'] ?? '');
+    final latCtrl = TextEditingController(
+      text: existing['lat']?.toString() ?? '',
+    );
+    final lngCtrl = TextEditingController(
+      text: existing['lng']?.toString() ?? '',
+    );
+    final addressCtrl = TextEditingController(text: existing['address'] ?? '');
+    final phoneCtrl = TextEditingController(text: existing['phone'] ?? '');
+    final hoursCtrl = TextEditingController(
+      text: existing['working_hours'] ?? '',
+    );
+    Uint8List? pickedImageBytes;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.kLightBackground,
+          title: Text(
+            isEditing ? 'تعديل الفرع' : 'إضافة فرع جديد',
+            style: const TextStyle(color: AppTheme.kLightText),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'اسم الفرع *',
+                    labelStyle: TextStyle(color: AppTheme.kSubtleText),
+                  ),
+                  style: const TextStyle(color: AppTheme.kLightText),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: latCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'خط العرض (Lat)',
+                          labelStyle: TextStyle(color: AppTheme.kSubtleText),
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                          signed: true,
+                        ),
+                        style: const TextStyle(color: AppTheme.kLightText),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: lngCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'خط الطول (Lng)',
+                          labelStyle: TextStyle(color: AppTheme.kSubtleText),
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                          signed: true,
+                        ),
+                        style: const TextStyle(color: AppTheme.kLightText),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: addressCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'العنوان',
+                    labelStyle: TextStyle(color: AppTheme.kSubtleText),
+                  ),
+                  style: const TextStyle(color: AppTheme.kLightText),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: phoneCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'رقم الهاتف',
+                    labelStyle: TextStyle(color: AppTheme.kSubtleText),
+                  ),
+                  style: const TextStyle(color: AppTheme.kLightText),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: hoursCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'ساعات العمل (مثال: 9AM-11PM)',
+                    labelStyle: TextStyle(color: AppTheme.kSubtleText),
+                  ),
+                  style: const TextStyle(color: AppTheme.kLightText),
+                ),
+                const SizedBox(height: 12),
+                // صورة الفرع
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final result = await FilePicker.platform.pickFiles(
+                          type: FileType.image,
+                          withData: true,
+                        );
+                        if (result != null &&
+                            result.files.first.bytes != null) {
+                          setDialogState(
+                            () => pickedImageBytes = result.files.first.bytes,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.image),
+                      label: const Text('صورة الفرع'),
+                    ),
+                    if (pickedImageBytes != null)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Icon(Icons.check_circle, color: Colors.green),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(color: AppTheme.kSubtleText),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (nameCtrl.text.trim().isEmpty) return;
+                final branchData = <String, dynamic>{
+                  'name': nameCtrl.text.trim(),
+                  'lat': double.tryParse(latCtrl.text) ?? 0.0,
+                  'lng': double.tryParse(lngCtrl.text) ?? 0.0,
+                  'address': addressCtrl.text.trim().isEmpty
+                      ? null
+                      : addressCtrl.text.trim(),
+                  'phone': phoneCtrl.text.trim().isEmpty
+                      ? null
+                      : phoneCtrl.text.trim(),
+                  'working_hours': hoursCtrl.text.trim().isEmpty
+                      ? null
+                      : hoursCtrl.text.trim(),
+                  'image_url': existing['image_url'],
+                  if (pickedImageBytes != null) '_imageBytes': pickedImageBytes,
+                };
+                setState(() {
+                  if (isEditing) {
+                    _branches[index!] = branchData;
+                  } else {
+                    _branches.add(branchData);
+                  }
+                });
+                Navigator.of(ctx).pop();
+              },
+              child: Text(isEditing ? 'حفظ' : 'إضافة'),
+            ),
+          ],
         ),
       ),
     );

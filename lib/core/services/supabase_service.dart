@@ -102,7 +102,7 @@ class SupabaseService {
       // 1. Fetch companies with deals count (Keep this as it was working)
       final companiesData = await _client
           .from('companies')
-          .select('*, deals(count)')
+          .select('*, deals(count), company_branches(*)')
           .order('created_at', ascending: false);
 
       // 2. Fetch all categories to map names manually (Safest approach due to DB FK issues)
@@ -146,14 +146,60 @@ class SupabaseService {
     }
   }
 
-  Future<void> addCompany(Map<String, dynamic> companyData) async {
+  Future<int> addCompany(Map<String, dynamic> companyData) async {
     try {
-      await _client.from('companies').insert(companyData);
+      final response = await _client
+          .from('companies')
+          .insert(companyData)
+          .select('id')
+          .single();
+      return response['id'] as int;
     } catch (e) {
       if (kDebugMode) {
         print('Error adding company: $e');
       }
       throw Exception('Failed to add company. Please try again.');
+    }
+  }
+
+  Future<void> saveCompanyBranches(
+    int companyId,
+    List<Map<String, dynamic>> branches,
+  ) async {
+    if (branches.isEmpty) return;
+    try {
+      final branchesWithId = branches.map((b) {
+        final copy = Map<String, dynamic>.from(b);
+        copy.remove('id');
+        copy['company_id'] = companyId;
+        return copy;
+      }).toList();
+      await _client.from('company_branches').insert(branchesWithId);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving company branches: $e');
+      }
+      throw Exception('Failed to save company branches.');
+    }
+  }
+
+  Future<void> replaceCompanyBranches(
+    int companyId,
+    List<Map<String, dynamic>> branches,
+  ) async {
+    try {
+      await _client
+          .from('company_branches')
+          .delete()
+          .eq('company_id', companyId);
+      if (branches.isNotEmpty) {
+        await saveCompanyBranches(companyId, branches);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error replacing company branches: $e');
+      }
+      throw Exception('Failed to replace company branches.');
     }
   }
 

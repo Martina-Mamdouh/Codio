@@ -75,6 +75,7 @@ class CompaniesManagementViewModel extends ChangeNotifier {
     Map<String, dynamic> companyData,
     Uint8List? logoBytes,
     Uint8List? coverBytes, // ✅ جديد
+    List<Map<String, dynamic>> branches, // ✅ فروع
   ) async {
     _isLoading = true;
     _errorMessage = null;
@@ -103,7 +104,27 @@ class CompaniesManagementViewModel extends ChangeNotifier {
         companyData['cover_image_url'] = coverUrl;
       }
 
-      await _supabaseService.addCompany(companyData);
+      await _supabaseService.addCompany(companyData).then((newId) async {
+        // حفظ الفروع لو موجودة
+        if (branches.isNotEmpty) {
+          // رفع صور الفروع أولاً
+          for (var branch in branches) {
+            if (branch['_imageBytes'] != null) {
+              final imgBytes = branch['_imageBytes'] as Uint8List;
+              branch.remove('_imageBytes');
+              final imgPath =
+                  'branches/${DateTime.now().millisecondsSinceEpoch}_${branch['name']}.png';
+              branch['image_url'] = await _supabaseService.uploadImageBytes(
+                imgBytes,
+                imgPath,
+              );
+            } else {
+              branch.remove('_imageBytes');
+            }
+          }
+          await _supabaseService.saveCompanyBranches(newId, branches);
+        }
+      });
       _companies = await _supabaseService.getCompanies();
       hideEditor();
     } catch (e) {
@@ -120,6 +141,7 @@ class CompaniesManagementViewModel extends ChangeNotifier {
     Map<String, dynamic> companyData,
     Uint8List? logoBytes,
     Uint8List? coverBytes, // ✅ جديد
+    List<Map<String, dynamic>> branches, // ✅ فروع
   ) async {
     _isLoading = true;
     _errorMessage = null;
@@ -147,6 +169,22 @@ class CompaniesManagementViewModel extends ChangeNotifier {
       }
 
       await _supabaseService.updateCompany(id, companyData);
+      // دايماً استبدل الفروع عند التعديل
+      for (var branch in branches) {
+        if (branch['_imageBytes'] != null) {
+          final imgBytes = branch['_imageBytes'] as Uint8List;
+          branch.remove('_imageBytes');
+          final imgPath =
+              'branches/${DateTime.now().millisecondsSinceEpoch}_${branch['name']}.png';
+          branch['image_url'] = await _supabaseService.uploadImageBytes(
+            imgBytes,
+            imgPath,
+          );
+        } else {
+          branch.remove('_imageBytes');
+        }
+      }
+      await _supabaseService.replaceCompanyBranches(id, branches);
       _companies = await _supabaseService.getCompanies();
       hideEditor();
     } catch (e) {

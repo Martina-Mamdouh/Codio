@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../utils/url_utils.dart';
+import 'branch_model.dart';
 
 class CompanyModel {
   final int id;
@@ -25,6 +26,7 @@ class CompanyModel {
   final List<int>? categoryIds; // ✅ New Field
   final int? primaryCategoryId; // ✅ New Field
   final String? instagramUrl; // ✅ New Field
+  final List<BranchModel>? branches; // ✅ Branches
 
   CompanyModel({
     required this.id,
@@ -50,6 +52,7 @@ class CompanyModel {
     this.categoryIds, // ✅ New Field
     this.primaryCategoryId, // ✅ New Field
     this.instagramUrl, // ✅ New Field
+    this.branches, // ✅ Branches
   });
 
   factory CompanyModel.fromJson(Map<String, dynamic> json) {
@@ -101,6 +104,9 @@ class CompanyModel {
         primaryCategoryId: (json['primary_category_id'] as num?)
             ?.toInt(), // ✅ New Field
         instagramUrl: json['instagram_url'], // ✅ New Field
+        branches: (json['company_branches'] as List<dynamic>?)
+            ?.map((b) => BranchModel.fromJson(b as Map<String, dynamic>))
+            .toList(),
       );
     } catch (e) {
       if (kDebugMode) {
@@ -161,6 +167,7 @@ class CompanyModel {
     List<int>? categoryIds, // ✅ New Field
     int? primaryCategoryId, // ✅ New Field
     String? instagramUrl, // ✅ New Field
+    List<BranchModel>? branches, // ✅ Branches
   }) {
     return CompanyModel(
       id: id ?? this.id,
@@ -187,6 +194,7 @@ class CompanyModel {
       primaryCategoryId:
           primaryCategoryId ?? this.primaryCategoryId, // ✅ New Field
       instagramUrl: instagramUrl ?? this.instagramUrl, // ✅ New Field
+      branches: branches ?? this.branches, // ✅ Branches
     );
   }
 }

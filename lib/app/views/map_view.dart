@@ -232,7 +232,7 @@ class _MapViewState extends State<MapView> {
       return Marker(
         point: LatLng(company.lat, company.lng),
         width: 56,
-        height: discount.isNotEmpty ? 72 : 56,
+        height: discount.isNotEmpty ? 96 : 56,
         child: GestureDetector(
           onTap: () => vm.selectCompany(company),
           child: _CompanyMarkerWidget(
@@ -263,18 +263,24 @@ class _CompanyMarkerWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (discount.isNotEmpty)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.redAccent,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              discount,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 140),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                discount,
+                maxLines: 3,
+                softWrap: true,
+                overflow: TextOverflow.clip,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

@@ -463,9 +463,6 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                           ),
                         ],
                         rows: displayDeals.map((deal) {
-                          final successRate =
-                              (deal['success_rate'] as num? ?? 0).toDouble();
-
                           // Extract emoji feedback data if available
                           final happyCount =
                               deal['emoji_happy_count'] as int? ?? 0;
@@ -474,6 +471,28 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                           final sadCount = deal['emoji_sad_count'] as int? ?? 0;
                           final totalEmoji =
                               happyCount + neutralCount + sadCount;
+
+                          // Extract engagement interactions from table
+                          final copyCount =
+                              deal['code_copies'] as int? ?? 0;
+                          final linkCount =
+                              deal['link_opens'] as int? ?? 0;
+                          final dealViews =
+                              deal['views'] as int? ?? 0;
+
+                          // Local flutter calc for success rate that matches mobile deal_details_view_model algorithm
+                          double successRate = 100.0;
+                          if (totalEmoji > 0) {
+                            final avg = ((happyCount * 5) + (neutralCount * 3) + (sadCount * 1)) / totalEmoji;
+                            
+                            double bonus = 0.0;
+                            if (avg < 5.0 && dealViews > 0) {
+                              bonus = ((copyCount + linkCount) / dealViews).clamp(0.0, 1.0);
+                            }
+                            
+                            final finalRating = (avg + bonus).clamp(0.0, 5.0);
+                            successRate = (finalRating / 5) * 100;
+                          }
 
                           return DataRow(
                             cells: [

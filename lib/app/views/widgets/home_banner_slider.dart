@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -45,7 +46,9 @@ class HomeBannerSlider extends StatelessWidget {
       ),
       itemBuilder: (context, index, realIndex) {
         final banner = banners[index];
-        print('📸 Banner Image URL: [${banner.imageUrl}]');
+        if (kDebugMode) {
+          print('📸 Banner Image URL: [${banner.imageUrl}]');
+        }
         return GestureDetector(
           onTap: () async {
             debugPrint('🖱️ Banner tapped: ${banner.id}');
@@ -118,7 +121,9 @@ class HomeBannerSlider extends StatelessWidget {
                   ),
                 ),
                 errorWidget: (context, url, error) {
-                  print('❌ Banner Image Error: $error for URL: [$url]');
+                  if (kDebugMode) {
+                    print('❌ Banner Image Error: $error for URL: [$url]');
+                  }
                   return Container(
                     color: AppTheme.kLightBackground,
                     child: const Icon(Icons.broken_image, color: Colors.white),

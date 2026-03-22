@@ -10,7 +10,6 @@ import 'admin/viewmodels/banners_management_viewmodel.dart';
 import 'admin/viewmodels/companies_management_viewmodel.dart';
 import 'admin/viewmodels/deals_management_viewmodel.dart';
 import 'admin/viewmodels/dashboard_viewmodel.dart';
-import 'core/services/analytics_service.dart';
 import 'core/theme/app_theme.dart';
 
 void main() async {

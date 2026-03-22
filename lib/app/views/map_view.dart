@@ -122,7 +122,7 @@ class _MapViewState extends State<MapView> {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.blue.withOpacity(0.4),
+                                        color: Colors.blue.withValues(alpha: 0.4),
                                         blurRadius: 8,
                                         spreadRadius: 2,
                                       ),
@@ -311,8 +311,8 @@ class _CompanyMarkerWidget extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: isSelected
-                    ? AppTheme.kElectricLime.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.4),
+                    ? AppTheme.kElectricLime.withValues(alpha: 0.5)
+                    : Colors.black.withValues(alpha: 0.4),
                 blurRadius: 6,
                 spreadRadius: 1,
               ),
@@ -430,7 +430,7 @@ class _MapIconButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: isActive
                   ? AppTheme.kElectricLime
-                  : Colors.black.withOpacity(0.7),
+                  : Colors.black.withValues(alpha: 0.7),
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white10),
             ),
@@ -460,10 +460,9 @@ class _SelectedCompanyCard extends StatefulWidget {
   final VoidCallback onClose;
 
   const _SelectedCompanyCard({
-    Key? key,
     required this.viewModel,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<_SelectedCompanyCard> createState() => _SelectedCompanyCardState();
@@ -567,7 +566,7 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
           border: Border.all(color: Colors.white12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.35),
+              color: Colors.black.withValues(alpha: 0.35),
               blurRadius: 24,
               offset: const Offset(0, 8),
             ),
@@ -863,7 +862,7 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.green,
                           side: BorderSide(
-                            color: Colors.green.withOpacity(0.45),
+                            color: Colors.green.withValues(alpha: 0.45),
                           ),
                           minimumSize: Size(118.w, 44.h),
                           shape: RoundedRectangleBorder(
@@ -936,7 +935,7 @@ class _DealListTile extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(10.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
+          color: Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(color: Colors.white10),
         ),
@@ -993,7 +992,7 @@ class _DealListTile extends StatelessWidget {
                         vertical: 3.h,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.22),
+                        color: Colors.orange.withValues(alpha: 0.22),
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Text(
@@ -1028,7 +1027,7 @@ class _InfoBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.75),
+        color: Colors.black.withValues(alpha: 0.75),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white12),
       ),

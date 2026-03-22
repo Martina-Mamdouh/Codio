@@ -82,13 +82,6 @@ class MainLayoutState extends State<MainLayout> {
     const ProfileView(),
   ];
 
-  List<Widget> get _currentScreens {
-    final deviceType = getDeviceType(MediaQuery.of(context).size);
-    return deviceType == DeviceScreenType.mobile
-        ? _mobileScreens
-        : _tabletScreens;
-  }
-
   void switchToTab(int index) {
     _onTabChanged(index);
   }
@@ -183,7 +176,7 @@ class MainLayoutState extends State<MainLayout> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(
-            color: AppTheme.kElectricLime.withOpacity(0.3),
+            color: AppTheme.kElectricLime.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -220,7 +213,7 @@ class MainLayoutState extends State<MainLayout> {
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.10),
+                  color: Colors.black.withValues(alpha: 0.10),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -240,7 +233,7 @@ class MainLayoutState extends State<MainLayout> {
                   label: 'الرئيسية',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(FontAwesomeIcons.thLarge),
+                  icon: Icon(FontAwesomeIcons.tableCellsLarge),
                   label: 'التصنيفات',
                 ),
                 BottomNavigationBarItem(

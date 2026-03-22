@@ -78,7 +78,7 @@ class UnifiedHeader extends StatelessWidget {
                           Text(
                             subtitle,
                             style: TextStyle(
-                              color: Colors.black.withOpacity(0.7),
+                              color: Colors.black.withValues(alpha: 0.7),
                               fontSize: isLandscape ? 11.sp : 13.sp,
                               fontWeight: FontWeight.w600,
                               height: 1.1,
@@ -97,7 +97,7 @@ class UnifiedHeader extends StatelessWidget {
                         ),
                         onPressed: onBackTap ?? () => Navigator.pop(context),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.black.withOpacity(0.05),
+                          backgroundColor: Colors.black.withValues(alpha: 0.05),
                           padding: EdgeInsets.all(8.w),
                         ),
                       ),
@@ -130,7 +130,7 @@ class UnifiedHeader extends StatelessWidget {
                   border: Border.all(color: Colors.white10),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),

@@ -213,7 +213,7 @@ class _SocialLinksManagementViewState extends State<SocialLinksManagementView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: p.color.withOpacity(0.12),
+              color: p.color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(child: FaIcon(p.icon, color: p.color, size: 20)),

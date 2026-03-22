@@ -52,10 +52,10 @@ class DealCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.kLightBackground,
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -81,7 +81,7 @@ class DealCard extends StatelessWidget {
                             imageUrl: deal.imageUrl,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
-                              color: AppTheme.kDarkBackground.withOpacity(0.5),
+                              color: AppTheme.kDarkBackground.withValues(alpha: 0.5),
                               child: const Center(
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
@@ -147,7 +147,7 @@ class DealCard extends StatelessWidget {
                     child: Container(
                       padding: EdgeInsets.all(6.w),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withValues(alpha: 0.4),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -270,7 +270,7 @@ class DealCard extends StatelessWidget {
             );
           },
         ),
-        backgroundColor: AppTheme.kDarkBackground.withOpacity(0.9),
+        backgroundColor: AppTheme.kDarkBackground.withValues(alpha: 0.9),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.all(16.w),
         shape: RoundedRectangleBorder(

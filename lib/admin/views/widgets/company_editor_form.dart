@@ -1273,7 +1273,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                             };
                             setState(() {
                               if (isEditing) {
-                                _branches[index!] = branchData;
+                                _branches[index] = branchData;
                               } else {
                                 _branches.add(branchData);
                               }
@@ -1701,7 +1701,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
-          value: _selectedPrimaryCategoryId,
+          initialValue: _selectedPrimaryCategoryId,
           items: selectedCategories.map((category) {
             return DropdownMenuItem<int>(
               value: category.id,

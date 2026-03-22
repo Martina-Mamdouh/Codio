@@ -65,7 +65,7 @@ class DealSection extends StatelessWidget {
         ),
 
         // Horizontal ListView (Orientation-aware height)
-        Container(
+        SizedBox(
           height: MediaQuery.of(context).orientation == Orientation.portrait
               ? 230.h
               : 330,

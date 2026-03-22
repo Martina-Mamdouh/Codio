@@ -34,11 +34,11 @@ class DashboardViewModel extends ChangeNotifier {
         _analyticsService.getUniqueAnalytics(),
       ]);
 
-      final rawTopDeals = results[0] as List<Map<String, dynamic>>;
-      final rawCompanyPerformance = results[1] as List<Map<String, dynamic>>;
-      bannerPerformance = results[2] as List<Map<String, dynamic>>;
-      socialBreakdown = results[3] as List<Map<String, dynamic>>;
-      final uniqueStats = results[4] as List<Map<String, dynamic>>;
+      final rawTopDeals = results[0];
+      final rawCompanyPerformance = results[1];
+      bannerPerformance = results[2];
+      socialBreakdown = results[3];
+      final uniqueStats = results[4];
 
       // Merge unique stats dynamically to avoid breaking existing DB schemas via dropped views
       topDeals = rawTopDeals.map((rawDeal) {

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../main_layout.dart';
-import '../../core/models/company_model.dart';
-import '../../core/services/supabase_service.dart';
 import 'widgets/company_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/theme/app_theme.dart';

@@ -229,7 +229,9 @@ class MapViewModel extends ChangeNotifier {
       }
 
       userPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.high
+        ),
       );
       locationError = null;
     } catch (e) {

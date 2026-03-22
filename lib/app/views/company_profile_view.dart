@@ -8,7 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
-import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/company_profile_view_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/services/analytics_service.dart';
@@ -113,8 +112,8 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                   top: 40.h,
                                   right: 16.w,
                                   child: CircleAvatar(
-                                    backgroundColor: Colors.black.withOpacity(
-                                      0.6,
+                                    backgroundColor: Colors.black.withValues(
+                                      alpha: 0.6,
                                     ),
                                     radius: 20.w,
                                     child: IconButton(
@@ -494,7 +493,7 @@ class _CompanyProfileScaffold extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
           side: BorderSide(
-            color: AppTheme.kElectricLime.withOpacity(0.3),
+            color: AppTheme.kElectricLime.withValues(alpha: 0.3),
             width: 1,
           ),
         ),

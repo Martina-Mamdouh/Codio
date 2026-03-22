@@ -565,7 +565,9 @@ class SupabaseService {
           .select()
           .order('name', ascending: true);
 
-      print('📊 Raw Categories Data: $data');
+      if (kDebugMode) {
+        print('📊 Raw Categories Data: $data');
+      }
 
       final categories = data
           .map((item) => CategoryModel.fromJson(item))

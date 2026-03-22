@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/models/company_model.dart';
 import '../../core/models/deal_model.dart';
 import '../../core/services/supabase_service.dart';

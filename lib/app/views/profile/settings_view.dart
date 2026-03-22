@@ -8,7 +8,6 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../terms_view.dart';
 import 'about_app_view.dart';
 import '../widgets/delete_account_dialog.dart';
-import '../auth/login_screen.dart';
 import '../splach_screen.dart';
 
 import '../../../core/services/onesignal_service.dart';
@@ -79,7 +78,7 @@ class _SettingsViewState extends State<SettingsView> {
               children: [
                 // إشعارات التطبيق
                 SwitchListTile(
-                  activeColor: AppTheme.kElectricLime,
+                  activeThumbColor: AppTheme.kElectricLime,
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16.w,
                     vertical: 0,
@@ -102,7 +101,7 @@ class _SettingsViewState extends State<SettingsView> {
 
                 // إشعارات العروض فقط
                 SwitchListTile(
-                  activeColor: AppTheme.kElectricLime,
+                  activeThumbColor: AppTheme.kElectricLime,
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: 16.w,
                     vertical: 0,
@@ -341,13 +340,13 @@ class _SettingsViewState extends State<SettingsView> {
                 },
                 icon: Icon(
                   Icons.delete_forever,
-                  color: Colors.redAccent.withOpacity(0.8),
+                  color: Colors.redAccent.withValues(alpha: 0.8),
                   size: 20.sp,
                 ),
                 label: Text(
                   'حذف الحساب',
                   style: TextStyle(
-                    color: Colors.redAccent.withOpacity(0.8),
+                    color: Colors.redAccent.withValues(alpha: 0.8),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),

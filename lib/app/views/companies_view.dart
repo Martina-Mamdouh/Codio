@@ -7,7 +7,6 @@ import '../viewmodels/companies_viewmodel.dart';
 import '../viewmodels/map_view_model.dart';
 import 'company_profile_view.dart';
 import 'widgets/company_card.dart';
-import 'widgets/mini_map_widget.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 import 'widgets/unified_header.dart'; // Import UnifiedHeader
 

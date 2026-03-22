@@ -25,7 +25,6 @@ class CompanyCard extends StatelessWidget {
     final rating = company.rating ?? 0.0;
     final reviewsCount = company.reviewsCount ?? 0;
     final followers = company.followersCount ?? 0;
-    final dealsCount = company.dealCount ?? 0;
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
@@ -190,7 +189,7 @@ class CompanyCard extends StatelessWidget {
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          '${followers}',
+                          '$followers',
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 10.sp,
@@ -200,7 +199,7 @@ class CompanyCard extends StatelessWidget {
                         Icon(Icons.star, size: 12.w, color: Colors.amber),
                         SizedBox(width: 4.w),
                         Text(
-                          '${rating.toStringAsFixed(1)}',
+                          rating.toStringAsFixed(1),
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 10.sp,

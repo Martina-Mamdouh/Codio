@@ -276,7 +276,7 @@ class HomeView extends StatelessWidget {
               border: Border.all(color: Colors.white10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -317,10 +317,10 @@ class _DiscoverNearbyCard extends StatelessWidget {
           gradient: const LinearGradient(
             colors: [Color(0xFF2D2D2D), Color(0xFF3A3A3A)],
           ),
-          border: Border.all(color: AppTheme.kElectricLime.withOpacity(0.3)),
+          border: Border.all(color: AppTheme.kElectricLime.withValues(alpha: 0.3)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

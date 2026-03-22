@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 void main() {
   final dir = Directory('lib');
   final files = dir.listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'));
@@ -9,10 +11,12 @@ void main() {
     if (content.contains("'Cairo'") || content.contains('"Cairo"')) {
       final original = content;
       // Regex to remove fontFamily: 'Cairo' and any surrounding commas/spacing
-      content = content.replaceAll(RegExp(r"fontFamily:\s*['""]Cairo['""]\s*,?"), '');
+      content = content.replaceAll(RegExp(r"fontFamily:\s*['""]Cairo['""]s*,?"), '');
       if (content != original) {
         file.writeAsStringSync(content);
-        print('Updated \${file.path}');
+        if (kDebugMode) {
+          print('Updated \${file.path}');
+        }
       }
     }
   }

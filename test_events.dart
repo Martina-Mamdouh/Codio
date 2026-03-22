@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase/supabase.dart';
 
 void main() async {
@@ -14,13 +15,19 @@ void main() async {
       .limit(100);
     
     final types = events.map((e) => e['event_type']).toSet();
-    print('Recent event types: $types');
+    if (kDebugMode) {
+      print('Recent event types: $types');
+    }
     
     // Test the Analytics View
     final view = await supabase.from('deal_analytics').select().limit(5);
-    print('Deal analytics view sample: $view');
+    if (kDebugMode) {
+      print('Deal analytics view sample: $view');
+    }
     
   } catch (e) {
-    print('Error: \$e');
+    if (kDebugMode) {
+      print('Error: \$e');
+    }
   }
 }

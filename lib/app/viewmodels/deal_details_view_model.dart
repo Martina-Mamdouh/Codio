@@ -64,7 +64,7 @@ class DealDetailsViewModel extends ChangeNotifier {
         dealViews = stats['view_count'] ?? 0;
         copyCodeCount = stats['code_copy_count'] ?? 0;
         openLinkCount = stats['link_open_count'] ?? 0;
-        favorite_count = stats['favorite_count'] ?? 0;
+        favoriteCount = stats['favorite_count'] ?? 0;
         imageClickCount = stats['image_click_count'] ?? 0;
         notifyListeners();
       }
@@ -73,7 +73,7 @@ class DealDetailsViewModel extends ChangeNotifier {
     }
   }
 
-  int favorite_count = 0;
+  int favoriteCount = 0;
 
   // Emoji feedback statistics (from real user data)
   int happyCount = 0;

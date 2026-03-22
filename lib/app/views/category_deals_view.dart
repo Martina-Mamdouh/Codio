@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -36,9 +37,11 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
     setState(() {
       _deals = deals;
       _isLoading = false;
-      print(
+      if (kDebugMode) {
+        print(
         'DEBUG: Loaded ${deals.length} deals for category ${widget.category.id}',
       );
+      }
     });
   }
 

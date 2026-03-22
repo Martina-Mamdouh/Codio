@@ -184,7 +184,7 @@ class _MapViewState extends State<MapView> {
                         top: false,
                         minimum: EdgeInsets.zero,
                         child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 360),
+                          duration: const Duration(milliseconds: 520),
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.easeInCubic,
                           transitionBuilder: (child, animation) {
@@ -193,11 +193,11 @@ class _MapViewState extends State<MapView> {
                               curve: Curves.easeOutCubic,
                             );
                             final offset = Tween<Offset>(
-                              begin: const Offset(0, 0.05),
+                              begin: const Offset(0, 0.22),
                               end: Offset.zero,
                             ).animate(curved);
                             final scale = Tween<double>(
-                              begin: 0.985,
+                              begin: 0.97,
                               end: 1,
                             ).animate(curved);
                             return SlideTransition(
@@ -212,11 +212,11 @@ class _MapViewState extends State<MapView> {
                             );
                           },
                           child: AnimatedSize(
-                            duration: const Duration(milliseconds: 260),
+                            key: ValueKey(vm.selectedCompany?.id ?? -1),
+                            duration: const Duration(milliseconds: 340),
                             curve: Curves.easeOutCubic,
                             alignment: Alignment.bottomCenter,
                             child: _SelectedCompanyCard(
-                              key: ValueKey(vm.selectedCompany?.id ?? -1),
                               viewModel: vm,
                               onClose: vm.clearSelection,
                             ),
@@ -455,7 +455,7 @@ class _MapIconButton extends StatelessWidget {
   }
 }
 
-class _SelectedCompanyCard extends StatelessWidget {
+class _SelectedCompanyCard extends StatefulWidget {
   final MapViewModel viewModel;
   final VoidCallback onClose;
 
@@ -466,14 +466,72 @@ class _SelectedCompanyCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<_SelectedCompanyCard> createState() => _SelectedCompanyCardState();
+}
+
+class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
+  static const double _dismissDragThreshold = 80;
+  double _dragOffsetY = 0;
+  bool _isDraggingHandle = false;
+  bool _isClosingByDrag = false;
+
+  void _handleDragStart(DragStartDetails details) {
+    _isDraggingHandle = true;
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    if (_isClosingByDrag) return;
+    final delta = details.primaryDelta ?? 0;
+    if (delta == 0) return;
+
+    setState(() {
+      final nextOffset = _dragOffsetY + delta;
+      _dragOffsetY = nextOffset.clamp(0.0, 320.0);
+    });
+  }
+
+  Future<void> _animateDismissDown() async {
+    if (_isClosingByDrag) return;
+    _isClosingByDrag = true;
+    _isDraggingHandle = false;
+
+    setState(() {
+      _dragOffsetY = MediaQuery.sizeOf(context).height * 0.82;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 260));
+    if (mounted) {
+      widget.onClose();
+    }
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    if (_isClosingByDrag) return;
+    _isDraggingHandle = false;
+
+    final shouldDismiss =
+        _dragOffsetY >= _dismissDragThreshold ||
+        (details.primaryVelocity ?? 0) > 800;
+
+    if (shouldDismiss) {
+      _animateDismissDown();
+      return;
+    }
+
+    setState(() {
+      _dragOffsetY = 0;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final company = viewModel.selectedCompany;
+    final company = widget.viewModel.selectedCompany;
     if (company == null) {
       return const SizedBox.shrink();
     }
 
-    final distance = viewModel.distanceKmFor(company);
-    final companyDeals = viewModel.dealsForCompany(company.id);
+    final distance = widget.viewModel.distanceKmFor(company);
+    final companyDeals = widget.viewModel.dealsForCompany(company.id);
     final hasPhone = (company.phone ?? '').isNotEmpty;
     final hasAddress = (company.address ?? '').isNotEmpty;
     final hasWorkingHours = (company.workingHours ?? '').isNotEmpty;
@@ -488,89 +546,118 @@ class _SelectedCompanyCard extends StatelessWidget {
 
     final panelMaxHeight = MediaQuery.sizeOf(context).height * 0.72;
 
-    return Container(
-      width: double.infinity,
-      constraints: BoxConstraints(maxHeight: panelMaxHeight, minHeight: 260.h),
-      decoration: BoxDecoration(
-        color: AppTheme.kLightBackground,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(26.r),
-          topRight: Radius.circular(26.r),
+    return AnimatedContainer(
+      duration: _isDraggingHandle
+          ? Duration.zero
+          : const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+      transform: Matrix4.translationValues(0, _dragOffsetY, 0),
+      child: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxHeight: panelMaxHeight,
+          minHeight: 260.h,
         ),
-        border: Border.all(color: Colors.white12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.35),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+        decoration: BoxDecoration(
+          color: AppTheme.kLightBackground,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(26.r),
+            topRight: Radius.circular(26.r),
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(26.r),
-          topRight: Radius.circular(26.r),
+          border: Border.all(color: Colors.white12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.35),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(14.w, 10.h, 14.w, 14.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 42.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      company.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.sp,
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(26.r),
+            topRight: Radius.circular(26.r),
+          ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(14.w, 10.h, 14.w, 14.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onVerticalDragStart: _handleDragStart,
+                    onVerticalDragUpdate: _handleDragUpdate,
+                    onVerticalDragEnd: _handleDragEnd,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.h),
+                      child: Container(
+                        width: 42.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
                       ),
                     ),
                   ),
-                  InkWell(
-                    onTap: onClose,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      child: const Icon(Icons.close, color: Colors.white70),
+                ),
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        company.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20.sp,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.h),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16.r),
-                child: SizedBox(
-                  height: 170.h,
-                  width: double.infinity,
-                  child: heroImageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: heroImageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(
-                            color: Colors.white10,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: AppTheme.kElectricLime,
+                    InkWell(
+                      onTap: widget.onClose,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        child: const Icon(Icons.close, color: Colors.white70),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10.h),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16.r),
+                  child: SizedBox(
+                    height: 170.h,
+                    width: double.infinity,
+                    child: heroImageUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: heroImageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: Colors.white10,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.kElectricLime,
+                                ),
                               ),
                             ),
-                          ),
-                          errorWidget: (_, __, ___) => Container(
+                            errorWidget: (_, __, ___) => Container(
+                              color: Colors.white10,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.store_mall_directory,
+                                  color: Colors.white30,
+                                  size: 42,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(
                             color: Colors.white10,
                             child: const Center(
                               child: Icon(
@@ -580,222 +667,215 @@ class _SelectedCompanyCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                        )
-                      : Container(
-                          color: Colors.white10,
-                          child: const Center(
-                            child: Icon(
-                              Icons.store_mall_directory,
-                              color: Colors.white30,
-                              size: 42,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Row(
+                  children: [
+                    Container(
+                      width: 44.w,
+                      height: 44.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: ClipOval(
+                        child:
+                            company.logoUrl != null &&
+                                company.logoUrl!.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: company.logoUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) =>
+                                    const Icon(Icons.store, color: Colors.grey),
+                                errorWidget: (_, __, ___) =>
+                                    const Icon(Icons.store, color: Colors.grey),
+                              )
+                            : const Icon(Icons.store, color: Colors.grey),
+                      ),
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            company.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14.sp,
                             ),
                           ),
-                        ),
-                ),
-              ),
-              SizedBox(height: 12.h),
-              Row(
-                children: [
-                  Container(
-                    width: 44.w,
-                    height: 44.w,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: ClipOval(
-                      child:
-                          company.logoUrl != null && company.logoUrl!.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: company.logoUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (_, __) =>
-                                  const Icon(Icons.store, color: Colors.grey),
-                              errorWidget: (_, __, ___) =>
-                                  const Icon(Icons.store, color: Colors.grey),
-                            )
-                          : const Icon(Icons.store, color: Colors.grey),
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          company.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14.sp,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Row(
-                          children: [
-                            if (company.categoryName != null)
-                              Flexible(
-                                child: Text(
-                                  company.categoryName!,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                          SizedBox(height: 2.h),
+                          Row(
+                            children: [
+                              if (company.categoryName != null)
+                                Flexible(
+                                  child: Text(
+                                    company.categoryName!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 11.sp,
+                                    ),
+                                  ),
+                                ),
+                              if (company.categoryName != null &&
+                                  distance != null)
+                                Text(
+                                  '  •  ',
                                   style: TextStyle(
-                                    color: Colors.white60,
+                                    color: Colors.white24,
+                                    fontSize: 10.sp,
+                                  ),
+                                ),
+                              if (distance != null)
+                                Text(
+                                  '${distance.toStringAsFixed(1)} كم',
+                                  style: TextStyle(
+                                    color: Colors.white70,
                                     fontSize: 11.sp,
                                   ),
                                 ),
-                              ),
-                            if (company.categoryName != null &&
-                                distance != null)
-                              Text(
-                                '  •  ',
-                                style: TextStyle(
-                                  color: Colors.white24,
-                                  fontSize: 10.sp,
-                                ),
-                              ),
-                            if (distance != null)
-                              Text(
-                                '${distance.toStringAsFixed(1)} كم',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11.sp,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              if (hasAddress || hasWorkingHours)
-                Padding(
-                  padding: EdgeInsets.only(top: 10.h),
-                  child: Wrap(
-                    spacing: 8.w,
-                    runSpacing: 8.h,
-                    children: [
-                      if (hasAddress)
-                        _InfoPill(
-                          icon: Icons.location_on_outlined,
-                          text: company.address!,
-                        ),
-                      if (hasWorkingHours)
-                        _InfoPill(
-                          icon: Icons.access_time_rounded,
-                          text: company.workingHours!,
-                        ),
-                    ],
-                  ),
-                ),
-              SizedBox(height: 14.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'العروض المتاحة',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15.sp,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${companyDeals.length}',
-                    style: TextStyle(
-                      color: AppTheme.kElectricLime,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 8.h),
-              if (companyDeals.isEmpty)
-                Padding(
-                  padding: EdgeInsets.only(bottom: 8.h),
-                  child: Text(
-                    'لا توجد عروض حالياً',
-                    style: TextStyle(color: Colors.white38, fontSize: 12.sp),
-                  ),
-                )
-              else
-                ListView.separated(
-                  itemCount: companyDeals.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                  itemBuilder: (context, index) {
-                    final deal = companyDeals[index];
-                    return _DealListTile(
-                      deal: deal,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DealDetailsView(deal: deal),
+                            ],
                           ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              SizedBox(height: 12.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                CompanyProfileView(companyId: company.id),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.storefront, size: 18),
-                      label: const Text('صفحة الشركة'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.kElectricLime,
-                        foregroundColor: Colors.black,
-                        minimumSize: Size(double.infinity, 44.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (hasPhone) ...[
-                    SizedBox(width: 10.w),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        final uri = Uri(
-                          scheme: 'tel',
-                          path: company.phone!.trim(),
-                        );
-                        launchUrl(uri, mode: LaunchMode.externalApplication);
-                      },
-                      icon: const Icon(Icons.phone, size: 18),
-                      label: const Text('اتصال'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.green,
-                        side: BorderSide(color: Colors.green.withOpacity(0.45)),
-                        minimumSize: Size(118.w, 44.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
+                        ],
                       ),
                     ),
                   ],
-                ],
-              ),
-            ],
+                ),
+                if (hasAddress || hasWorkingHours)
+                  Padding(
+                    padding: EdgeInsets.only(top: 10.h),
+                    child: Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: [
+                        if (hasAddress)
+                          _InfoPill(
+                            icon: Icons.location_on_outlined,
+                            text: company.address!,
+                          ),
+                        if (hasWorkingHours)
+                          _InfoPill(
+                            icon: Icons.access_time_rounded,
+                            text: company.workingHours!,
+                          ),
+                      ],
+                    ),
+                  ),
+                SizedBox(height: 14.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'العروض المتاحة',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15.sp,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${companyDeals.length}',
+                      style: TextStyle(
+                        color: AppTheme.kElectricLime,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                if (companyDeals.isEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: Text(
+                      'لا توجد عروض حالياً',
+                      style: TextStyle(color: Colors.white38, fontSize: 12.sp),
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    itemCount: companyDeals.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                    itemBuilder: (context, index) {
+                      final deal = companyDeals[index];
+                      return _DealListTile(
+                        deal: deal,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DealDetailsView(deal: deal),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                SizedBox(height: 12.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  CompanyProfileView(companyId: company.id),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.storefront, size: 18),
+                        label: const Text('صفحة الشركة'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.kElectricLime,
+                          foregroundColor: Colors.black,
+                          minimumSize: Size(double.infinity, 44.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (hasPhone) ...[
+                      SizedBox(width: 10.w),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          final uri = Uri(
+                            scheme: 'tel',
+                            path: company.phone!.trim(),
+                          );
+                          launchUrl(uri, mode: LaunchMode.externalApplication);
+                        },
+                        icon: const Icon(Icons.phone, size: 18),
+                        label: const Text('اتصال'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.green,
+                          side: BorderSide(
+                            color: Colors.green.withOpacity(0.45),
+                          ),
+                          minimumSize: Size(118.w, 44.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

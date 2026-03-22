@@ -106,66 +106,68 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                                   onDestinationSelected: _onDestinationSelected,
                                   labelType: NavigationRailLabelType.all,
                                   backgroundColor: Colors.transparent,
-                                  indicatorColor: AppTheme.kElectricLime.withAlpha(51),
-                                selectedLabelTextStyle: const TextStyle(
-                                  color: AppTheme.kElectricLime,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  indicatorColor: AppTheme.kElectricLime
+                                      .withAlpha(51),
+                                  selectedLabelTextStyle: const TextStyle(
+                                    color: AppTheme.kElectricLime,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                  unselectedLabelTextStyle: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                  unselectedIconTheme: const IconThemeData(
+                                    color: Colors.white70,
+                                    size: 24,
+                                  ),
+                                  selectedIconTheme: const IconThemeData(
+                                    color: AppTheme.kElectricLime,
+                                    size: 24,
+                                  ),
+                                  destinations: const [
+                                    NavigationRailDestination(
+                                      icon: Icon(Icons.home_outlined),
+                                      selectedIcon: Icon(Icons.home),
+                                      label: Text('الرئيسية'),
+                                    ),
+                                    NavigationRailDestination(
+                                      icon: Icon(Icons.business_outlined),
+                                      selectedIcon: Icon(Icons.business),
+                                      label: Text('الشركات'),
+                                    ),
+                                    NavigationRailDestination(
+                                      icon: Icon(Icons.local_offer_outlined),
+                                      selectedIcon: Icon(Icons.local_offer),
+                                      label: Text('العروض'),
+                                    ),
+                                    NavigationRailDestination(
+                                      icon: Icon(Icons.star_border_outlined),
+                                      selectedIcon: Icon(Icons.star),
+                                      label: Text('التقييمات'),
+                                    ),
+                                    NavigationRailDestination(
+                                      icon: Icon(Icons.category_outlined),
+                                      selectedIcon: Icon(Icons.category),
+                                      label: Text('الفئات'),
+                                    ),
+                                    NavigationRailDestination(
+                                      icon: Icon(Icons.image_outlined),
+                                      selectedIcon: Icon(Icons.image),
+                                      label: Text('البانرات'),
+                                    ),
+                                    NavigationRailDestination(
+                                      icon: Icon(Icons.share_outlined),
+                                      selectedIcon: Icon(Icons.share),
+                                      label: Text('التواصل'),
+                                    ),
+                                    NavigationRailDestination(
+                                      icon: Icon(Icons.map_outlined),
+                                      selectedIcon: Icon(Icons.map),
+                                      label: Text('المواقع'),
+                                    ),
+                                  ],
                                 ),
-                                unselectedLabelTextStyle: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                                unselectedIconTheme: const IconThemeData(
-                                  color: Colors.white70,
-                                  size: 24,
-                                ),
-                                selectedIconTheme: const IconThemeData(
-                                  color: AppTheme.kElectricLime,
-                                  size: 24,
-                                ),
-                                destinations: const [
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.home_outlined),
-                                    selectedIcon: Icon(Icons.home),
-                                    label: Text('الرئيسية'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.business_outlined),
-                                    selectedIcon: Icon(Icons.business),
-                                    label: Text('الشركات'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.local_offer_outlined),
-                                    selectedIcon: Icon(Icons.local_offer),
-                                    label: Text('العروض'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.star_border_outlined),
-                                    selectedIcon: Icon(Icons.star),
-                                    label: Text('التقييمات'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.category_outlined),
-                                    selectedIcon: Icon(Icons.category),
-                                    label: Text('الفئات'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.image_outlined),
-                                    selectedIcon: Icon(Icons.image),
-                                    label: Text('البانرات'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.share_outlined),
-                                    selectedIcon: Icon(Icons.share),
-                                    label: Text('التواصل'),
-                                  ),
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.map_outlined),
-                                    selectedIcon: Icon(Icons.map),
-                                    label: Text('المواقع'),
-                                  ),
-                                ],
                               ),
                             ),
                           ),

@@ -35,8 +35,30 @@ class CompaniesManagementView extends StatelessWidget {
   }
 }
 
-class CompaniesTable extends StatelessWidget {
+class CompaniesTable extends StatefulWidget {
   const CompaniesTable({super.key});
+
+  @override
+  State<CompaniesTable> createState() => _CompaniesTableState();
+}
+
+class _CompaniesTableState extends State<CompaniesTable> {
+  late final ScrollController _verticalController;
+  late final ScrollController _horizontalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _verticalController = ScrollController();
+    _horizontalController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _verticalController.dispose();
+    _horizontalController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,11 +133,22 @@ class CompaniesTable extends StatelessWidget {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
+    return Scrollbar(
+      controller: _verticalController,
+      thumbVisibility: true,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: buildDataTable(context, vm, vmRead),
+        controller: _verticalController,
+        scrollDirection: Axis.vertical,
+        child: Scrollbar(
+          controller: _horizontalController,
+          thumbVisibility: true,
+          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+          child: SingleChildScrollView(
+            controller: _horizontalController,
+            scrollDirection: Axis.horizontal,
+            child: buildDataTable(context, vm, vmRead),
+          ),
+        ),
       ),
     );
   }

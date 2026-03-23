@@ -34,6 +34,25 @@ class _NotificationsViewState extends State<NotificationsView> {
           title: 'الإشعارات',
           titleWidget: Row(
             children: [
+              // Badge on the right (index 0 in RTL)
+              if (vm.newNotifications.isNotEmpty) ...[
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: Colors.red, // Red circle
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    '${vm.newNotifications.length}',
+                    style: TextStyle(
+                      color: Colors.black, // Black text
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+              ],
               Text(
                 'الإشعارات',
                 style: TextStyle(
@@ -43,46 +62,47 @@ class _NotificationsViewState extends State<NotificationsView> {
                   height: 1.1,
                 ),
               ),
-              if (vm.newNotifications.isNotEmpty) ...[
-                SizedBox(width: 8.w),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Text(
-                    '${vm.newNotifications.length}',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
+            ],
+          ),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ─── Mark All As Read Button (Under Yellow Header) ───
+              if (vm.newNotifications.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  child: InkWell(
+                    onTap: () => vm.markAllAsRead(),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.done_all,
+                          color: AppTheme.kElectricLime,
+                          size: 20.sp,
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          'تحديد الكل كمقروء',
+                          style: TextStyle(
+                            color: AppTheme.kElectricLime,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ],
-          ),
-          actions: [
-            if (vm.newNotifications.isNotEmpty)
-              TextButton(
-                onPressed: () => vm.markAllAsRead(),
-                child: Text(
-                  'تحديد الكل كمقروء',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-          ],
-          body: vm.isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.kElectricLime,
-                  ),
-                )
+
+              // ─── Main Content ───
+              Expanded(
+                child: vm.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.kElectricLime,
+                        ),
+                      )
               : vm.errorMessage != null
               ? Center(
                   child: Text(
@@ -101,22 +121,26 @@ class _NotificationsViewState extends State<NotificationsView> {
                   onRefresh: vm.loadNotifications,
                   color: AppTheme.kElectricLime,
                   child: ListView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 16.h,
+                    padding: EdgeInsets.only(
+                      left: 16.w,
+                      right: 16.w,
+                      bottom: 16.h,
+                      top: vm.newNotifications.isEmpty ? 16.h : 0, // Less top padding if button exists
                     ),
                     children: [
                       // قسم "جديد"
                       if (vm.newNotifications.isNotEmpty) ...[
                         Padding(
                           padding: EdgeInsets.only(bottom: 8.h),
-                          child: Text(
-                            'جديد',
-                            textAlign: TextAlign.end,
-                            style: TextStyle(
-                              color: AppTheme.kElectricLime,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.bold,
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              'جديد',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -157,13 +181,15 @@ class _NotificationsViewState extends State<NotificationsView> {
                       if (vm.oldNotifications.isNotEmpty) ...[
                         Padding(
                           padding: EdgeInsets.only(bottom: 8.h),
-                          child: Text(
-                            'في وقت سابق',
-                            textAlign: TextAlign.end,
-                            style: TextStyle(
-                              color: AppTheme.kElectricLime,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.bold,
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              'في وقت سابق',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -198,7 +224,10 @@ class _NotificationsViewState extends State<NotificationsView> {
                     ],
                   ),
                 ),
-        );
+              ), // Expanded
+            ], // Column children
+          ), // Column
+        ); // Scaffold
       },
     );
   }

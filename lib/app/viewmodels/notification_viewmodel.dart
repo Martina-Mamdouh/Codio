@@ -22,13 +22,14 @@ class NotificationsViewModel extends ChangeNotifier {
     try {
       // 1. جلب البيانات فوراً لضمان ظهورها (حتى لو الـ Stream فيه مشكلة)
       final all = await _supabaseService.getNotifications();
+      debugPrint('🔔 NotificationsVM: loadNotifications got ${all.length} total notifications');
       _updateLists(all);
 
       // 2. بدء الاستماع للتحديثات
       startListening();
     } catch (e) {
       errorMessage = 'حدث خطأ أثناء تحميل الإشعارات';
-      debugPrint('Error loading notifications: $e');
+      debugPrint('❌ Error loading notifications: $e');
     } finally {
       isLoading = false;
       notifyListeners();
@@ -55,6 +56,8 @@ class NotificationsViewModel extends ChangeNotifier {
 
     newNotifications = all.where((n) => !n.isRead).toList();
     oldNotifications = all.where((n) => n.isRead).toList();
+    
+    debugPrint('🔔 NotificationsVM: ${newNotifications.length} new (unread), ${oldNotifications.length} old (read)');
   }
 
   @override

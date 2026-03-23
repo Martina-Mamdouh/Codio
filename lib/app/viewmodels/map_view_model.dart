@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show EdgeInsets;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -72,7 +73,10 @@ class MapViewModel extends ChangeNotifier {
     bool forceRefresh = false,
   }) async {
     if (isLoading) return;
-    if (hasLoaded && !forceRefresh) {
+
+    // Allow re-init if data is empty (e.g. previous load returned empty due to transient error)
+    final hasData = companies.isNotEmpty || categories.isNotEmpty;
+    if (hasLoaded && hasData && !forceRefresh) {
       if (focusNearby) {
         await enableNearbyMode();
       }
@@ -112,7 +116,8 @@ class MapViewModel extends ChangeNotifier {
       }
 
       _buildDiscountLookup();
-      hasLoaded = true;
+      // Only mark as loaded if we actually received data
+      hasLoaded = companies.isNotEmpty || categories.isNotEmpty;
 
       if (focusNearby) {
         await enableNearbyMode();
@@ -342,13 +347,75 @@ class MapViewModel extends ChangeNotifier {
     return distance / 1000;
   }
 
+  // Branch markers state
+  bool showBranchMarkers = false;
+  List<LatLng> branchMarkerPoints = [];
+  List<String> branchMarkerNames = [];
+
   void selectCompany(CompanyModel company) {
     selectedCompany = company;
+    showBranchMarkers = false;
+    branchMarkerPoints = [];
+    branchMarkerNames = [];
     notifyListeners();
   }
 
   void clearSelection() {
     selectedCompany = null;
+    showBranchMarkers = false;
+    branchMarkerPoints = [];
+    branchMarkerNames = [];
+    notifyListeners();
+  }
+
+  void showAllBranches(CompanyModel company) {
+    final branches = company.branches ?? [];
+    final points = <LatLng>[];
+    final names = <String>[];
+
+    // Add main company location
+    if (company.lat != 0 && company.lng != 0) {
+      points.add(LatLng(company.lat, company.lng));
+      names.add('${company.name} (الرئيسي)');
+    }
+
+    // Add branch locations
+    for (final branch in branches) {
+      if (branch.lat != 0 && branch.lng != 0) {
+        points.add(LatLng(branch.lat, branch.lng));
+        names.add(branch.name.isNotEmpty ? branch.name : company.name);
+      }
+    }
+
+    if (points.isEmpty) return;
+
+    branchMarkerPoints = points;
+    branchMarkerNames = names;
+    showBranchMarkers = true;
+    notifyListeners();
+
+    // Fit map to show all branches
+    if (points.length == 1) {
+      try {
+        mapController.move(points.first, 14.0);
+      } catch (_) {}
+    } else {
+      try {
+        final bounds = LatLngBounds.fromPoints(points);
+        mapController.fitCamera(
+          CameraFit.bounds(
+            bounds: bounds,
+            padding: const EdgeInsets.all(60),
+          ),
+        );
+      } catch (_) {}
+    }
+  }
+
+  void clearBranchMarkers() {
+    showBranchMarkers = false;
+    branchMarkerPoints = [];
+    branchMarkerNames = [];
     notifyListeners();
   }
 }

@@ -286,10 +286,30 @@ class SupabaseService {
   // 1) جلب كل إشعارات المستخدم الحالي (Inbox)
   Future<List<NotificationModel>> getNotifications() async {
     try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) {
+        if (kDebugMode) {
+          print('⚠️ getNotifications: No authenticated user - returning empty');
+        }
+        return [];
+      }
+
+      if (kDebugMode) {
+        print('🔔 getNotifications: Fetching for user $userId');
+      }
+
       final data = await _client
           .from('notifications')
           .select('*')
+          .eq('user_id', userId)
           .order('created_at', ascending: false);
+
+      if (kDebugMode) {
+        print('🔔 getNotifications: Got ${(data as List).length} notifications from Supabase');
+        if ((data as List).isNotEmpty) {
+          print('🔔 First notification: ${data.first}');
+        }
+      }
 
       return (data as List)
           .map(
@@ -298,7 +318,7 @@ class SupabaseService {
           .toList();
     } catch (e) {
       if (kDebugMode) {
-        print('Error getting notifications: $e');
+        print('❌ Error getting notifications: $e');
       }
       return [];
     }
@@ -307,9 +327,13 @@ class SupabaseService {
   // 2) جعل كل إشعارات المستخدم الحالي كمقروءة
   Future<void> markAllNotificationsAsRead() async {
     try {
+      final userId = _client.auth.currentUser?.id;
+      if (userId == null) return;
+
       await _client
           .from('notifications')
           .update({'is_read': true})
+          .eq('user_id', userId)
           .eq('is_read', false);
     } catch (e) {
       if (kDebugMode) {
@@ -367,12 +391,15 @@ class SupabaseService {
     }
 
     try {
+      if (kDebugMode) {
+        print('🔔 Saving notification: title="$title", body="$body", userId=$userId, dealId=$dealId');
+      }
+
       await _client.from('notifications').insert({
         'user_id': userId,
         'title': title,
         'body': body,
-        if (dealId != null) 'deal_id': dealId, // Optional deep-link to deal
-        // is_read = false, created_at = now() من الـ default
+        if (dealId != null) 'deal_id': dealId,
       });
 
       if (kDebugMode) {
@@ -381,10 +408,30 @@ class SupabaseService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Error saving notification: $e');
+      // If FK constraint fails (deal was deleted), retry WITHOUT deal_id
+      if (dealId != null && e.toString().contains('23503')) {
+        if (kDebugMode) {
+          print('⚠️ Deal $dealId not found in DB, saving notification without deal link...');
+        }
+        try {
+          await _client.from('notifications').insert({
+            'user_id': userId,
+            'title': title,
+            'body': body,
+          });
+          if (kDebugMode) {
+            print('✅ Notification saved successfully (without deal link)');
+          }
+        } catch (retryError) {
+          if (kDebugMode) {
+            print('❌ Retry also failed: $retryError');
+          }
+        }
+      } else {
+        if (kDebugMode) {
+          print('❌ Error saving notification to Supabase: $e');
+        }
       }
-      // Don't throw - fail silently to avoid crashing OneSignal listeners
     }
   }
 

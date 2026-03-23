@@ -10,7 +10,6 @@ import '../../core/models/company_model.dart';
 import '../../core/models/deal_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/map_view_model.dart';
-import 'company_profile_view.dart';
 import 'deal_details_view.dart';
 
 class MapView extends StatefulWidget {
@@ -134,6 +133,54 @@ class _MapViewState extends State<MapView> {
                           ),
                         // Company markers
                         MarkerLayer(markers: _buildCompanyMarkers(vm)),
+                        // Branch markers (shown when "show directions" is active)
+                        if (vm.showBranchMarkers)
+                          MarkerLayer(
+                            markers: List.generate(
+                              vm.branchMarkerPoints.length,
+                              (i) => Marker(
+                                point: vm.branchMarkerPoints[i],
+                                width: 140,
+                                height: 60,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.kElectricLime,
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.3),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        vm.branchMarkerNames[i],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 10.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.location_on,
+                                      color: AppTheme.kElectricLime,
+                                      size: 28.w,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                     // Control buttons
@@ -529,19 +576,8 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
       return const SizedBox.shrink();
     }
 
-    final distance = widget.viewModel.distanceKmFor(company);
     final companyDeals = widget.viewModel.dealsForCompany(company.id);
     final hasPhone = (company.phone ?? '').isNotEmpty;
-    final hasAddress = (company.address ?? '').isNotEmpty;
-    final hasWorkingHours = (company.workingHours ?? '').isNotEmpty;
-
-    String? heroImageUrl;
-    for (final deal in companyDeals) {
-      if (deal.imageUrl.isNotEmpty) {
-        heroImageUrl = deal.imageUrl;
-        break;
-      }
-    }
 
     final panelMaxHeight = MediaQuery.sizeOf(context).height * 0.72;
 
@@ -555,7 +591,7 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
         width: double.infinity,
         constraints: BoxConstraints(
           maxHeight: panelMaxHeight,
-          minHeight: 260.h,
+          minHeight: 200.h,
         ),
         decoration: BoxDecoration(
           color: AppTheme.kLightBackground,
@@ -583,6 +619,7 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ─── Drag Handle ───
                 Center(
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
@@ -602,99 +639,67 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                     ),
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        company.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20.sp,
-                        ),
-                      ),
+
+                // ─── Close button (left side) ───
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: InkWell(
+                    onTap: widget.onClose,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      child: const Icon(Icons.close, color: Colors.white70, size: 22),
                     ),
-                    InkWell(
-                      onTap: widget.onClose,
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        child: const Icon(Icons.close, color: Colors.white70),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10.h),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16.r),
-                  child: SizedBox(
-                    height: 170.h,
-                    width: double.infinity,
-                    child: heroImageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: heroImageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              color: Colors.white10,
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppTheme.kElectricLime,
-                                ),
-                              ),
-                            ),
-                            errorWidget: (_, __, ___) => Container(
-                              color: Colors.white10,
-                              child: const Center(
-                                child: Icon(
-                                  Icons.store_mall_directory,
-                                  color: Colors.white30,
-                                  size: 42,
-                                ),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: Colors.white10,
-                            child: const Center(
-                              child: Icon(
-                                Icons.store_mall_directory,
-                                color: Colors.white30,
-                                size: 42,
-                              ),
-                            ),
-                          ),
                   ),
                 ),
-                SizedBox(height: 12.h),
+
+                SizedBox(height: 8.h),
+
+                // ─── Company Logo + Name + Category (RTL: logo right, text left) ───
                 Row(
                   children: [
+                    // Logo
                     Container(
-                      width: 44.w,
-                      height: 44.w,
+                      width: 60.w,
+                      height: 60.w,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.circular(16.r),
                         border: Border.all(color: Colors.white12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 6,
+                          ),
+                        ],
                       ),
-                      child: ClipOval(
-                        child:
-                            company.logoUrl != null &&
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14.r),
+                        child: company.logoUrl != null &&
                                 company.logoUrl!.isNotEmpty
                             ? CachedNetworkImage(
                                 imageUrl: company.logoUrl!,
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) =>
-                                    const Icon(Icons.store, color: Colors.grey),
-                                errorWidget: (_, __, ___) =>
-                                    const Icon(Icons.store, color: Colors.grey),
+                                placeholder: (_, __) => const Icon(
+                                  Icons.store,
+                                  color: Colors.grey,
+                                  size: 28,
+                                ),
+                                errorWidget: (_, __, ___) => const Icon(
+                                  Icons.store,
+                                  color: Colors.grey,
+                                  size: 28,
+                                ),
                               )
-                            : const Icon(Icons.store, color: Colors.grey),
+                            : const Icon(
+                                Icons.store,
+                                color: Colors.grey,
+                                size: 28,
+                              ),
                       ),
                     ),
-                    SizedBox(width: 10.w),
+                    SizedBox(width: 12.w),
+                    // Name + Category
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -705,70 +710,91 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14.sp,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18.sp,
                             ),
                           ),
-                          SizedBox(height: 2.h),
-                          Row(
-                            children: [
-                              if (company.categoryName != null)
-                                Flexible(
-                                  child: Text(
-                                    company.categoryName!,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 11.sp,
-                                    ),
-                                  ),
-                                ),
-                              if (company.categoryName != null &&
-                                  distance != null)
-                                Text(
-                                  '  •  ',
-                                  style: TextStyle(
-                                    color: Colors.white24,
-                                    fontSize: 10.sp,
-                                  ),
-                                ),
-                              if (distance != null)
-                                Text(
-                                  '${distance.toStringAsFixed(1)} كم',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 11.sp,
-                                  ),
-                                ),
-                            ],
-                          ),
+                          if (company.categoryName != null) ...[
+                            SizedBox(height: 3.h),
+                            Text(
+                              company.categoryName!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white60,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ],
                 ),
-                if (hasAddress || hasWorkingHours)
-                  Padding(
-                    padding: EdgeInsets.only(top: 10.h),
-                    child: Wrap(
-                      spacing: 8.w,
-                      runSpacing: 8.h,
-                      children: [
-                        if (hasAddress)
-                          _InfoPill(
-                            icon: Icons.location_on_outlined,
-                            text: company.address!,
+
+                SizedBox(height: 16.h),
+
+                // ─── Action Buttons: Call (left) + Show Directions (right) ───
+                Row(
+                  children: [
+                    // Show Directions button (appears RIGHT in RTL)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          widget.viewModel.showAllBranches(company);
+                        },
+                        icon: const Icon(Icons.directions, size: 20),
+                        label: const Text('عرض الاتجاهات'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.kElectricLime,
+                          foregroundColor: Colors.black,
+                          minimumSize: Size(double.infinity, 48.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
                           ),
-                        if (hasWorkingHours)
-                          _InfoPill(
-                            icon: Icons.access_time_rounded,
-                            text: company.workingHours!,
+                          textStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14.sp,
                           ),
-                      ],
+                        ),
+                      ),
                     ),
-                  ),
-                SizedBox(height: 14.h),
+                    SizedBox(width: 10.w),
+                    // Call button (appears LEFT in RTL)
+                    InkWell(
+                      onTap: hasPhone
+                          ? () {
+                              final uri = Uri(
+                                scheme: 'tel',
+                                path: company.phone!.trim(),
+                              );
+                              launchUrl(uri, mode: LaunchMode.externalApplication);
+                            }
+                          : null,
+                      borderRadius: BorderRadius.circular(14.r),
+                      child: Container(
+                        width: 52.w,
+                        height: 48.h,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14.r),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Icon(
+                          Icons.phone,
+                          color: hasPhone
+                              ? AppTheme.kElectricLime
+                              : Colors.white30,
+                          size: 22.w,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 18.h),
+
+                // ─── Deals Section ───
                 Row(
                   children: [
                     Expanded(
@@ -821,97 +847,10 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                       );
                     },
                   ),
-                SizedBox(height: 12.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  CompanyProfileView(companyId: company.id),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.storefront, size: 18),
-                        label: const Text('صفحة الشركة'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.kElectricLime,
-                          foregroundColor: Colors.black,
-                          minimumSize: Size(double.infinity, 44.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (hasPhone) ...[
-                      SizedBox(width: 10.w),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          final uri = Uri(
-                            scheme: 'tel',
-                            path: company.phone!.trim(),
-                          );
-                          launchUrl(uri, mode: LaunchMode.externalApplication);
-                        },
-                        icon: const Icon(Icons.phone, size: 18),
-                        label: const Text('اتصال'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.green,
-                          side: BorderSide(
-                            color: Colors.green.withValues(alpha: 0.45),
-                          ),
-                          minimumSize: Size(118.w, 44.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _InfoPill extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _InfoPill({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: 0.85.sw),
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
-      decoration: BoxDecoration(
-        color: Colors.white10,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppTheme.kElectricLime, size: 14.w),
-          SizedBox(width: 4.w),
-          Flexible(
-            child: Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: Colors.white60, fontSize: 11.sp),
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -112,6 +112,13 @@ class CompanyProfileViewModel extends ChangeNotifier {
     }
   }
 
+  /// Refresh company data (for error recovery)
+  Future<void> refresh() async {
+    company = null;
+    errorMessage = null;
+    await loadCompanyData();
+  }
+
   // ✅ Call this from View to sync with global UserProfile state
   void checkFollowStatus(bool isGloballyFollowed) {
     if (isFollowed != isGloballyFollowed) {

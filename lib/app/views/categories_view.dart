@@ -95,7 +95,7 @@ class _CategoriesViewState extends State<CategoriesView> {
                     SliverPadding(
                       padding: EdgeInsets.only(
                         top: 24.h,
-                        bottom: 16.h,
+                        bottom: kBottomNavigationBarHeight + 40.h,
                         left: 16.w,
                         right: 8.w,
                       ),

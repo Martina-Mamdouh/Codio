@@ -141,7 +141,12 @@ class _ProfileViewState extends State<ProfileView> {
       },
       color: AppTheme.kElectricLime,
       child: ListView(
-        padding: EdgeInsets.all(24.w),
+        padding: EdgeInsets.only(
+          top: 24.w,
+          left: 24.w,
+          right: 24.w,
+          bottom: kBottomNavigationBarHeight + 40.h,
+        ),
         children: [
           _buildHeader(user),
           SizedBox(height: 24.h),

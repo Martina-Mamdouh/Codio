@@ -120,7 +120,7 @@ class _CompaniesViewState extends State<CompaniesView> {
                         left: 16.w,
                         right: 16.w,
                         top: 24.h,
-                        bottom: 16.h,
+                        bottom: kBottomNavigationBarHeight + 40.h,
                       ),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

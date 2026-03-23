@@ -45,7 +45,12 @@ class _CompanyDealsTabState extends State<CompanyDealsTab> {
       onRefresh: widget.viewModel.refreshDeals,
       color: AppTheme.kElectricLime,
       child: GridView.builder(
-        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+        padding: EdgeInsets.only(
+          top: 16.h,
+          left: 16.w,
+          right: 16.w,
+          bottom: MediaQuery.of(context).padding.bottom + 16.h,
+        ),
         itemCount: widget.viewModel.deals.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,

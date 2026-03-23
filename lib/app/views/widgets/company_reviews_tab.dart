@@ -55,7 +55,12 @@ class ReviewsTab extends StatelessWidget {
             onRefresh: vm.loadReviews,
             color: AppTheme.kElectricLime,
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(16.w),
+              padding: EdgeInsets.only(
+                top: 16.w,
+                left: 16.w,
+                right: 16.w,
+                bottom: MediaQuery.of(context).padding.bottom + 16.w,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

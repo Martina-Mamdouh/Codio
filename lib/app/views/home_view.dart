@@ -9,6 +9,8 @@ import 'notifications_view.dart';
 import 'map_view.dart';
 import 'widgets/home_banner_slider.dart';
 import 'widgets/deal_section.dart';
+import 'widgets/state_widgets.dart';
+import 'widgets/shimmer_loading.dart';
 import 'search_view.dart';
 
 class HomeView extends StatelessWidget {
@@ -21,29 +23,13 @@ class HomeView extends StatelessWidget {
       body: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
           if (viewModel.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppTheme.kElectricLime),
-            );
+            return _buildLoadingState();
           }
 
           if (viewModel.errorMessage != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: Colors.red, size: 48.w),
-                  SizedBox(height: 8.h),
-                  Text(
-                    viewModel.errorMessage!,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  SizedBox(height: 16.h),
-                  ElevatedButton(
-                    onPressed: viewModel.fetchAllData,
-                    child: const Text('إعادة المحاولة'),
-                  ),
-                ],
-              ),
+            return ErrorState(
+              message: viewModel.errorMessage!,
+              onRetry: viewModel.fetchAllData,
             );
           }
 
@@ -300,65 +286,182 @@ class HomeView extends StatelessWidget {
       ),
     );
   }
-}
 
-class _DiscoverNearbyCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _DiscoverNearbyCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.r),
-          gradient: const LinearGradient(
-            colors: [Color(0xFF2D2D2D), Color(0xFF3A3A3A)],
-          ),
-          border: Border.all(color: AppTheme.kElectricLime.withValues(alpha: 0.3)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: AppTheme.kElectricLime,
-                shape: BoxShape.circle,
+  Widget _buildLoadingState() {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        children: [
+          // Header shimmer
+          Container(
+            width: double.infinity,
+            height: 170.h,
+            decoration: BoxDecoration(
+              color: AppTheme.kElectricLime.withValues(alpha: 0.3),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(18),
               ),
-              child: const Icon(Icons.map_outlined, color: Colors.black),
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          SizedBox(height: AppTheme.spacing48),
+
+          // Banner shimmer
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+            child: ShimmerLoading(
+              child: ShimmerBox(
+                width: double.infinity,
+                height: 160.h,
+                borderRadius: AppTheme.radiusLg,
+              ),
+            ),
+          ),
+          SizedBox(height: AppTheme.spacing24),
+
+          // Discover nearby shimmer
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+            child: ShimmerLoading(
+              child: ShimmerBox(
+                width: double.infinity,
+                height: 80.h,
+                borderRadius: AppTheme.radiusLg,
+              ),
+            ),
+          ),
+          SizedBox(height: AppTheme.spacing24),
+
+          // Deal sections shimmer
+          for (int i = 0; i < 3; i++) ...[
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'اكتشف العروض القريبة منك',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  ShimmerLoading(
+                    child: ShimmerBox(width: 100.w, height: 20.h),
                   ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'شاهد جميع العروض والخصومات بالقرب منك على الخريطة',
-                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                  ShimmerLoading(
+                    child: ShimmerBox(width: 60.w, height: 16.h),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 18.w),
+            SizedBox(height: AppTheme.spacing12),
+            SizedBox(
+              height: 220.h,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+                itemCount: 3,
+                separatorBuilder: (_, __) =>
+                    SizedBox(width: AppTheme.spacing12),
+                itemBuilder: (_, __) => const ShimmerDealCard(),
+              ),
+            ),
+            SizedBox(height: AppTheme.spacing24),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DiscoverNearbyCard extends StatefulWidget {
+  final VoidCallback onTap;
+  const _DiscoverNearbyCard({required this.onTap});
+
+  @override
+  State<_DiscoverNearbyCard> createState() => _DiscoverNearbyCardState();
+}
+
+class _DiscoverNearbyCardState extends State<_DiscoverNearbyCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: AppTheme.durationFast,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.98,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          padding: EdgeInsets.all(AppTheme.spacing16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            gradient: LinearGradient(
+              colors: [AppTheme.kLightBackground, AppTheme.kElevatedBackground],
+            ),
+            border: Border.all(
+              color: AppTheme.kElectricLime.withValues(alpha: 0.3),
+            ),
+            boxShadow: AppTheme.shadowMd,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(AppTheme.spacing12),
+                decoration: BoxDecoration(
+                  color: AppTheme.kElectricLime,
+                  shape: BoxShape.circle,
+                  boxShadow: AppTheme.glowLime,
+                ),
+                child: Icon(
+                  Icons.map_outlined,
+                  color: Colors.black,
+                  size: AppTheme.iconMd,
+                ),
+              ),
+              SizedBox(width: AppTheme.spacing12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'اكتشف العروض القريبة منك',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: AppTheme.spacing4),
+                    Text(
+                      'شاهد جميع العروض والخصومات بالقرب منك على الخريطة',
+                      style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 18.w),
+            ],
+          ),
         ),
       ),
     );

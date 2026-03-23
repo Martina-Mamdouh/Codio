@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import '../../../core/models/deal_model.dart';
@@ -8,8 +9,9 @@ import '../../../core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/analytics_service.dart';
 import '../auth/login_screen.dart';
+import 'app_snackbar.dart';
 
-class DealCard extends StatelessWidget {
+class DealCard extends StatefulWidget {
   final DealModel deal;
   final VoidCallback? onTap;
 
@@ -28,253 +30,346 @@ class DealCard extends StatelessWidget {
   });
 
   @override
+  State<DealCard> createState() => _DealCardState();
+}
+
+class _DealCardState extends State<DealCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: AppTheme.durationFast,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    debugPrint('🖱️ DealCard tapped: ${widget.deal.id}');
+    try {
+      context.read<AnalyticsService>().trackDealCardClick(widget.deal.id);
+    } catch (e) {
+      debugPrint('⚠️ Analytics Error in DealCard: $e');
+    }
+
+    if (widget.onTap != null) {
+      widget.onTap!();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final formattedDate = DateFormat('dd/MM/yyyy').format(deal.expiresAt);
+    final formattedDate = DateFormat('dd/MM/yyyy').format(widget.deal.expiresAt);
     final AuthService authService = AuthService();
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
 
     return GestureDetector(
-      onTap: () {
-        debugPrint('🖱️ DealCard tapped: ${deal.id}');
-        try {
-          context.read<AnalyticsService>().trackDealCardClick(deal.id);
-        } catch (e) {
-          debugPrint('⚠️ Analytics Error in DealCard: $e');
-        }
-
-        if (onTap != null) {
-          onTap!();
-        }
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        HapticFeedback.selectionClick();
+        _handleTap();
       },
-      child: Container(
-        clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          color: AppTheme.kLightBackground,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          // mainAxisSize: MainAxisSize.min, // Removed to allow Expanded to work if parent constrains
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // -------------------- IMAGE SECTION --------------------
-            Stack(
-              children: [
-                AspectRatio(
-                  aspectRatio: isLandscape
-                      ? 2.2
-                      : (1280 / 700), // Requested 1280x700
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(12.r),
-                    ),
-                    child: deal.imageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: deal.imageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: AppTheme.kDarkBackground.withValues(alpha: 0.5),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppTheme.kElectricLime,
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            color: AppTheme.kLightBackground,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            border: Border.all(color: AppTheme.kCardBorder),
+            boxShadow: AppTheme.shadowSm,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // -------------------- IMAGE SECTION --------------------
+              Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: isLandscape
+                        ? 2.2
+                        : (1280 / 700),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(AppTheme.radiusMd),
+                      ),
+                      child: widget.deal.imageUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: widget.deal.imageUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: AppTheme.kDarkBackground.withValues(alpha: 0.5),
+                                child: Center(
+                                  child: SizedBox(
+                                    width: 24.w,
+                                    height: 24.w,
+                                    child: const CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppTheme.kElectricLime,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
+                              errorWidget: (context, url, error) => Container(
+                                color: AppTheme.kDarkBackground,
+                                child: Icon(
+                                  Icons.broken_image_rounded,
+                                  color: AppTheme.kSubtleText,
+                                  size: AppTheme.iconLg,
+                                ),
+                              ),
+                            )
+                          : Container(
                               color: AppTheme.kDarkBackground,
-                              child: const Icon(
-                                Icons.broken_image,
-                                color: Colors.white24,
+                              child: Icon(
+                                Icons.image_not_supported_rounded,
+                                color: AppTheme.kSubtleText,
+                                size: AppTheme.iconLg,
                               ),
                             ),
-                          )
-                        : Container(
-                            color: Colors.grey[900],
-                            child: const Icon(
-                              Icons.image_not_supported,
-                              color: Colors.white24,
-                            ),
+                    ),
+                  ),
+                  // -------------------- DISCOUNT BADGE --------------------
+                  if (widget.deal.discountValue.isNotEmpty)
+                    PositionedDirectional(
+                      top: AppTheme.spacing8,
+                      start: AppTheme.spacing8,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppTheme.spacing8,
+                          vertical: AppTheme.spacing4,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.redAccent,
+                              Colors.red.shade700,
+                            ],
                           ),
-                  ),
-                ),
-                // -------------------- DISCOUNT BADGE --------------------
-                if (deal.discountValue.isNotEmpty)
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          widget.deal.discountValue,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: isLandscape ? 8.sp : 10.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                  // -------------------- FAVORITE BUTTON --------------------
                   PositionedDirectional(
-                    top: 8.h,
-                    start: 8.w,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 6.w,
-                        vertical: 3.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.redAccent,
-                        borderRadius: BorderRadius.circular(4.r),
-                      ),
-                      child: Text(
-                        deal.discountValue,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: isLandscape ? 8.sp : 10.sp,
-                        ),
-                      ),
+                    top: AppTheme.spacing8,
+                    end: AppTheme.spacing8,
+                    child: _FavoriteButton(
+                      isFavorite: widget.isFavorite,
+                      size: isLandscape ? 14.w : 18.w,
+                      onTap: () {
+                        if (authService.currentUser == null) {
+                          AppSnackbar.loginRequired(
+                            context,
+                            onLogin: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
+                              );
+                            },
+                          );
+                          return;
+                        }
+                        if (widget.onFavoriteToggle != null) {
+                          widget.onFavoriteToggle!();
+                        }
+                      },
                     ),
                   ),
-                // -------------------- FAVORITE BUTTON --------------------
-                PositionedDirectional(
-                  top: 8.h,
-                  end: 8.w,
-                  child: GestureDetector(
-                    onTap: () {
-                      if (authService.currentUser == null) {
-                        _showLoginSnackBar(context);
-                        return;
-                      }
-                      if (onFavoriteToggle != null) {
-                        onFavoriteToggle!();
-                      }
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(6.w),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.redAccent : Colors.white,
-                        size: isLandscape ? 14.w : 18.w,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // -------------------- INFO SECTION --------------------
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Company Name
-                  if (deal.companyName != null)
-                    Text(
-                      deal.companyName!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: isLandscape ? 9.sp : 10.sp,
-                        //  // Inherited
-                      ),
-                    ),
-
-                  SizedBox(height: 2.h),
-
-                  // Title
-                  Text(
-                    deal.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppTheme.kLightText,
-                      fontWeight: FontWeight.bold,
-                      fontSize: isLandscape ? 11.sp : 13.sp,
-                      height: 1.2,
-                    ),
-                  ),
-
-                  SizedBox(height: isLandscape ? 2.h : 4.h),
-
-                  // Expiry
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: isLandscape ? 10.w : 12.w,
-                        color: Colors.redAccent,
-                      ),
-                      SizedBox(width: 4.w),
-                      Text(
-                        formattedDate,
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontSize: isLandscape ? 9.sp : 10.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Category (Only show if space helps, or keep it but ensure no overflow)
-                  if (showCategory &&
-                      deal.categoryName != null &&
-                      deal.categoryName!.isNotEmpty) ...[
-                    SizedBox(height: 2.h),
-                    Text(
-                      deal.categoryName!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: AppTheme.kElectricLime,
-                        fontSize: isLandscape ? 9.sp : 10.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
                 ],
               ),
-            ),
-          ],
+              // -------------------- INFO SECTION --------------------
+              Expanded(
+                child: ClipRect(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing8,
+                      vertical: AppTheme.spacing4,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Company Name
+                        if (widget.deal.companyName != null)
+                          Text(
+                            widget.deal.companyName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: AppTheme.kSubtleText,
+                              fontSize: isLandscape ? 9.sp : 10.sp,
+                            ),
+                          ),
+
+                        // Title
+                        Text(
+                          widget.deal.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppTheme.kLightText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: isLandscape ? 10.sp : 11.sp,
+                            height: 1.2,
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        // Expiry
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.timer_outlined,
+                              size: isLandscape ? 10.w : 11.w,
+                              color: Colors.redAccent,
+                            ),
+                            SizedBox(width: AppTheme.spacing4),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: isLandscape ? 9.sp : 10.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Category
+                        if (widget.showCategory &&
+                            widget.deal.categoryName != null &&
+                            widget.deal.categoryName!.isNotEmpty)
+                          Text(
+                            widget.deal.categoryName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: AppTheme.kElectricLime,
+                              fontSize: isLandscape ? 9.sp : 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  void _showLoginSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.white, size: 24.w),
-            SizedBox(width: 8.w),
-            const Expanded(
-              child: Text(
-                'يجب تسجيل الدخول لإضافة المفضلات',
-                style: TextStyle(
-                  //  // Inherited
-                  color: Colors.white,
-                ),
-              ),
+/// Animated favorite button with scale and color transition
+class _FavoriteButton extends StatefulWidget {
+  final bool isFavorite;
+  final double size;
+  final VoidCallback onTap;
+
+  const _FavoriteButton({
+    required this.isFavorite,
+    required this.size,
+    required this.onTap,
+  });
+
+  @override
+  State<_FavoriteButton> createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<_FavoriteButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: AppTheme.durationFast,
+      lowerBound: 0.8,
+      upperBound: 1.2,
+      value: 1.0,
+    );
+  }
+
+  @override
+  void didUpdateWidget(_FavoriteButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isFavorite != oldWidget.isFavorite && widget.isFavorite) {
+      _controller.forward().then((_) => _controller.reverse());
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        widget.onTap();
+      },
+      child: Container(
+        padding: EdgeInsets.all(AppTheme.spacing8),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.5),
+          shape: BoxShape.circle,
+        ),
+        child: ScaleTransition(
+          scale: _controller,
+          child: AnimatedSwitcher(
+            duration: AppTheme.durationFast,
+            transitionBuilder: (child, animation) {
+              return ScaleTransition(scale: animation, child: child);
+            },
+            child: Icon(
+              widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+              key: ValueKey(widget.isFavorite),
+              color: widget.isFavorite ? Colors.redAccent : Colors.white,
+              size: widget.size,
             ),
-          ],
-        ),
-        action: SnackBarAction(
-          label: 'تسجيل الدخول',
-          textColor: AppTheme.kElectricLime,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            );
-          },
-        ),
-        backgroundColor: AppTheme.kDarkBackground.withValues(alpha: 0.9),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(16.w),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
+          ),
         ),
       ),
     );

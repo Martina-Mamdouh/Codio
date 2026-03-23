@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kodio_app/app/views/widgets/company_deals_tab.dart';
 import 'package:kodio_app/app/views/widgets/company_info_tab.dart';
 import 'package:kodio_app/app/views/widgets/company_reviews_tab.dart';
+import 'package:kodio_app/app/views/widgets/app_snackbar.dart';
+import 'package:kodio_app/app/views/widgets/shimmer_loading.dart';
+import 'package:kodio_app/app/views/widgets/state_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
@@ -12,7 +16,6 @@ import '../viewmodels/company_profile_view_model.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../core/services/analytics_service.dart';
 import 'auth/login_screen.dart';
-// ✅ Import UserProfileViewModel
 import '../viewmodels/user_profile_viewmodel.dart';
 import '../../core/models/company_model.dart';
 
@@ -46,16 +49,15 @@ class _CompanyProfileScaffold extends StatelessWidget {
         body: Consumer<CompanyProfileViewModel>(
           builder: (context, vm, _) {
             if (vm.isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppTheme.kElectricLime),
-              );
+              return const ShimmerCompanyProfile();
             }
             if (vm.errorMessage != null || vm.company == null) {
-              return Center(
-                child: Text(
-                  vm.errorMessage ?? 'حدث خطأ غير متوقع',
-                  style: const TextStyle(color: Colors.white),
-                ),
+              return ErrorState(
+                message: vm.errorMessage ?? 'حدث خطأ غير متوقع',
+                onRetry: () {
+                  // Trigger refresh
+                  context.read<CompanyProfileViewModel>().refresh();
+                },
               );
             }
 
@@ -204,10 +206,11 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                       ),
                                     ),
                                     // Follow Button
-                                    InkWell(
+                                    GestureDetector(
                                       onTap: vm.isFollowLoading
                                           ? null
                                           : () async {
+                                              HapticFeedback.lightImpact();
                                               if (auth.currentUser != null) {
                                                 // 1. Calculate Optimistic State
                                                 final bool isCurrentlyFollowed =
@@ -244,19 +247,33 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                                         vm.company!,
                                                         isCurrentlyFollowed,
                                                       );
+                                                  AppSnackbar.error(
+                                                    context,
+                                                    'فشل في تحديث المتابعة',
+                                                  );
                                                 }
                                               } else {
                                                 // No user (guest or not logged in)
-                                                _showLoginSnackBar(context);
+                                                AppSnackbar.loginRequired(
+                                                  context,
+                                                  onLogin: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            const LoginScreen(),
+                                                      ),
+                                                    );
+                                                  },
+                                                );
                                               }
                                             },
                                       child: AnimatedContainer(
-                                        duration: const Duration(
-                                          milliseconds: 300,
-                                        ),
+                                        duration: AppTheme.durationNormal,
+                                        curve: AppTheme.curveDefault,
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: 20.w,
-                                          vertical: 8.h,
+                                          horizontal: AppTheme.spacing20,
+                                          vertical: AppTheme.spacing10,
                                         ),
                                         decoration: BoxDecoration(
                                           color: vm.isFollowed
@@ -269,37 +286,54 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                                   width: 1.5,
                                                 ),
                                           borderRadius: BorderRadius.circular(
-                                            20.r,
+                                            AppTheme.radiusFull,
                                           ),
+                                          boxShadow: vm.isFollowed
+                                              ? AppTheme.glowLime
+                                              : null,
                                         ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            FaIcon(
-                                              vm.isFollowed
-                                                  ? FontAwesomeIcons.check
-                                                  : FontAwesomeIcons.plus,
-                                              size: 14.sp,
-                                              color: vm.isFollowed
-                                                  ? Colors.black
-                                                  : AppTheme.kElectricLime,
-                                            ),
-                                            SizedBox(width: 8.w),
-                                            Text(
-                                              vm.isFollowed
-                                                  ? 'متابَع'
-                                                  : 'متابعة',
-                                              style: TextStyle(
-                                                color: vm.isFollowed
-                                                    ? Colors.black
-                                                    : AppTheme.kElectricLime,
-                                                fontSize: 13.sp,
-                                                fontWeight: FontWeight.bold,
-                                                //  // Inherited
+                                        child: vm.isFollowLoading
+                                            ? SizedBox(
+                                                width: 18.w,
+                                                height: 18.w,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: vm.isFollowed
+                                                      ? Colors.black
+                                                      : AppTheme.kElectricLime,
+                                                ),
+                                              )
+                                            : Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  AnimatedSwitcher(
+                                                    duration: AppTheme.durationFast,
+                                                    child: FaIcon(
+                                                      vm.isFollowed
+                                                          ? FontAwesomeIcons.check
+                                                          : FontAwesomeIcons.plus,
+                                                      key: ValueKey(vm.isFollowed),
+                                                      size: 14.sp,
+                                                      color: vm.isFollowed
+                                                          ? Colors.black
+                                                          : AppTheme.kElectricLime,
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: AppTheme.spacing8),
+                                                  Text(
+                                                    vm.isFollowed
+                                                        ? 'متابَع'
+                                                        : 'متابعة',
+                                                    style: TextStyle(
+                                                      color: vm.isFollowed
+                                                          ? Colors.black
+                                                          : AppTheme.kElectricLime,
+                                                      fontSize: 13.sp,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ),
-                                          ],
-                                        ),
                                       ),
                                     ),
                                   ],
@@ -445,62 +479,6 @@ class _CompanyProfileScaffold extends StatelessWidget {
     );
   }
 
-  void _showLoginSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.white, size: 24.w),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: Text(
-                'يجب تسجيل الدخول لمتابعة الشركات',
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.kElectricLime,
-                foregroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-              },
-              child: Text(
-                'تسجيل الدخول',
-                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: AppTheme.kDarkBackground,
-        elevation: 6,
-        duration: const Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(16.w),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-          side: BorderSide(
-            color: AppTheme.kElectricLime.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-      ),
-    );
-  }
-
   // Helpers
   Uri _normalizeWeb(String url) {
     final u = url.trim();
@@ -563,24 +541,11 @@ ${website != null && website.isNotEmpty ? '🔗 $website' : ''}
 
 // Show Not Available SnackBar
 void _showNotAvailable(BuildContext context, String item) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(
-        '$item غير متوفر',
-        style: TextStyle(fontSize: 13.sp, color: AppTheme.kLightText),
-        textAlign: TextAlign.center,
-      ),
-      backgroundColor: Colors.red.shade700,
-      duration: const Duration(seconds: 3),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-    ),
-  );
+  AppSnackbar.warning(context, '$item غير متوفر');
 }
 
 // Action Button Widget
-class _ActionButton extends StatelessWidget {
+class _ActionButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -592,19 +557,74 @@ class _ActionButton extends StatelessWidget {
   });
 
   @override
+  State<_ActionButton> createState() => _ActionButtonState();
+}
+
+class _ActionButtonState extends State<_ActionButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: AppTheme.durationFast,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 24.w),
-          SizedBox(height: 4.h),
-          Text(
-            label,
-            style: TextStyle(color: Colors.white, fontSize: 10.sp),
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        HapticFeedback.selectionClick();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppTheme.spacing16,
+            vertical: AppTheme.spacing12,
           ),
-        ],
+          decoration: BoxDecoration(
+            color: AppTheme.kLightBackground,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            border: Border.all(color: AppTheme.kCardBorder),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                widget.icon,
+                color: AppTheme.kElectricLime,
+                size: AppTheme.iconMd,
+              ),
+              SizedBox(height: AppTheme.spacing6),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

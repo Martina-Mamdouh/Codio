@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'admin/viewmodels/categories_management_viewmodel.dart';
 import 'admin/views/widgets/auth_wrapper.dart';
 import 'firebase_options.dart';
@@ -43,11 +44,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Codio Admin Panel',
-      theme: AppTheme.darkTheme,
-      debugShowCheckedModeBanner: false,
-      home: AuthWrapper(),
+    return ScreenUtilInit(
+      designSize: const Size(393, 852), // Design size for admin panel
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'Codio Admin Panel',
+          theme: AppTheme.darkTheme,
+          debugShowCheckedModeBanner: false,
+          home: AuthWrapper(),
+        );
+      },
     );
   }
 }

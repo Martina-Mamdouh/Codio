@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../../main_layout.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'email_verification_screen.dart';
 import '../widgets/social_login_button.dart';
@@ -70,10 +69,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       } else {
         // Logged In
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainLayout()),
-        );
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,10 +92,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!mounted) return;
     if (success) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainLayout()),
-      );
+      // Pop back to let AuthWrapperApp show the authenticated MainLayout
+      // instead of creating a duplicate MainLayout outside the wrapper.
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

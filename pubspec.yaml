@@ -81,6 +81,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/slogan.png
+    - google_fonts/
 
 # ========================================
 # Splash Screen Configuration

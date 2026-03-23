@@ -18,6 +18,7 @@ import 'core/services/onesignal_service.dart';
 import 'core/services/version_service.dart';
 import 'core/theme/app_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 
 // Global navigator key for deep-linking from OneSignal notifications
@@ -56,6 +57,9 @@ Future<void> main() async {
   } catch (e) {
     debugPrint('❌ Firebase initialization error: $e');
   }
+
+  // Use bundled Cairo font — prevents flash of default font on startup
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   runApp(const CodioApp());
 }

@@ -61,34 +61,38 @@ class _LoginScreenState extends State<LoginScreen> {
   void _handleAuthResult(bool success, String? errorMessage) {
     if (!mounted) return;
 
-    // Success is handled by AuthWrapperApp listening to AuthViewModel
-    // which will rebuild and show MainLayout automatically.
-
-    if (!success) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Colors.black87,
-          title: const Text(
-            'خطأ في تسجيل الدخول',
-            style: TextStyle(color: Colors.white),
-          ),
-          content: Text(
-            errorMessage ?? 'فشل تسجيل الدخول',
-            style: const TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'حسناً',
-                style: TextStyle(color: Color(0xFFE5FF17)),
-              ), // AppTheme.kElectricLime
-            ),
-          ],
-        ),
-      );
+    if (success) {
+      // Pop LoginScreen if it was pushed on top of another screen (e.g. guest mode)
+      // so the user can see the authenticated MainLayout rebuilt by AuthWrapperApp.
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+      return;
     }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.black87,
+        title: const Text(
+          'خطأ في تسجيل الدخول',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          errorMessage ?? 'فشل تسجيل الدخول',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'حسناً',
+              style: TextStyle(color: Color(0xFFE5FF17)),
+            ), // AppTheme.kElectricLime
+          ),
+        ],
+      ),
+    );
   }
 
   @override

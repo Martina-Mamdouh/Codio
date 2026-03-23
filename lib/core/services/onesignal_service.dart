@@ -71,10 +71,12 @@ class OneSignalService {
                 // ignore: use_build_context_synchronously
                 final context = _navigatorKey!.currentState!.context;
                 // Check if widget is mounted to be safe, though context check covers most
-                Provider.of<NotificationsViewModel>(
-                  context,
-                  listen: false,
-                ).loadNotifications();
+                if (context.mounted) {
+                  Provider.of<NotificationsViewModel>(
+                    context,
+                    listen: false,
+                  ).loadNotifications();
+                }
               }
             } catch (e) {
               if (kDebugMode) {
@@ -124,10 +126,13 @@ class OneSignalService {
             if (_navigatorKey?.currentState?.context != null) {
               // ignore: use_build_context_synchronously
               final context = _navigatorKey!.currentState!.context;
-              Provider.of<NotificationsViewModel>(
-                context,
-                listen: false,
-              ).loadNotifications();
+              // Check if widget is mounted to be safe, though context check covers most
+              if (context.mounted) {
+                Provider.of<NotificationsViewModel>(
+                  context,
+                  listen: false,
+                ).loadNotifications();
+              }
             }
           } else if (kDebugMode) {
             print(

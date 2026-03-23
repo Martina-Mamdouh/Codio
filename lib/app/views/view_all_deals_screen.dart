@@ -60,38 +60,42 @@ class ViewAllDealsScreen extends StatelessWidget {
                 return ListView.separated(
                   padding: EdgeInsets.all(16.w),
                   itemCount: deals.length,
-                  separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                  separatorBuilder: (context, index) => SizedBox(height: 20.h),
                   itemBuilder: (context, index) {
                     final deal = deals[index];
                     final isFav = profileVm.isDealFavorite(deal.id);
 
-                    return DealCard(
-                      deal: deal,
-                      isFavorite: isFav,
-                      showCategory: true,
-                      onTap: () {
-                        debugPrint('Pressed on deal: ${deal.title}');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DealDetailsView(deal: deal),
-                          ),
-                        );
-                      },
-                      onFavoriteToggle: () async {
-                        final success = await profileVm.toggleFavoriteForDeal(
-                          deal.id,
-                        );
-                        if (!success && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'تعذّر تحديث المفضّلة، حاول مرة أخرى',
-                              ),
+                    return SizedBox(
+                      // Properly calculated height based on typical device width to prevent overflow
+                      height: MediaQuery.of(context).orientation == Orientation.portrait ? 310.h : 400.h,
+                      child: DealCard(
+                        deal: deal,
+                        isFavorite: isFav,
+                        showCategory: true,
+                        onTap: () {
+                          debugPrint('Pressed on deal: ${deal.title}');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DealDetailsView(deal: deal),
                             ),
                           );
-                        }
-                      },
+                        },
+                        onFavoriteToggle: () async {
+                          final success = await profileVm.toggleFavoriteForDeal(
+                            deal.id,
+                          );
+                          if (!success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'تعذّر تحديث المفضّلة، حاول مرة أخرى',
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     );
                   },
                 );

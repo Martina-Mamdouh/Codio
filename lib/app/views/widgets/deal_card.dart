@@ -249,7 +249,22 @@ class _DealCardState extends State<DealCard>
 
                         const Spacer(),
 
-                        // Expiry
+                        // 1. Category
+                        Text(
+                          (widget.deal.categoryName != null && widget.deal.categoryName!.isNotEmpty)
+                              ? widget.deal.categoryName!
+                              : 'عرض',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppTheme.kElectricLime,
+                            fontSize: isLandscape ? 9.sp : 10.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        
+                        // 2. Expiry Date
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -269,21 +284,6 @@ class _DealCardState extends State<DealCard>
                             ),
                           ],
                         ),
-
-                        // Category
-                        if (widget.showCategory &&
-                            widget.deal.categoryName != null &&
-                            widget.deal.categoryName!.isNotEmpty)
-                          Text(
-                            widget.deal.categoryName!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: AppTheme.kElectricLime,
-                              fontSize: isLandscape ? 9.sp : 10.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                       ],
                     ),
                   ),

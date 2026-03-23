@@ -12,6 +12,7 @@ import 'widgets/deal_section.dart';
 import 'widgets/state_widgets.dart';
 import 'widgets/shimmer_loading.dart';
 import 'search_view.dart';
+import 'view_all_deals_screen.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -173,35 +174,81 @@ class HomeView extends StatelessWidget {
                   DealSection(
                     title: 'عروض جديدة',
                     deals: viewModel.newDeals,
-                    onSeeAllTap: () => debugPrint('See all new deals tapped'),
+                    onSeeAllTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ViewAllDealsScreen(
+                            title: 'عروض جديدة',
+                            deals: viewModel.allNewDeals,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 8.h),
                   DealSection(
                     title: 'تنتهي قريباً',
                     deals: viewModel.expiringDeals,
-                    onSeeAllTap: () =>
-                        debugPrint('See all expiring deals tapped'),
+                    onSeeAllTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ViewAllDealsScreen(
+                            title: 'تنتهي قريباً',
+                            deals: viewModel.allExpiringDeals,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 8.h),
                   DealSection(
                     title: 'عروض مميزة',
                     deals: viewModel.featuredDeals,
-                    onSeeAllTap: () =>
-                        debugPrint('See all featured deals tapped'),
+                    onSeeAllTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ViewAllDealsScreen(
+                            title: 'عروض مميزة',
+                            deals: viewModel.allFeaturedDeals,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 8.h),
                   DealSection(
                     title: 'عروض الطلاب',
                     deals: viewModel.studentDeals,
-                    onSeeAllTap: () =>
-                        debugPrint('See all student deals tapped'),
+                    onSeeAllTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ViewAllDealsScreen(
+                            title: 'عروض الطلاب',
+                            deals: viewModel.allStudentDeals,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 6.h),
                   DealSection(
                     title: 'عروض الأنشطة الترفيهية',
                     deals: viewModel.entertainmentDeals,
-                    onSeeAllTap: () =>
-                        debugPrint('See all entertainment deals tapped'),
+                    onSeeAllTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ViewAllDealsScreen(
+                            title: 'عروض الأنشطة الترفيهية',
+                            deals: viewModel.allEntertainmentDeals,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 20.h),
                 ],

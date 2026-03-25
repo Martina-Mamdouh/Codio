@@ -19,17 +19,31 @@ class CompaniesManagementView extends StatelessWidget {
         .isEditorVisible;
 
     return Scaffold(
-      body: Row(
-        children: [
-          Expanded(
-            flex: isEditorVisible ? 3 : 5,
-            child: const CompaniesTable(),
-          ),
-          if (isEditorVisible) ...[
-            const VerticalDivider(thickness: 1, width: 1, color: Colors.black),
-            const Expanded(flex: 2, child: CompanyEditorForm()),
-          ],
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 800;
+
+          if (isMobile) {
+            if (isEditorVisible) {
+              return const CompanyEditorForm();
+            } else {
+              return const CompaniesTable();
+            }
+          }
+
+          return Row(
+            children: [
+              Expanded(
+                flex: isEditorVisible ? 3 : 5,
+                child: const CompaniesTable(),
+              ),
+              if (isEditorVisible) ...[
+                const VerticalDivider(thickness: 1, width: 1, color: Colors.black),
+                const Expanded(flex: 2, child: CompanyEditorForm()),
+              ],
+            ],
+          );
+        },
       ),
     );
   }

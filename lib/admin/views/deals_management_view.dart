@@ -18,21 +18,57 @@ class DealsManagementView extends StatelessWidget {
         .isEditorVisible;
 
     return Scaffold(
-      body: Row(
-        children: [
-          Expanded(flex: isEditorVisible ? 3 : 5, child: _DealsTable()),
-          if (isEditorVisible) ...[
-            VerticalDivider(thickness: 1, width: 1, color: Colors.black),
-            Expanded(flex: 2, child: DealEditorForm()),
-          ],
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 800;
+
+          if (isMobile) {
+            if (isEditorVisible) {
+              return DealEditorForm();
+            } else {
+              return const _DealsTable();
+            }
+          }
+
+          return Row(
+            children: [
+              Expanded(flex: isEditorVisible ? 3 : 5, child: const _DealsTable()),
+              if (isEditorVisible) ...[
+                const VerticalDivider(thickness: 1, width: 1, color: Colors.black),
+                Expanded(flex: 2, child: DealEditorForm()),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class _DealsTable extends StatelessWidget {
+class _DealsTable extends StatefulWidget {
   const _DealsTable();
+
+  @override
+  State<_DealsTable> createState() => _DealsTableState();
+}
+
+class _DealsTableState extends State<_DealsTable> {
+  late final ScrollController _verticalController;
+  late final ScrollController _horizontalController;
+
+  @override
+  void initState() {
+    super.initState();
+    _verticalController = ScrollController();
+    _horizontalController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _verticalController.dispose();
+    _horizontalController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,11 +145,22 @@ class _DealsTable extends StatelessWidget {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
+    return Scrollbar(
+      controller: _verticalController,
+      thumbVisibility: true,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: _buildDataTable(context, vm, vmRead),
+        controller: _verticalController,
+        scrollDirection: Axis.vertical,
+        child: Scrollbar(
+          controller: _horizontalController,
+          thumbVisibility: true,
+          notificationPredicate: (notif) => notif.metrics.axis == Axis.horizontal,
+          child: SingleChildScrollView(
+            controller: _horizontalController,
+            scrollDirection: Axis.horizontal,
+            child: _buildDataTable(context, vm, vmRead),
+          ),
+        ),
       ),
     );
   }

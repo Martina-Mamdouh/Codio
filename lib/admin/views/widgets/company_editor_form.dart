@@ -531,7 +531,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (val) {
                   if (val != null && val.isNotEmpty) {
-                    if (!RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(val)) {
+                    if (!val.contains('@') || !val.contains('.')) {
                       return 'بريد إلكتروني غير صالح';
                     }
                   }

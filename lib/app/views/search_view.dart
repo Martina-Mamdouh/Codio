@@ -39,12 +39,8 @@ class _SearchViewState extends State<SearchView> {
   @override
   void initState() {
     super.initState();
+    _focusNode.requestFocus();
     _loadRecentSearches();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _focusNode.requestFocus();
-      }
-    });
   }
 
   @override
@@ -122,56 +118,37 @@ class _SearchViewState extends State<SearchView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.kDarkBackground,
-      appBar: AppBar(
-        toolbarHeight: 70.h,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
         backgroundColor: AppTheme.kDarkBackground,
-        elevation: 0,
-        titleSpacing: 0,
-        leading: Padding(
-          padding: EdgeInsetsDirectional.only(end: 8.w),
-          child: IconButton(
-            icon: Icon(Icons.arrow_forward, color: Colors.white, size: 24.sp),
-            onPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              } else {
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/home', (route) => false);
-              }
-            },
+        appBar: AppBar(
+          toolbarHeight: 60.h,
+          backgroundColor: AppTheme.kDarkBackground,
+          elevation: 0,
+          titleSpacing: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
           ),
-        ),
-        title: Padding(
-          padding: EdgeInsetsDirectional.only(start: 16.w, end: 8.w),
-          child: Hero(
-            tag: 'search_bar',
+          title: Padding(
+            padding: EdgeInsets.only(left: 16.w),
             child: Material(
               color: Colors.transparent,
               child: TextField(
                 controller: _searchController,
                 focusNode: _focusNode,
-                style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'ابحث عن المتاجر والعروض...',
-                  hintStyle: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14.sp,
-                  ),
-                  prefixIcon: Icon(
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: const Icon(
                     Icons.search,
                     color: AppTheme.kElectricLime,
-                    size: 22.sp,
                   ),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: Icon(
-                            Icons.clear,
-                            color: Colors.grey,
-                            size: 20.sp,
-                          ),
+                          icon: const Icon(Icons.clear, color: Colors.grey),
                           onPressed: () {
                             _searchController.clear();
                             setState(() {});
@@ -186,8 +163,8 @@ class _SearchViewState extends State<SearchView> {
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12.w,
-                    vertical: 10.h,
+                    horizontal: 0,
+                    vertical: 12.h,
                   ),
                 ),
                 onChanged: (value) {
@@ -205,15 +182,17 @@ class _SearchViewState extends State<SearchView> {
             ),
           ),
         ),
-      ),
-      body: SafeArea(
-        child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.kElectricLime),
-              )
-            : _hasSearched
-            ? _buildSearchResults()
-            : _buildSuggestions(),
+        body: SafeArea(
+          child: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: AppTheme.kElectricLime,
+                  ),
+                )
+              : _hasSearched
+              ? _buildSearchResults()
+              : _buildSuggestions(),
+        ),
       ),
     );
   }
@@ -286,7 +265,7 @@ class _SearchViewState extends State<SearchView> {
               Expanded(
                 child: Text(
                   'مقترحات شائعة',
-                  textAlign: TextAlign.end,
+                  textAlign: TextAlign.right,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18.sp,
@@ -377,49 +356,67 @@ class _SearchViewState extends State<SearchView> {
         Expanded(
           child: Consumer<UserProfileViewModel>(
             builder: (context, profileVm, _) {
-              return RefreshIndicator(
-                onRefresh: () => _performSearch(_searchController.text),
-                color: AppTheme.kElectricLime,
-                child: ListView.separated(
-                  padding: EdgeInsets.symmetric(
-                    vertical: 16.h,
-                    horizontal: 16.w,
-                  ),
-                  itemCount: _searchResults.length,
-                  separatorBuilder: (context, index) => SizedBox(height: 16.h),
-                  itemBuilder: (context, index) {
-                    final deal = _searchResults[index];
-                    final isFav = profileVm.isDealFavorite(deal.id);
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  // Force exact column count
+                  int crossAxisCount;
+                  final width = constraints.maxWidth;
 
-                    return DealCard(
-                      deal: deal,
-                      isFavorite: isFav,
-                      showCategory: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DealDetailsView(deal: deal),
-                          ),
-                        );
-                      },
-                      onFavoriteToggle: () async {
-                        final success = await profileVm.toggleFavoriteForDeal(
-                          deal.id,
-                        );
-                        if (!success && context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'تعذّر تحديث المفضّلة، حاول مرة أخرى',
+                  if (width < 360) {
+                    crossAxisCount = 1; // Single column for small screens
+                  } else {
+                    crossAxisCount = 2; // Always 2 columns
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () => _performSearch(_searchController.text),
+                    color: AppTheme.kElectricLime,
+                    child: GridView.builder(
+                      padding: EdgeInsets.symmetric(
+                        vertical: 16.h,
+                        horizontal: 16.w,
+                      ),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 12.w,
+                        mainAxisSpacing: 16.h,
+                        childAspectRatio: 0.72,
+                      ),
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, index) {
+                        final deal = _searchResults[index];
+                        final isFav = profileVm.isDealFavorite(deal.id);
+
+                        return DealCard(
+                          deal: deal,
+                          isFavorite: isFav,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DealDetailsView(deal: deal),
                               ),
-                            ),
-                          );
-                        }
+                            );
+                          },
+                          onFavoriteToggle: () async {
+                            final success = await profileVm
+                                .toggleFavoriteForDeal(deal.id);
+                            if (!success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'تعذّر تحديث المفضّلة، حاول مرة أخرى',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        );
                       },
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               );
             },
           ),

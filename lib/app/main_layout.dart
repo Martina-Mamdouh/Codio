@@ -1,188 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_builder/responsive_builder.dart';
-import 'package:provider/provider.dart';
 import 'package:kodio_app/app/views/categories_view.dart';
 import 'package:kodio_app/app/views/companies_view.dart';
 import 'package:kodio_app/app/views/home_view.dart';
 import 'package:kodio_app/app/views/profile/profile_view.dart';
-import 'viewmodels/auth_viewmodel.dart';
-import 'viewmodels/companies_viewmodel.dart';
-import 'viewmodels/categories_viewmodel.dart';
-import 'viewmodels/map_view_model.dart';
-import 'viewmodels/user_profile_viewmodel.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'views/followed_companies_view.dart';
-import 'views/auth/login_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
 
   @override
-  State<MainLayout> createState() => MainLayoutState();
+  State<MainLayout> createState() => _MainLayoutState();
 }
 
-class MainLayoutState extends State<MainLayout> {
+class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    // Pre-fetch data for other tabs after Home has likely started rendering
-    _scheduleBackgroundDataLoad();
-  }
-
-  void _scheduleBackgroundDataLoad() {
-    // Wait 3 seconds to let Home & Splash finish animations/loading
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        final categoryVm = context.read<CategoriesViewModel>();
-        // Only load if not already loaded/loading
-        if (categoryVm.categories.isEmpty && !categoryVm.isLoading) {
-          debugPrint('🚀 Triggering background load: Categories');
-          categoryVm.loadCategories();
-        }
-      }
-    });
-
-    // Wait 4 seconds for Companies (staggered)
-    Future.delayed(const Duration(seconds: 4), () {
-      if (mounted) {
-        final companiesVm = context.read<CompaniesViewModel>();
-        if (companiesVm.companies.isEmpty && !companiesVm.isLoading) {
-          debugPrint('🚀 Triggering background load: Companies');
-          companiesVm.loadCompanies();
-        }
-      }
-    });
-
-    // Wait 5 seconds for Map (staggered)
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        final mapVm = context.read<MapViewModel>();
-        if (!mapVm.hasLoaded && !mapVm.isLoading) {
-          mapVm.init();
-        }
-      }
-    });
-  }
-
-  final List<Widget> _mobileScreens = [
+  final List<Widget> _screens = [
     const HomeView(),
     const CategoriesView(),
     const CompaniesView(),
     const FollowedCompaniesView(),
     const ProfileView(),
   ];
-
-  final List<Widget> _tabletScreens = [
-    const HomeView(),
-    const CategoriesView(),
-    const CompaniesView(),
-    const ProfileView(),
-  ];
-
-  void switchToTab(int index) {
-    _onTabChanged(index);
-  }
-
-  void _onTabChanged(int index) {
-    final deviceType = getDeviceType(MediaQuery.of(context).size);
-    final isMobile = deviceType == DeviceScreenType.mobile;
-
-    // Mapping:
-    // Mobile: 1=Cat, 2=Comp, 3=Follow, 4=Profile
-    // Tablet: 1=Cat, 2=Comp, 3=Profile
-
-    if (index == 1) {
-      // Categories (Both)
-      final vm = context.read<CategoriesViewModel>();
-      if (vm.categories.isEmpty && !vm.isLoading) {
-        vm.loadCategories();
-      }
-    } else if (index == 2) {
-      // Companies (Both)
-      final vm = context.read<CompaniesViewModel>();
-      if (vm.companies.isEmpty && !vm.isLoading) {
-        vm.loadCompanies();
-      }
-      final mapVm = context.read<MapViewModel>();
-      if (!mapVm.hasLoaded && !mapVm.isLoading) {
-        mapVm.init();
-      }
-    } else if (isMobile && index == 3) {
-      // Followed (Mobile Only)
-      // Block guests from the Followed tab
-      final authVm = context.read<AuthViewModel>();
-      if (authVm.isGuestMode) {
-        _showGuestTabSnackBar();
-        return; // Don't switch tab
-      }
-      final vm = context.read<UserProfileViewModel>();
-      if (vm.followedCompanies.isEmpty && !vm.isLoadingProfile) {
-        vm.loadProfileData();
-      }
-    }
-
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
-  void _showGuestTabSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.lock_outline, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text(
-                'سجّل دخولك لعرض الشركات المتابَعة',
-                style: TextStyle(color: Colors.white, fontSize: 13),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.kElectricLime,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              },
-              child: const Text(
-                'تسجيل الدخول',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: AppTheme.kDarkBackground,
-        elevation: 6,
-        duration: const Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: AppTheme.kElectricLime.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -196,15 +38,9 @@ class MainLayoutState extends State<MainLayout> {
   Widget _buildMobileLayout() {
     return Scaffold(
       backgroundColor: AppTheme.kDarkBackground,
-      body: IndexedStack(index: _currentIndex, children: _mobileScreens),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewPadding.bottom > 0
-              ? MediaQuery.of(context).viewPadding.bottom
-              : 16,
-          left: 12,
-          right: 12,
-        ),
+        padding: EdgeInsets.only(bottom: 16, left: 12, right: 12),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(18),
           child: Container(
@@ -213,7 +49,7 @@ class MainLayoutState extends State<MainLayout> {
               borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.10),
+                  color: Colors.black.withOpacity(0.10),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -226,28 +62,17 @@ class MainLayoutState extends State<MainLayout> {
               unselectedItemColor: Colors.grey,
               type: BottomNavigationBarType.fixed,
               currentIndex: _currentIndex,
-              onTap: _onTabChanged,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
               items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(FontAwesomeIcons.house),
-                  label: 'الرئيسية',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(FontAwesomeIcons.tableCellsLarge),
-                  label: 'التصنيفات',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(FontAwesomeIcons.store),
-                  label: 'الشركات',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(FontAwesomeIcons.solidStar),
-                  label: 'متابَعة',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(FontAwesomeIcons.user),
-                  label: 'حسابي',
-                ),
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.house), label: 'الرئيسية'),
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.thLarge), label: 'التصنيفات'),
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.store), label: 'الشركات'),
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.solidStar), label: 'متابَعة'),
+                BottomNavigationBarItem(icon: Icon(FontAwesomeIcons.user), label: 'حسابي'),
               ],
             ),
           ),
@@ -264,7 +89,11 @@ class MainLayoutState extends State<MainLayout> {
           NavigationRail(
             backgroundColor: AppTheme.kLightBackground,
             selectedIndex: _currentIndex,
-            onDestinationSelected: _onTabChanged,
+            onDestinationSelected: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
             labelType: NavigationRailLabelType.all,
             destinations: const [
               NavigationRailDestination(
@@ -286,7 +115,7 @@ class MainLayoutState extends State<MainLayout> {
             ],
           ),
           Expanded(
-            child: IndexedStack(index: _currentIndex, children: _tabletScreens),
+            child: IndexedStack(index: _currentIndex, children: _screens),
           ),
         ],
       ),

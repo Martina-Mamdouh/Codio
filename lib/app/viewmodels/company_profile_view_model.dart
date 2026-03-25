@@ -5,11 +5,9 @@ import '../../core/models/company_model.dart';
 import '../../core/models/deal_model.dart';
 import '../../core/models/category_model.dart'; // ✅ Import CategoryModel
 import '../../core/services/supabase_service.dart';
-import '../../core/services/analytics_service.dart';
 
 class CompanyProfileViewModel extends ChangeNotifier {
   final SupabaseService _supabaseService = SupabaseService();
-  final AnalyticsService _analyticsService = AnalyticsService();
   final int companyId;
 
   CompanyModel? company;
@@ -27,33 +25,25 @@ class CompanyProfileViewModel extends ChangeNotifier {
   int mapClicks = 0;
   int companyPageViews = 0;
 
-  void incrementSocialClicks([String? platform]) {
+  void incrementSocialClicks() {
     socialClicks++;
-    _analyticsService.trackSocialClick(companyId, platform: platform);
     notifyListeners();
   }
 
   void incrementMapClicks() {
     mapClicks++;
-    _analyticsService.trackMapClick(companyId);
     notifyListeners();
   }
 
   void incrementCompanyPageViews() {
     companyPageViews++;
-    _analyticsService.trackCompanyView(companyId);
     notifyListeners();
   }
 
   // قناة Realtime
   RealtimeChannel? _companyChannel;
 
-  CompanyProfileViewModel(this.companyId, {CompanyModel? initialCompany}) {
-    if (initialCompany != null) {
-      company = initialCompany;
-      // We rely on loadCompanyData or local check for isFollowed
-    }
-
+  CompanyProfileViewModel(this.companyId) {
     if (kDebugMode) {
       print('CompanyProfileViewModel created with companyId: $companyId');
     }
@@ -62,85 +52,52 @@ class CompanyProfileViewModel extends ChangeNotifier {
   }
 
   Future<void> loadCompanyData() async {
-    // If we have initial data, don't show full screen loader
-    if (company == null) {
-      isLoading = true;
+    isLoading = true;
+    errorMessage = null;
+    if (hasListeners) {
       notifyListeners();
     }
 
-    errorMessage = null;
-
     try {
-      // ✅ Fetch company, deal count, and category name in one optimized call
+      // بيانات الشركة (من الـ Service اللي بيرجع category_name و deal_count)
       company = await _supabaseService.getCompanyById(companyId);
+      if (kDebugMode) {
+        print('loadCompanyData: company loaded: ${company?.name ?? 'null'} for id $companyId');
+      }
 
-      // Fetch all categories for tags
+      // ✅ جلب كل التصنيفات عشان نعرض ال tags
       allCategories = await _supabaseService.getCategories();
 
       if (company == null) {
         errorMessage = 'لم يتم العثور على هذه الشركة';
+        isLoading = false;
+        if (hasListeners) {
+          notifyListeners();
+        }
         return;
       }
 
-      // Fetch deals and check follow status concurrently
-      final results = await Future.wait([
-        _supabaseService.getCompanyDeals(companyId),
-        _supabaseService.isCompanyFollowed(companyId),
-      ]);
-
-      deals = results[0] as List<DealModel>;
-      isFollowed = results[1] as bool;
-
-      // Update local click counts without extra notify
-      final stats = await _analyticsService.getCompanyAnalytics(companyId);
-      if (stats != null) {
-        companyPageViews = stats['page_view_count'] ?? 0;
-        socialClicks = stats['social_click_count'] ?? 0;
-        mapClicks = stats['map_click_count'] ?? 0;
+      // عروض الشركة
+      deals = await _supabaseService.getCompanyDeals(companyId);
+      if (kDebugMode) {
+        print('loadCompanyData: loaded ${deals.length} deals for company ${company!.name}');
       }
 
-      // ... existing code ...
+      // حالة المتابعة
+      isFollowed = await _supabaseService.isCompanyFollowed(companyId);
 
+      // اشترك في Realtime بعد التحميل
       _subscribeToCompany();
     } catch (e) {
-      // ... error handling ...
+      if (kDebugMode) {
+        print('Error loadCompanyData: $e');
+      }
+      errorMessage = 'حدث خطأ أثناء تحميل بيانات الشركة';
     } finally {
       isLoading = false;
       if (hasListeners) {
         notifyListeners();
       }
-    }
-  }
-
-  /// Refresh company data (for error recovery)
-  Future<void> refresh() async {
-    company = null;
-    errorMessage = null;
-    await loadCompanyData();
-  }
-
-  // ✅ Call this from View to sync with global UserProfile state
-  void checkFollowStatus(bool isGloballyFollowed) {
-    if (isFollowed != isGloballyFollowed) {
-      isFollowed = isGloballyFollowed;
-      // Simply update the local flag without triggering a full reload or notify unless changed
-      // actually we should notify if it changes visual state
-      notifyListeners();
-    }
-  }
-
-  // جلب الإحصائيات الحقيقية من قاعدة البيانات
-  Future<void> loadCompanyStats() async {
-    try {
-      final stats = await _analyticsService.getCompanyAnalytics(companyId);
-      if (stats != null) {
-        companyPageViews = stats['page_view_count'] ?? 0;
-        socialClicks = stats['social_click_count'] ?? 0;
-        mapClicks = stats['map_click_count'] ?? 0;
-        if (hasListeners) notifyListeners();
-      }
-    } catch (e) {
-      debugPrint('❌ Error loading company stats: $e');
     }
   }
 
@@ -216,9 +173,7 @@ class CompanyProfileViewModel extends ChangeNotifier {
     try {
       deals = await _supabaseService.getCompanyDeals(companyId);
       if (kDebugMode) {
-        print(
-          'loadDeals: loaded ${deals.length} deals for company ${company!.name}',
-        );
+        print('loadDeals: loaded ${deals.length} deals for company ${company!.name}');
       }
       if (hasListeners) {
         notifyListeners();
@@ -230,8 +185,8 @@ class CompanyProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> toggleFollow() async {
-    if (company == null) return false;
+  Future<void> toggleFollow() async {
+    if (company == null) return;
 
     isFollowLoading = true;
     if (hasListeners) {
@@ -255,12 +210,6 @@ class CompanyProfileViewModel extends ChangeNotifier {
         company = company!.copyWith(
           followersCount: (company!.followersCount ?? 1) - 1,
         );
-
-        // Track unfollow
-        await _analyticsService.trackCompanyFollow(
-          company!.id,
-          isFollowed: false,
-        );
       } else {
         // متابعة
         await Supabase.instance.client.from('following').insert({
@@ -273,21 +222,15 @@ class CompanyProfileViewModel extends ChangeNotifier {
         company = company!.copyWith(
           followersCount: (company!.followersCount ?? 0) + 1,
         );
-
-        // Track follow
-        await _analyticsService.trackCompanyFollow(
-          company!.id,
-          isFollowed: true,
-        );
       }
 
       if (hasListeners) {
         notifyListeners();
       }
-      return true;
+      // Realtime + التريجر هيأكدوا القيمة من السيرفر بعد كده
     } catch (e) {
       debugPrint('خطأ في المتابعة: $e');
-      return false;
+      // اختياري: أعد التحميل من السيرفر عند فشل
     } finally {
       isFollowLoading = false;
       if (hasListeners) {

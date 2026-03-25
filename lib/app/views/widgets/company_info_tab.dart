@@ -21,12 +21,7 @@ class CompanyInfoTab extends StatelessWidget {
       onRefresh: viewModel.loadCompanyData,
       color: AppTheme.kElectricLime,
       child: SingleChildScrollView(
-        padding: EdgeInsets.only(
-          top: 16,
-          left: 16,
-          right: 16,
-          bottom: MediaQuery.of(context).padding.bottom + 16,
-        ),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -70,7 +65,7 @@ class CompanyInfoTab extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  //  // Inherited
+                  fontFamily: 'Cairo',
                 ),
               ),
               const SizedBox(height: 8),
@@ -111,14 +106,20 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                //  // Inherited
+                fontFamily: 'Cairo',
               ),
             ),
             const SizedBox(height: 8),
-            _CompactTextBox(
-              text: (c.description ?? '').isNotEmpty
+            Text(
+              (c.description ?? '').isNotEmpty
                   ? c.description!
                   : 'لا يوجد وصف حالياً',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                height: 1.6,
+                fontFamily: 'Cairo',
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -130,7 +131,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                //  // Inherited
+                fontFamily: 'Cairo',
               ),
             ),
             const SizedBox(height: 12),
@@ -150,7 +151,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                        //  // Inherited
+                        fontFamily: 'Cairo',
                       ),
                     ),
                   ),
@@ -174,7 +175,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                        //  // Inherited
+                        fontFamily: 'Cairo',
                       ),
                     ),
                   ),
@@ -198,7 +199,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                        //  // Inherited
+                        fontFamily: 'Cairo',
                       ),
                     ),
                   ),
@@ -222,7 +223,7 @@ class CompanyInfoTab extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,
-                        //  // Inherited
+                        fontFamily: 'Cairo',
                       ),
                     ),
                   ),
@@ -240,7 +241,7 @@ class CompanyInfoTab extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white54,
                   fontSize: 13,
-                  //  // Inherited
+                  fontFamily: 'Cairo',
                 ),
               ),
 
@@ -253,14 +254,20 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                //  // Inherited
+                fontFamily: 'Cairo',
               ),
             ),
             const SizedBox(height: 8),
-            _CompactTextBox(
-              text: (c.workingHours ?? '').isNotEmpty
+            Text(
+              (c.workingHours ?? '').isNotEmpty
                   ? c.workingHours!
                   : 'لا توجد ساعات عمل متاحة',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                height: 1.6,
+                fontFamily: 'Cairo',
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -272,7 +279,7 @@ class CompanyInfoTab extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
-                //  // Inherited
+                fontFamily: 'Cairo',
               ),
             ),
             const SizedBox(height: 8),
@@ -292,7 +299,7 @@ class CompanyInfoTab extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
-                      //  // Inherited
+                      fontFamily: 'Cairo',
                     ),
                   ),
                 ),
@@ -309,7 +316,7 @@ class CompanyInfoTab extends StatelessWidget {
                     style: TextStyle(
                       color: AppTheme.kElectricLime,
                       fontSize: 13,
-                      //  // Inherited
+                      fontFamily: 'Cairo',
                     ),
                   ),
                 ),
@@ -326,196 +333,69 @@ class CompanyInfoTab extends StatelessWidget {
                   color: Colors.white,
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  //  // Inherited
+                  fontFamily: 'Cairo',
                 ),
               ),
               const SizedBox(height: 12),
               _SocialLinks(socialLinks: c.socialLinks!, viewModel: viewModel),
-            ],
-
-            // ✅ الفروع
-            if ((c.branches ?? []).isNotEmpty) ...[
               const SizedBox(height: 20),
-              const Text(
-                'الفروع',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ...c.branches!.map(
-                (branch) => Card(
+
+              // تتبع التفاعل
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
                   color: AppTheme.kLightBackground,
-                  margin: const EdgeInsets.only(bottom: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'تتبع التفاعل:',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
                       children: [
-                        // اسم الفرع
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on,
-                              color: AppTheme.kElectricLime,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                branch.name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
+                        const Icon(Icons.link, color: Colors.white70, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          'الضغط على التواصل: ${viewModel.socialClicks}',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontFamily: 'Cairo',
+                          ),
                         ),
-                        if ((branch.address ?? '').isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.map_outlined,
-                                color: AppTheme.kSubtleText,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  branch.address!,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        if ((branch.phone ?? '').isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          GestureDetector(
-                            onTap: () =>
-                                launchUrl(Uri.parse('tel:${branch.phone}')),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.phone_outlined,
-                                  color: AppTheme.kSubtleText,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  branch.phone!,
-                                  style: const TextStyle(
-                                    color: AppTheme.kElectricLime,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        if ((branch.workingHours ?? '').isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.access_time,
-                                color: AppTheme.kSubtleText,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                branch.workingHours!,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        // مواقع التواصل الاجتماعي للفرع
-                        if (branch.socialLinks != null &&
-                            branch.socialLinks!.values.any(
-                              (v) => (v as String? ?? '').isNotEmpty,
-                            )) ...[
-                          const SizedBox(height: 10),
-                          const Divider(color: Colors.white10),
-                          const SizedBox(height: 6),
-                          _BranchSocialLinks(socialLinks: branch.socialLinks!),
-                        ],
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.map, color: Colors.white70, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          'الضغط على الخريطة: ${viewModel.mapClicks}',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
           ],
         ),
       ),
-    );
-  }
-}
-
-// ✅ Branch Social Links Widget
-class _BranchSocialLinks extends StatelessWidget {
-  final Map<String, dynamic> socialLinks;
-  const _BranchSocialLinks({required this.socialLinks});
-
-  @override
-  Widget build(BuildContext context) {
-    final items = <({IconData icon, Color color, String url})>[];
-
-    void add(String key, IconData icon, Color color) {
-      final v = socialLinks[key] as String? ?? '';
-      if (v.isNotEmpty) items.add((icon: icon, color: color, url: v));
-    }
-
-    add('facebook', FontAwesomeIcons.facebook, const Color(0xFF1877F2));
-    add('whatsapp', FontAwesomeIcons.whatsapp, const Color(0xFF25D366));
-    add('telegram', FontAwesomeIcons.telegram, const Color(0xFF0088CC));
-    add('linkedin', FontAwesomeIcons.linkedin, const Color(0xFF0A66C2));
-    add('tiktok', FontAwesomeIcons.tiktok, Colors.white);
-    add('instagram', FontAwesomeIcons.instagram, const Color(0xFFE4405F));
-
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: items.map((item) {
-        return InkWell(
-          onTap: () async {
-            try {
-              final uri = Uri.parse(item.url.trim());
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
-            } catch (_) {}
-          },
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppTheme.kDarkBackground,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Center(
-              child: FaIcon(item.icon, color: item.color, size: 18),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }
@@ -580,26 +460,20 @@ class _SocialLinks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = viewModel.company!;
+    if (socialLinks.isEmpty) return const SizedBox();
+
     final List<Widget> icons = [];
 
-    // Helper to add social icons with tracking
-    void addIcon(String platform, IconData icon, Color color, String? url) {
-      if (url != null && url.trim().isNotEmpty) {
+    void addIcon(String key, IconData icon, Color color) {
+      final url = socialLinks[key] as String?;
+      if (url != null && url.isNotEmpty) {
         icons.add(
           InkWell(
             onTap: () async {
-              viewModel.incrementSocialClicks(platform);
-              final uri = Uri.parse(url.trim());
-              try {
-                if (!await launchUrl(
-                  uri,
-                  mode: LaunchMode.externalApplication,
-                )) {
-                  debugPrint('Could not launch $uri');
-                }
-              } catch (e) {
-                debugPrint('Error launching social: $e');
+              viewModel.incrementSocialClicks();
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
               }
             },
             borderRadius: BorderRadius.circular(12),
@@ -618,58 +492,14 @@ class _SocialLinks extends StatelessWidget {
       }
     }
 
-    // 1. Instagram (From new field)
-    addIcon(
-      'instagram',
-      FontAwesomeIcons.instagram,
-      const Color(0xFFE4405F),
-      c.instagramUrl,
-    );
-
-    // 2. Facebook (From socialLinks map)
-    addIcon(
-      'facebook',
-      FontAwesomeIcons.facebook,
-      const Color(0xFF1877F2),
-      socialLinks['facebook'] as String?,
-    );
-
-    // 3. WhatsApp (From socialLinks map)
-    addIcon(
-      'whatsapp',
-      FontAwesomeIcons.whatsapp,
-      const Color(0xFF25D366),
-      socialLinks['whatsapp'] as String?,
-    );
+    addIcon('facebook', FontAwesomeIcons.facebook, const Color(0xFF1877F2));
+    addIcon('whatsapp', FontAwesomeIcons.whatsapp, const Color(0xFF25D366));
+    addIcon('telegram', FontAwesomeIcons.telegram, const Color(0xFF0088cc));
+    addIcon('linkedin', FontAwesomeIcons.linkedin, const Color(0xFF0077b5));
+    addIcon('tiktok', FontAwesomeIcons.tiktok, Colors.white);
 
     if (icons.isEmpty) return const SizedBox();
 
     return Wrap(spacing: 12, runSpacing: 12, children: icons);
-  }
-}
-
-class _CompactTextBox extends StatelessWidget {
-  final String text;
-  const _CompactTextBox({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.kLightBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 13,
-          height: 1.5, // Compact line height
-        ),
-      ),
-    );
   }
 }

@@ -23,29 +23,12 @@ class SupabaseService {
             '*, companies(name, logo_url, cover_image_url), categories(name)',
           )
           .order('created_at', ascending: false);
-
-      if (kDebugMode) {
-        print('📊 getDeals: ${data.length} raw rows');
-        if (data.isNotEmpty) {
-          print('📊 First deal raw: ${data.first}');
-        }
-      }
-
-      final deals = data.map((item) => DealModel.fromJson(item)).toList();
-
-      if (kDebugMode) {
-        print('📊 getDeals: parsed ${deals.length} deals');
-        if (deals.isNotEmpty) {
-          print(
-            '📊 First parsed deal: id=${deals.first.id}, companyId=${deals.first.companyId}',
-          );
-        }
-      }
-
+      // Use compute to parse JSON in background isolate
+      final deals = await compute(parseDeals, data);
       return deals;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error getting deals: $e');
+        print('Error getting deals: $e');
       }
       return [];
     }
@@ -75,19 +58,6 @@ class SupabaseService {
 
   Future<void> deleteDeal(int id) async {
     try {
-      // ✨ PRE-DELETE: Handle Foreign Key Constraints (favorites and notifications)
-      // This prevents "Failed to delete deal" when the deal is referenced elsewhere.
-      try {
-        await _client.from('favorites_deals').delete().eq('deal_id', id);
-        await _client.from('notifications').delete().eq('deal_id', id);
-      } catch (e) {
-        if (kDebugMode) {
-          print('Error deleting related records for deal $id: $e');
-        }
-        // Continue even if this fails, as the table might not have those records
-      }
-
-      // NOW DELETE THE DEAL
       await _client.from('deals').delete().eq('id', id);
     } catch (e) {
       if (kDebugMode) {
@@ -99,13 +69,13 @@ class SupabaseService {
 
   Future<List<CompanyModel>> getCompanies() async {
     try {
-      // 1. Fetch companies with deals count (Keep this as it was working)
+      // 1. Fetch companies (without joining categories to avoid FK issues)
       final companiesData = await _client
           .from('companies')
-          .select('*, deals(count), company_branches(*)')
+          .select('*, deals(count)')
           .order('created_at', ascending: false);
 
-      // 2. Fetch all categories to map names manually (Safest approach due to DB FK issues)
+      // 2. Fetch all categories to map names manually (Safest approach)
       final categoriesData = await _client
           .from('categories')
           .select('id, name');
@@ -120,18 +90,23 @@ class SupabaseService {
       final companies = rawList.map((item) {
         final Map<String, dynamic> json = Map<String, dynamic>.from(item);
 
-        // Map Deal Count
+        // Map Supabase count response to flat deal_count
         if (json['deals'] != null && json['deals'] is List) {
           final dealsList = json['deals'] as List;
-          json['deal_count'] = dealsList.isNotEmpty
-              ? dealsList.first['count']
-              : 0;
+          if (dealsList.isNotEmpty && dealsList.first is Map) {
+            json['deal_count'] = dealsList.first['count'];
+          } else {
+            json['deal_count'] = 0;
+          }
         }
 
-        // 3. Resolve Primary Category Name manually
+        // 3. Resolve Primary Category Name
         final primaryId = json['primary_category_id'] as int?;
         if (primaryId != null && categoryMap.containsKey(primaryId)) {
           json['category_name'] = categoryMap[primaryId];
+        } else {
+          // Optional: fallback logic or leave null
+          json['category_name'] = null;
         }
 
         return CompanyModel.fromJson(json);
@@ -140,7 +115,7 @@ class SupabaseService {
       return companies;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error getting companies: $e');
+        print('Error getting companies: $e');
       }
       return [];
     }
@@ -286,30 +261,10 @@ class SupabaseService {
   // 1) جلب كل إشعارات المستخدم الحالي (Inbox)
   Future<List<NotificationModel>> getNotifications() async {
     try {
-      final userId = _client.auth.currentUser?.id;
-      if (userId == null) {
-        if (kDebugMode) {
-          print('⚠️ getNotifications: No authenticated user - returning empty');
-        }
-        return [];
-      }
-
-      if (kDebugMode) {
-        print('🔔 getNotifications: Fetching for user $userId');
-      }
-
       final data = await _client
           .from('notifications')
           .select('*')
-          .eq('user_id', userId)
           .order('created_at', ascending: false);
-
-      if (kDebugMode) {
-        print('🔔 getNotifications: Got ${(data as List).length} notifications from Supabase');
-        if ((data as List).isNotEmpty) {
-          print('🔔 First notification: ${data.first}');
-        }
-      }
 
       return (data as List)
           .map(
@@ -318,22 +273,48 @@ class SupabaseService {
           .toList();
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error getting notifications: $e');
+        print('Error getting notifications: $e');
       }
       return [];
+    }
+  }
+
+  Future<Map<String, String>> getAppSettings() async {
+    try {
+      final data = await _client.from('app_settings').select();
+      final map = <String, String>{};
+      for (final row in data as List) {
+        map[row['key'] as String] = row['value'] as String;
+      }
+      return map;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting app settings: $e');
+      }
+      return {};
+    }
+  }
+
+  Future<void> updateAppSetting(String key, String value) async {
+    try {
+      await _client.from('app_settings').upsert({
+        'key': key,
+        'value': value,
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating app setting: $e');
+      }
+      throw Exception('Failed to update \$key');
     }
   }
 
   // 2) جعل كل إشعارات المستخدم الحالي كمقروءة
   Future<void> markAllNotificationsAsRead() async {
     try {
-      final userId = _client.auth.currentUser?.id;
-      if (userId == null) return;
-
       await _client
           .from('notifications')
           .update({'is_read': true})
-          .eq('user_id', userId)
           .eq('is_read', false);
     } catch (e) {
       if (kDebugMode) {
@@ -357,24 +338,6 @@ class SupabaseService {
     }
   }
 
-  // 2.5) جلب الإشعارات كـ Stream (Real-time)
-  Stream<List<NotificationModel>> getNotificationsStream() {
-    final userId = _client.auth.currentUser?.id;
-    if (userId == null) {
-      return const Stream.empty();
-    }
-
-    return _client
-        .from('notifications')
-        .stream(primaryKey: ['id'])
-        .eq('user_id', userId)
-        .order('created_at', ascending: false)
-        .map(
-          (data) =>
-              data.map((json) => NotificationModel.fromJson(json)).toList(),
-        );
-  }
-
   // مفيدة لو في إشعارات inside-app غير OneSignal
   Future<void> logNotificationForCurrentUser(
     String title,
@@ -391,15 +354,12 @@ class SupabaseService {
     }
 
     try {
-      if (kDebugMode) {
-        print('🔔 Saving notification: title="$title", body="$body", userId=$userId, dealId=$dealId');
-      }
-
       await _client.from('notifications').insert({
         'user_id': userId,
         'title': title,
         'body': body,
-        if (dealId != null) 'deal_id': dealId,
+        if (dealId != null) 'deal_id': dealId, // Optional deep-link to deal
+        // is_read = false, created_at = now() من الـ default
       });
 
       if (kDebugMode) {
@@ -408,30 +368,10 @@ class SupabaseService {
         );
       }
     } catch (e) {
-      // If FK constraint fails (deal was deleted), retry WITHOUT deal_id
-      if (dealId != null && e.toString().contains('23503')) {
-        if (kDebugMode) {
-          print('⚠️ Deal $dealId not found in DB, saving notification without deal link...');
-        }
-        try {
-          await _client.from('notifications').insert({
-            'user_id': userId,
-            'title': title,
-            'body': body,
-          });
-          if (kDebugMode) {
-            print('✅ Notification saved successfully (without deal link)');
-          }
-        } catch (retryError) {
-          if (kDebugMode) {
-            print('❌ Retry also failed: $retryError');
-          }
-        }
-      } else {
-        if (kDebugMode) {
-          print('❌ Error saving notification to Supabase: $e');
-        }
+      if (kDebugMode) {
+        print('❌ Error saving notification: $e');
       }
+      // Don't throw - fail silently to avoid crashing OneSignal listeners
     }
   }
 
@@ -559,10 +499,11 @@ class SupabaseService {
 
   Future<CompanyModel?> getCompanyById(int companyId) async {
     try {
-      // ✅ optimized: single query with join
       final data = await _client
           .from('companies')
-          .select('*, deals(count), categories(name)')
+          .select('''
+          *
+        ''')
           .eq('id', companyId)
           .maybeSingle();
 
@@ -574,24 +515,15 @@ class SupabaseService {
       }
 
       final json = Map<String, dynamic>.from(data);
-
-      // ✅ Map Deal Count from join
-      if (json['deals'] != null && json['deals'] is List) {
-        final dealsList = json['deals'] as List;
-        json['deal_count'] = dealsList.isNotEmpty
-            ? dealsList.first['count']
-            : 0;
+      if (json['categories'] != null && json['categories'] is Map) {
+        json['category_name'] = json['categories']['name'];
       }
 
-      // ✅ Map Category Name from join
-      if (json['categories'] != null) {
-        if (json['categories'] is List &&
-            (json['categories'] as List).isNotEmpty) {
-          json['category_name'] = (json['categories'] as List).first['name'];
-        } else if (json['categories'] is Map) {
-          json['category_name'] = json['categories']['name'];
-        }
-      }
+      final dealsData = await _client
+          .from('deals')
+          .select('id')
+          .eq('company_id', companyId);
+      json['deal_count'] = (dealsData as List).length;
 
       return CompanyModel.fromJson(json);
     } catch (e) {
@@ -611,10 +543,6 @@ class SupabaseService {
           .from('categories')
           .select()
           .order('name', ascending: true);
-
-      if (kDebugMode) {
-        print('📊 Raw Categories Data: $data');
-      }
 
       final categories = data
           .map((item) => CategoryModel.fromJson(item))
@@ -689,29 +617,34 @@ class SupabaseService {
   // ================== End Categories ======================
 
   // ==================== Favorite Deals ====================
-  // ==================== Favorite Deals ====================
   Future<List<DealModel>> getFavoriteDeals() async {
     try {
       final userId = _client.auth.currentUser?.id;
       if (userId == null) return [];
 
-      // Use deep select to fetch deals directly through the foreign key
-      // 'deals!inner' ensures we only get rows where the deal still exists
-      final data = await _client
-          .from(
-            'favorites_deals',
-          ) // assuming FK name is 'deal_id' -> relation 'deals'
-          .select('deals!inner(*, companies(*), categories(name))')
-          .eq('user_id', userId)
+      final favRows = await _client
+          .from('favorites_deals')
+          .select('deal_id')
+          .eq('user_id', userId);
+
+      final ids = (favRows as List)
+          .map((row) => row['deal_id'] as int)
+          .toList();
+
+      if (ids.isEmpty) return [];
+
+      final dealsData = await _client
+          .from('deals')
+          .select('*, companies(name, logo_url, cover_image_url)')
+          .inFilter('id', ids)
           .order('created_at', ascending: false);
 
-      return (data as List).map((row) {
-        final dealData = row['deals'] as Map<String, dynamic>;
-        return DealModel.fromJson(dealData);
-      }).toList();
+      return (dealsData as List)
+          .map((json) => DealModel.fromJson(json))
+          .toList();
     } catch (e) {
       debugPrint('❌ Error getting favorite deals: $e');
-      rethrow;
+      return [];
     }
   }
 
@@ -863,59 +796,27 @@ class SupabaseService {
   }
 
   Future<List<CompanyModel>> getFollowedCompanies() async {
+    final ids = await getFollowedCompanyIds();
+    if (ids.isEmpty) return [];
+
     try {
-      final userId = _client.auth.currentUser?.id;
-      if (userId == null) return [];
+      final data = await _client.rpc(
+        'get_companies_with_deal_count_v2',
+      ); // نفس الـ RPC اللي في home
 
-      // Deep select: Fetch companies via 'following' table
-      // relationships: following -> companies (FK: company_id)
-      // companies -> deals (for count)
-      // companies -> categories (for category name) - assuming FK exists
+      if (data == null) return [];
 
-      final data = await _client
-          .from('following')
-          .select('''
-            companies!inner(
-              *,
-              deals(count),
-              categories(name)
-            )
-          ''')
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
+      final List<dynamic> rawList = data as List<dynamic>;
 
-      return (data as List).map((row) {
-        final companyJson = row['companies'] as Map<String, dynamic>;
-
-        // Handle Deal Count
-        // Supabase returns {count: X} or [{count: X}]
-        if (companyJson['deals'] != null) {
-          final dealsData = companyJson['deals'];
-          if (dealsData is List && dealsData.isNotEmpty) {
-            companyJson['deal_count'] = dealsData.first['count'];
-          } else if (dealsData is Map) {
-            companyJson['deal_count'] = dealsData['count'];
-          } else {
-            companyJson['deal_count'] = 0;
-          }
-        }
-
-        // Handle Category Name
-        // Supabase returns {name: "Foo"} or null
-        if (companyJson['categories'] != null) {
-          final catData = companyJson['categories'];
-          if (catData is Map) {
-            companyJson['category_name'] = catData['name'];
-          }
-        }
-
-        return CompanyModel.fromJson(companyJson);
-      }).toList();
+      return rawList
+          .map((item) => CompanyModel.fromJson(item as Map<String, dynamic>))
+          .where((c) => ids.contains(c.id))
+          .toList();
     } catch (e) {
       if (kDebugMode) {
         print('Error getFollowedCompanies: $e');
       }
-      rethrow;
+      return [];
     }
   }
 
@@ -1115,110 +1016,4 @@ class SupabaseService {
   }
 
   // ==================== End Search ==================
-  // ==================== Diagnostics ====================
-  Future<String> runDiagnostics() async {
-    final StringBuffer report = StringBuffer();
-    report.writeln('--- Diagnostics Report ---');
-    report.writeln('Timestamp: ${DateTime.now().toIso8601String()}');
-
-    final user = _client.auth.currentUser;
-    if (user == null) {
-      report.writeln('❌ Auth Status: Not Authenticated');
-      return report.toString();
-    }
-    report.writeln('✅ Auth Status: Authenticated (${user.id})');
-    report.writeln('Email: ${user.email}');
-
-    try {
-      // Check Favorites Count (Raw)
-      final favRows = await _client
-          .from('favorites_deals')
-          .select('deal_id')
-          .eq('user_id', user.id);
-
-      final count = (favRows as List).length;
-      report.writeln('✅ Favorites Table Row Count: $count');
-
-      if (count > 0) {
-        // Check visibility of first deal
-        final firstDealId = favRows.first['deal_id'];
-        report.writeln('🔍 Checking visibility for Deal ID: $firstDealId');
-
-        final dealCheck = await _client
-            .from('deals')
-            .select('id')
-            .eq('id', firstDealId)
-            .maybeSingle();
-
-        if (dealCheck != null) {
-          report.writeln('✅ Deal $firstDealId is VISIBLE via standard select.');
-        } else {
-          report.writeln(
-            '❌ Deal $firstDealId is NOT VISIBLE (RLS or Deleted).',
-          );
-        }
-      }
-
-      // Check Following Count
-      final followRows = await _client
-          .from('following')
-          .select('id')
-          .eq('user_id', user.id);
-
-      report.writeln(
-        '✅ Following Table Row Count: ${(followRows as List).length}',
-      );
-
-      // ---------------------------------------------------------
-      // TEST MAIN QUERY
-      report.writeln('🔍 Testing getFavoriteDeals() query...');
-      try {
-        final deals = await getFavoriteDeals();
-        report.writeln('✅ getFavoriteDeals returned: ${deals.length} items');
-        if (deals.isNotEmpty) {
-          report.writeln('   First Item: ${deals.first.title}');
-        }
-      } catch (e) {
-        report.writeln('❌ getFavoriteDeals FAILED:');
-        report.writeln('   $e');
-      }
-      // ---------------------------------------------------------
-    } catch (e) {
-      report.writeln('❌ Error running diagnostics: $e');
-    }
-
-    report.writeln('--------------------------');
-    return report.toString();
-  }
-
-  // ==================== App Settings (Social Links) ====================
-
-  /// جلب كل إعدادات التطبيق من جدول app_settings
-  Future<Map<String, String>> getAppSettings() async {
-    try {
-      final data = await _client.from('app_settings').select('key, value');
-      return {
-        for (final row in data as List)
-          row['key'] as String: (row['value'] as String?) ?? '',
-      };
-    } catch (e) {
-      debugPrint('❌ Error getting app settings: $e');
-      return {};
-    }
-  }
-
-  /// تحديث إعداد واحد في جدول app_settings
-  Future<void> updateAppSetting(String key, String value) async {
-    try {
-      await _client.from('app_settings').upsert({
-        'key': key,
-        'value': value,
-      }, onConflict: 'key');
-    } catch (e) {
-      debugPrint('❌ Error updating app setting $key: $e');
-      rethrow;
-    }
-  }
-
-  // ==================== End App Settings ====================
 }

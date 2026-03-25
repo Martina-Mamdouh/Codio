@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import '../main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +6,6 @@ import '../../core/models/category_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/categories_viewmodel.dart';
 import 'category_deals_view.dart';
-import 'widgets/unified_header.dart'; // Import the new header
 
 class CategoriesView extends StatefulWidget {
   const CategoriesView({super.key});
@@ -21,104 +19,188 @@ class _CategoriesViewState extends State<CategoriesView> {
   @override
   void initState() {
     super.initState();
-    // Lazy loading handled by MainLayout
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final vm = context.read<CategoriesViewModel>();
+      if (vm.categories.isEmpty && !vm.isLoading) {
+        vm.loadCategories();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        UnifiedHeader(
-          title: 'التصنيفات',
-          subtitle: 'تصفح العروض حسب الفئة',
-          searchHint: 'ابحث عن تصنيف...',
-          showBackButton: true,
-          onBackTap: () {
-            context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
-          },
-          onSearchChanged: (val) {
-            setState(() {
-              _searchQuery = val;
-            });
-          },
-        ),
-        Expanded(
-          child: Consumer<CategoriesViewModel>(
-            builder: (context, vm, child) {
-              if (vm.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: AppTheme.kDarkBackground,
+        body: Stack(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 140.h,
+              decoration: const BoxDecoration(
+                color: Color(0xFFE5FF17),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(18),
+                ),
+              ),
+            ),
+            // Header row: titles left, arrow right, aligned
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'التصنيفات',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: Theme.of(context).textTheme.titleLarge?.fontFamily,
+                                height: 1.1,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              'تصفح العروض حسب اهتماماتك',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 14.sp,
+                                fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                                height: 1.1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 24),
+                        onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
+                        tooltip: 'الرجوع للرئيسية',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Search bar (centered, interactive)
+            Positioned(
+              top: 110.h,
+              left: 0,
+              right: 0,
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.88,
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: AppTheme.kLightBackground,
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(color: Colors.white10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.search, color: AppTheme.kElectricLime),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'ابحث عن تصنيف...',
+                            hintStyle: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 15.sp,
+                              fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                            ),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15.sp,
+                            fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                          ),
+                          onChanged: (query) {
+                            setState(() {
+                              _searchQuery = query;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Main content
+            Padding(
+              padding: EdgeInsets.only(top: 180.h),
+              child: Consumer<CategoriesViewModel>(
+                builder: (context, vm, child) {
+                  final filteredCategories = _searchQuery.isEmpty
+                      ? vm.categories
+                      : vm.categories.where((c) => c.name.contains(_searchQuery)).toList();
+                  if (vm.isLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: AppTheme.kElectricLime),
+                    );
+                  }
+                  if (filteredCategories.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'لا توجد فئات',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  }
+                  return RefreshIndicator(
+                    onRefresh: vm.loadCategories,
                     color: AppTheme.kElectricLime,
-                  ),
-                );
-              }
-              if (vm.categories.isEmpty) {
-                return const Center(
-                  child: Text(
-                    'لا توجد فئات',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                );
-              }
-
-              final filtered = vm.categories.where((c) {
-                return c.name.toLowerCase().contains(
-                  _searchQuery.toLowerCase(),
-                );
-              }).toList();
-
-              if (filtered.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا توجد نتائج بحث',
-                    style: TextStyle(color: Colors.white70, fontSize: 16.sp),
-                  ),
-                );
-              }
-
-              final width = MediaQuery.of(context).size.width;
-              int crossAxisCount = 2;
-              if (width > 900) {
-                crossAxisCount = 4;
-              } else if (width > 600) {
-                crossAxisCount = 3;
-              }
-
-              return RefreshIndicator(
-                onRefresh: vm.loadCategories,
-                color: AppTheme.kElectricLime,
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
-                  slivers: [
-                    SliverPadding(
+                    child: GridView.builder(
                       padding: EdgeInsets.only(
-                        top: 24.h,
-                        bottom: kBottomNavigationBarHeight + 40.h,
+                        top: 16.h,
+                        bottom: 16.h,
                         left: 16.w,
                         right: 8.w,
                       ),
-                      sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: 16.w,
-                          mainAxisSpacing: 16.h,
-                          childAspectRatio: 3.5,
-                        ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final category = filtered[index];
-                          return _CategoryCard(category: category);
-                        }, childCount: filtered.length),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16.w,
+                        mainAxisSpacing: 16.h,
+                        childAspectRatio: 3.5,
                       ),
+                      itemCount: filteredCategories.length,
+                      itemBuilder: (context, index) {
+                        final category = filteredCategories[index];
+                        return _CategoryCard(category: category);
+                      },
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

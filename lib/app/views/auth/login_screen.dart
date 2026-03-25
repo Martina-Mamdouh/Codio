@@ -1,10 +1,10 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../main_layout.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
@@ -54,45 +54,21 @@ class _LoginScreenState extends State<LoginScreen> {
     _handleAuthResult(success, authViewModel.errorMessage);
   }
 
-  void _handleGuestMode() {
-    context.read<AuthViewModel>().enterGuestMode();
-  }
-
   void _handleAuthResult(bool success, String? errorMessage) {
     if (!mounted) return;
-
     if (success) {
-      // Pop LoginScreen if it was pushed on top of another screen (e.g. guest mode)
-      // so the user can see the authenticated MainLayout rebuilt by AuthWrapperApp.
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
-      }
-      return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainLayout()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage ?? 'فشل تسجيل الدخول'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.black87,
-        title: const Text(
-          'خطأ في تسجيل الدخول',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Text(
-          errorMessage ?? 'فشل تسجيل الدخول',
-          style: const TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'حسناً',
-              style: TextStyle(color: Color(0xFFE5FF17)),
-            ), // AppTheme.kElectricLime
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -108,8 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: EdgeInsets.only(
               right: 16.w,
               left: 16.w,
-              top: 80.h,
-              bottom: 20.h,
+              top: 120.h,
+              bottom: 24.h,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,10 +120,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
               ),
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(16.w, 28.h, 16.w, 16.w),
+                padding: EdgeInsets.fromLTRB(16.w, 40.h, 16.w, 24.w),
                 child: Form(
                   key: _formKey,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -170,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 16.h),
 
                       // Password
                       AuthTextField(
@@ -186,19 +161,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (value == null || value.isEmpty) {
                             return 'يرجى إدخال كلمة المرور';
                           }
-                          if (value.length < 10) {
-                            return 'كلمة المرور يجب أن تكون 10 أحرف على الأقل';
+                          if (value.length < 6) {
+                            return 'كلمة المرور قصيرة جداً';
                           }
                           return null;
                         },
                       ),
 
-                      SizedBox(height: 12.h),
+                      SizedBox(height: 16.h),
                       // Forgot Password
                       Padding(
-                        padding: EdgeInsets.only(top: 4.h, bottom: 8.h),
+                        padding: EdgeInsets.only(top: 12.h, bottom: 24.h),
                         child: Align(
-                          alignment: AlignmentDirectional.centerStart,
+                          alignment: Alignment.centerLeft,
                           child: GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -213,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               'نسيت كلمة المرور؟',
                               style: TextStyle(
                                 color: Colors.white54,
-                                fontSize: 13.sp,
+                                fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -228,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               foregroundColor: Colors.black,
-                              padding: EdgeInsetsDirectional.only(end: 8.w),
+                              padding: EdgeInsets.only(right: 8.w),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(999.r),
                               ),
@@ -261,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ),
                                         ),
                                         Container(
-                                          padding: EdgeInsets.all(12.w),
+                                          padding: EdgeInsets.all(16.w),
                                           decoration: const BoxDecoration(
                                             color: Colors.black,
                                             shape: BoxShape.circle,
@@ -269,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           child: Icon(
                                             Icons.arrow_forward,
                                             color: Colors.white,
-                                            size: 20.sp,
+                                            size: 24.sp,
                                           ),
                                         ),
                                       ],
@@ -279,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
 
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 32.h),
 
                       Row(
                         children: [
@@ -295,50 +270,37 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
 
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 32.h),
 
                       // Social Buttons
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 12.w),
                         child: Row(
                           children: [
-                            if (Platform.isAndroid) ...[
-                              const Spacer(flex: 1),
-                              SocialLoginButton(
-                                text: 'كوكل',
-                                icon: FontAwesomeIcons.google,
-                                onPressed: _handleGoogleLogin,
-                                flex: 2,
-                              ),
-                              const Spacer(flex: 1),
-                            ] else ...[
-                              SocialLoginButton(
-                                text: 'كوكل',
-                                icon: FontAwesomeIcons.google,
-                                onPressed: _handleGoogleLogin,
-                              ),
-                              if (Platform.isIOS) ...[
-                                SizedBox(width: 16.w),
-                                SocialLoginButton(
-                                  text: 'أبل',
-                                  icon: FontAwesomeIcons.apple,
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'تسجيل الدخول عبر أبل متاح قريباً',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ],
+                            SocialLoginButton(
+                              text: 'جوجل',
+                              icon: FontAwesomeIcons.google,
+                              onPressed: _handleGoogleLogin,
+                            ),
+                            SizedBox(width: 16.w),
+                            SocialLoginButton(
+                              text: 'أبل',
+                              icon: FontAwesomeIcons.apple,
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'تسجيل الدخول عبر أبل قريباً',
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
 
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 40.h),
 
                       // Sign Up Footer
                       Row(
@@ -372,34 +334,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
-
-                      // Skip Button
-                      SizedBox(height: 8.h),
-                      GestureDetector(
-                        onTap: _handleGuestMode,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.h),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'تخطي — تصفح بدون تسجيل دخول',
-                                style: TextStyle(
-                                  color: Colors.white38,
-                                  fontSize: 13.sp,
-                                ),
-                              ),
-                              SizedBox(width: 4.w),
-                              Icon(
-                                Icons.arrow_forward,
-                                color: Colors.white38,
-                                size: 14.sp,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 20.h),
                     ],
                   ),
                 ),

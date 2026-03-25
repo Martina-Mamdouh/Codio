@@ -25,229 +25,189 @@ class CompanyCard extends StatelessWidget {
     final rating = company.rating ?? 0.0;
     final reviewsCount = company.reviewsCount ?? 0;
     final followers = company.followersCount ?? 0;
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+    final dealsCount = company.dealCount ?? 0;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(12.r),
-      onTap: onTap,
-      child: Container(
-        clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // الصورة مع اللوجو
-            Stack(
-              clipBehavior: Clip.none, // 👈 مهم عشان اللوجو يطلع بره
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(12.r),
-                  ),
-                  child: AspectRatio(
-                    aspectRatio: isLandscape
-                        ? 2.5
-                        : (1280 / 700), // Requested 1280x700
-                    child:
-                        (company.coverImageUrl?.isNotEmpty ?? false) ||
-                            (company.logoUrl?.isNotEmpty ?? false)
-                        ? CachedNetworkImage(
-                            imageUrl:
-                                (company.coverImageUrl?.isNotEmpty ?? false)
-                                ? company.coverImageUrl!
-                                : company.logoUrl!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            placeholder: (context, url) => Container(
-                              color: const Color(0xFF2A2A2A),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppTheme.kElectricLime,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: const Color(0xFF2A2A2A),
-                              child: Icon(
-                                Icons.store,
-                                color: Colors.white24,
-                                size: 40.w,
-                              ),
-                            ),
-                          )
-                        : Container(
-                            color: const Color(0xFF2A2A2A),
-                            child: Icon(
-                              Icons.store,
-                              color: Colors.white24,
-                              size: 40.w,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12.r),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A2A2A),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // الصورة مع اللوجو
+              Stack(
+                clipBehavior: Clip.none, // 👈 مهم عشان اللوجو يطلع بره
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12.r),
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: 16.w / 9.h,
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            company.coverImageUrl ?? company.logoUrl ?? '',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        placeholder: (context, url) => Container(
+                          color: const Color(0xFF2A2A2A),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.kElectricLime,
+                              strokeWidth: 2,
                             ),
                           ),
-                  ),
-                ),
-
-                PositionedDirectional(
-                  bottom: -20.h, // Slightly adjusted
-                  end: 12.w,
-                  child: Container(
-                    width: isLandscape
-                        ? 40.w
-                        : 50.w, // Smaller logo in landscape
-                    height: isLandscape ? 40.w : 50.w,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: const Color(0xFF2A2A2A),
+                          child: Icon(
+                            Icons.store,
+                            color: Colors.white24,
+                            size: 40.w,
+                          ),
+                        ),
+                      ),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.r),
-                      child: (company.logoUrl?.isNotEmpty ?? false)
-                          ? CachedNetworkImage(
-                              imageUrl: company.logoUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                  ),
+
+                  Positioned(
+                    bottom: -25.h, // 👈 نصف اللوجو تحت الصورة
+                    left: 16.w,
+                    child: Container(
+                      width: 56.w,
+                      height: 56.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.r),
+                        child: (company.logoUrl?.isNotEmpty ?? false)
+                            ? CachedNetworkImage(
+                                imageUrl: company.logoUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2),
                                 ),
-                              ),
-                              errorWidget: (context, url, error) => Icon(
-                                Icons.store,
-                                color: Colors.grey,
-                                size: 24.w,
-                              ),
-                            )
-                          : Icon(Icons.store, color: Colors.grey, size: 24.w),
+                                errorWidget: (context, url, error) =>
+                                    Icon(Icons.store, color: Colors.grey, size: 28.w),
+                              )
+                            : Icon(Icons.store, color: Colors.grey, size: 28.w),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-
-            // المعلومات تحت الصورة
-            Padding(
-              padding: EdgeInsets.only(
-                left: 12.w,
-                right: 12.w,
-                top: isLandscape ? 4.h : 6.h,
-                bottom: 4.h,
+                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // اسم الشركة
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      end: isLandscape ? 45.w : 60.w,
-                    ),
-                    child: Text(
+
+              // المعلومات تحت الصورة
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 12.w,
+                  right: 12.w,
+                  top: 18.h,
+                  bottom: 4.h,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // اسم الشركة
+                    Text(
                       company.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: isLandscape ? 11.sp : 13.sp,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.bold,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(
-                    height: isLandscape ? 6.h : 8.h,
-                  ), // Space after logo area
-                  // الفئة
-                  if (company.categoryName != null &&
-                      company.categoryName!.isNotEmpty)
-                    Text(
-                      company.categoryName!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: isLandscape ? 9.sp : 11.sp,
                       ),
                     ),
 
-                  if (!isLandscape) SizedBox(height: 4.h),
+                    SizedBox(height: 4.h),
 
-                  // المتابعين والعروض (Compact row in landscape?)
-                  if (isLandscape)
-                    // In landscape, combine info to save space
+                    // الفئة
+                    if (company.categoryName != null &&
+                        company.categoryName!.isNotEmpty) ...[
+                      Text(
+                        company.categoryName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                    ],
+
+                    // المتابعين
                     Row(
                       children: [
                         Icon(
                           Icons.people_outline,
-                          size: 12.w,
-                          color: Colors.white54,
-                        ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          '$followers',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10.sp,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Icon(Icons.star, size: 12.w, color: Colors.amber),
-                        SizedBox(width: 4.w),
-                        Text(
-                          rating.toStringAsFixed(1),
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10.sp,
-                          ),
-                        ),
-                      ],
-                    )
-                  else ...[
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.people_outline,
-                          size: 14.w,
+                          size: 16.w,
                           color: Colors.white54,
                         ),
                         SizedBox(width: 6.w),
                         Text(
-                          '$followers متابع',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          '$followers متابع', // 👈 إضافة نص
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 12.sp,
+                            fontSize: 13.sp,
                           ),
                         ),
                       ],
                     ),
+
                     SizedBox(height: 4.h),
+
+                    // عدد العروض
                     Row(
                       children: [
-                        Icon(Icons.star, size: 14.w, color: Colors.amber),
+                        Icon(
+                          Icons.local_offer_outlined,
+                          size: 16.w,
+                          color: Colors.white54,
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          '$dealsCount عرض', // 👈 إضافة نص
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 4.h),
+
+                    // التقييم
+                    Row(
+                      children: [
+                        Icon(Icons.star, size: 16.w, color: Colors.amber),
                         SizedBox(width: 6.w),
                         Text(
                           '${rating.toStringAsFixed(1)} ($reviewsCount)',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 12.sp,
+                            fontSize: 13.sp,
                           ),
                         ),
                       ],
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -4,15 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../viewmodels/home_view_model.dart';
-import '../viewmodels/notification_viewmodel.dart';
 import 'notifications_view.dart';
 import 'map_view.dart';
 import 'widgets/home_banner_slider.dart';
 import 'widgets/deal_section.dart';
-import 'widgets/state_widgets.dart';
-import 'widgets/shimmer_loading.dart';
 import 'search_view.dart';
-import 'view_all_deals_screen.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -24,13 +20,29 @@ class HomeView extends StatelessWidget {
       body: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
           if (viewModel.isLoading) {
-            return _buildLoadingState();
+            return const Center(
+              child: CircularProgressIndicator(color: AppTheme.kElectricLime),
+            );
           }
 
           if (viewModel.errorMessage != null) {
-            return ErrorState(
-              message: viewModel.errorMessage!,
-              onRetry: viewModel.fetchAllData,
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red, size: 48.w),
+                  SizedBox(height: 8.h),
+                  Text(
+                    viewModel.errorMessage!,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(height: 16.h),
+                  ElevatedButton(
+                    onPressed: viewModel.fetchAllData,
+                    child: const Text('إعادة المحاولة'),
+                  ),
+                ],
+              ),
             );
           }
 
@@ -39,218 +51,208 @@ class HomeView extends StatelessWidget {
             color: AppTheme.kElectricLime,
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              child: Column(
+              child: Stack(
                 children: [
-                  SizedBox(
-                    height:
-                        (MediaQuery.of(context).orientation ==
-                                Orientation.landscape
-                            ? 160.h
-                            : 140.h) +
-                        30.h,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Background
-                        Container(
-                          width: double.infinity,
-                          height:
-                              MediaQuery.of(context).orientation ==
-                                  Orientation.landscape
-                              ? 160.h
-                              : 140.h,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE5FF17),
-                            borderRadius: BorderRadius.vertical(
-                              bottom: Radius.circular(18),
+                  // الخلفية الصفراء مع نصف استدارة من الأسفل
+                  Container(
+                    width: double.infinity,
+                    height: 140.h,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE5FF17),
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(18),
+                      ),
+                    ),
+                  ),
+                  // الشعار والنوتيفيكيشن فوق الخلفية
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: SafeArea(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/images/slogan.png',
+                              width: 120.w,
+                              height: 60.h,
+                              fit: BoxFit.contain,
                             ),
-                          ),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(Icons.notifications_none, color: Colors.black, size: 28),
+                              onPressed: () {
+                                debugPrint('Notifications tapped');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const NotificationsView()),
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                        // Logo & Notifs
-                        SafeArea(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16.w,
-                              vertical: 8.h,
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/slogan.png',
-                                  width: 120.w,
-                                  height:
-                                      MediaQuery.of(context).orientation ==
-                                          Orientation.landscape
-                                      ? 50.h
-                                      : 60.h,
-                                  fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  // باقي الصفحة
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // search bar في منتصف الحد الفاصل بين الخلفيتين
+                      SizedBox(height: 110.h),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Hero(
+                          tag: 'search_bar',
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder:
+                                        (context, animation, secondaryAnimation) =>
+                                            const SearchView(),
+                                    transitionDuration: const Duration(
+                                      milliseconds: 400,
+                                    ),
+                                    reverseTransitionDuration: const Duration(
+                                      milliseconds: 300,
+                                    ),
+                                    transitionsBuilder:
+                                        (
+                                          context,
+                                          animation,
+                                          secondaryAnimation,
+                                          child,
+                                        ) {
+                                          // الشاشة تنزلق من تحت لفوق
+                                          const begin = Offset(0.0, 1.0);
+                                          const end = Offset.zero;
+                                          const curve = Curves.easeInOutCubic;
+
+                                          var tween = Tween(
+                                            begin: begin,
+                                            end: end,
+                                          ).chain(CurveTween(curve: curve));
+                                          var offsetAnimation = animation.drive(
+                                            tween,
+                                          );
+
+                                          return SlideTransition(
+                                            position: offsetAnimation,
+                                            child: child,
+                                          );
+                                        },
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(14.r),
+                              child: Ink(
+                                width: MediaQuery.of(context).size.width * 0.88,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 14.w,
+                                  vertical: 8.h,
                                 ),
-                                const Spacer(),
-                                Consumer<NotificationsViewModel>(
-                                  builder: (context, notificationsVm, _) {
-                                    return Stack(
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.notifications_none,
-                                            color: Colors.black,
-                                            size: 28,
-                                          ),
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const NotificationsView(),
-                                              ),
-                                            );
-                                          },
+                                decoration: BoxDecoration(
+                                  color: AppTheme.kLightBackground,
+                                  borderRadius: BorderRadius.circular(14.r),
+                                  border: Border.all(color: Colors.white10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.search,
+                                      color: AppTheme.kElectricLime,
+                                    ),
+                                    SizedBox(width: 10.w),
+                                    Expanded(
+                                      child: Text(
+                                        'ابحث عن المتاجر والعروض...',
+                                        style: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 15.sp,
                                         ),
-                                        if (notificationsVm
-                                            .newNotifications
-                                            .isNotEmpty)
-                                          Positioned(
-                                            top: 8,
-                                            right: 8,
-                                            child: Container(
-                                              width: 10.w,
-                                              height: 10.w,
-                                              decoration: BoxDecoration(
-                                                color: Colors.red,
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: const Color(
-                                                    0xFFE5FF17,
-                                                  ),
-                                                  width: 1.5,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    );
-                                  },
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
-                        // Search Bar Positioned to straddle
-                        Positioned(
-                          bottom: 0, // Match the bottom of the SizedBox
-                          left: 0,
-                          right: 0,
-                          child: Center(child: _buildSearchBar(context)),
+                      ),
+                      SizedBox(height: 28.h),
+                      HomeBannerSlider(banners: viewModel.banners),
+                      SizedBox(height: 20.h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: _DiscoverNearbyCard(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MapView(startNearby: true),
+                              ),
+                            );
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: 6.h),
+                      DealSection(
+                        title: 'عروض جديدة',
+                        deals: viewModel.newDeals,
+                        onSeeAllTap: () {
+                          debugPrint('See all new deals tapped');
+                        },
+                      ),
+                      SizedBox(height: 8.h),
+                      DealSection(
+                        title: 'تنتهي قريباً',
+                        deals: viewModel.expiringDeals,
+                        onSeeAllTap: () {
+                          debugPrint('See all expiring deals tapped');
+                        },
+                      ),
+                      SizedBox(height: 8.h),
+                      DealSection(
+                        title: 'عروض مميزة',
+                        deals: viewModel.featuredDeals,
+                        onSeeAllTap: () {
+                          debugPrint('See all featured deals tapped');
+                        },
+                      ),
+                      SizedBox(height: 8.h),
+                      DealSection(
+                        title: 'عروض الطلاب',
+                        deals: viewModel.studentDeals,
+                        onSeeAllTap: () {
+                          debugPrint('See all student deals tapped');
+                        },
+                      ),
+                      SizedBox(height: 6.h),
+                      DealSection(
+                        title: 'عروض الأنشطة الترفيهية',
+                        deals: viewModel.entertainmentDeals,
+                        onSeeAllTap: () {
+                          debugPrint('See all entertainment deals tapped');
+                        },
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
                   ),
-
-                  // Rest of the content following the header
-                  SizedBox(height: 48.h), // Space for search bar overlap
-
-                  HomeBannerSlider(banners: viewModel.banners),
-                  SizedBox(height: 16.h),
-
-                  // Discover Nearby Offers button
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: _DiscoverNearbyCard(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MapView(startNearby: true),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-
-                  SizedBox(height: 6.h),
-                  DealSection(
-                    title: 'عروض جديدة',
-                    deals: viewModel.newDeals,
-                    onSeeAllTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ViewAllDealsScreen(
-                            title: 'عروض جديدة',
-                            deals: viewModel.allNewDeals,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: 8.h),
-                  DealSection(
-                    title: 'تنتهي قريباً',
-                    deals: viewModel.expiringDeals,
-                    onSeeAllTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ViewAllDealsScreen(
-                            title: 'تنتهي قريباً',
-                            deals: viewModel.allExpiringDeals,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: 8.h),
-                  DealSection(
-                    title: 'عروض مميزة',
-                    deals: viewModel.featuredDeals,
-                    onSeeAllTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ViewAllDealsScreen(
-                            title: 'عروض مميزة',
-                            deals: viewModel.allFeaturedDeals,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: 8.h),
-                  DealSection(
-                    title: 'عروض الطلاب',
-                    deals: viewModel.studentDeals,
-                    onSeeAllTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ViewAllDealsScreen(
-                            title: 'عروض الطلاب',
-                            deals: viewModel.allStudentDeals,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: 6.h),
-                  DealSection(
-                    title: 'عروض الأنشطة الترفيهية',
-                    deals: viewModel.entertainmentDeals,
-                    onSeeAllTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ViewAllDealsScreen(
-                            title: 'عروض الأنشطة الترفيهية',
-                            deals: viewModel.allEntertainmentDeals,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(height: 20.h),
                 ],
               ),
             ),
@@ -259,256 +261,68 @@ class HomeView extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildSearchBar(BuildContext context) {
-    return Hero(
-      tag: 'search_bar',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const SearchView(),
-                transitionDuration: const Duration(milliseconds: 300),
-                reverseTransitionDuration: const Duration(milliseconds: 250),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                      const begin = Offset(
-                        0.0,
-                        0.05,
-                      ); // Subtle lift instead of full slide
-                      const end = Offset.zero;
-                      const curve = Curves.easeOutCubic;
-                      var tween = Tween(
-                        begin: begin,
-                        end: end,
-                      ).chain(CurveTween(curve: curve));
-                      var fadeTween = Tween<double>(begin: 0.0, end: 1.0);
-
-                      return FadeTransition(
-                        opacity: animation.drive(fadeTween),
-                        child: SlideTransition(
-                          position: animation.drive(tween),
-                          child: child,
-                        ),
-                      );
-                    },
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(14.r),
-          child: Ink(
-            width: MediaQuery.of(context).size.width * 0.88,
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: AppTheme.kLightBackground,
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: Colors.white10),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.search, color: AppTheme.kElectricLime),
-                SizedBox(width: 10.w),
-                Expanded(
-                  child: Text(
-                    'ابحث عن المتاجر والعروض...',
-                    style: TextStyle(color: Colors.grey[400], fontSize: 15.sp),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      child: Column(
-        children: [
-          // Header shimmer
-          Container(
-            width: double.infinity,
-            height: 170.h,
-            decoration: BoxDecoration(
-              color: AppTheme.kElectricLime.withValues(alpha: 0.3),
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(18),
-              ),
-            ),
-          ),
-          SizedBox(height: AppTheme.spacing48),
-
-          // Banner shimmer
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
-            child: ShimmerLoading(
-              child: ShimmerBox(
-                width: double.infinity,
-                height: 160.h,
-                borderRadius: AppTheme.radiusLg,
-              ),
-            ),
-          ),
-          SizedBox(height: AppTheme.spacing24),
-
-          // Discover nearby shimmer
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
-            child: ShimmerLoading(
-              child: ShimmerBox(
-                width: double.infinity,
-                height: 80.h,
-                borderRadius: AppTheme.radiusLg,
-              ),
-            ),
-          ),
-          SizedBox(height: AppTheme.spacing24),
-
-          // Deal sections shimmer
-          for (int i = 0; i < 3; i++) ...[
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ShimmerLoading(
-                    child: ShimmerBox(width: 100.w, height: 20.h),
-                  ),
-                  ShimmerLoading(
-                    child: ShimmerBox(width: 60.w, height: 16.h),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: AppTheme.spacing12),
-            SizedBox(
-              height: 220.h,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
-                itemCount: 3,
-                separatorBuilder: (_, __) =>
-                    SizedBox(width: AppTheme.spacing12),
-                itemBuilder: (_, __) => const ShimmerDealCard(),
-              ),
-            ),
-            SizedBox(height: AppTheme.spacing24),
-          ],
-        ],
-      ),
-    );
-  }
 }
 
-class _DiscoverNearbyCard extends StatefulWidget {
+class _DiscoverNearbyCard extends StatelessWidget {
   final VoidCallback onTap;
   const _DiscoverNearbyCard({required this.onTap});
 
   @override
-  State<_DiscoverNearbyCard> createState() => _DiscoverNearbyCardState();
-}
-
-class _DiscoverNearbyCardState extends State<_DiscoverNearbyCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: AppTheme.durationFast,
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.98,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) {
-        _controller.reverse();
-        widget.onTap();
-      },
-      onTapCancel: () => _controller.reverse(),
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: Container(
-          padding: EdgeInsets.all(AppTheme.spacing16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            gradient: LinearGradient(
-              colors: [AppTheme.kLightBackground, AppTheme.kElevatedBackground],
-            ),
-            border: Border.all(
-              color: AppTheme.kElectricLime.withValues(alpha: 0.3),
-            ),
-            boxShadow: AppTheme.shadowMd,
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.r),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2D2D2D), Color(0xFF3A3A3A)],
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(AppTheme.spacing12),
-                decoration: BoxDecoration(
-                  color: AppTheme.kElectricLime,
-                  shape: BoxShape.circle,
-                  boxShadow: AppTheme.glowLime,
-                ),
-                child: Icon(
-                  Icons.map_outlined,
-                  color: Colors.black,
-                  size: AppTheme.iconMd,
-                ),
+          border: Border.all(color: AppTheme.kElectricLime.withOpacity(0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: AppTheme.kElectricLime,
+                shape: BoxShape.circle,
               ),
-              SizedBox(width: AppTheme.spacing12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'اكتشف العروض القريبة منك',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+              child: const Icon(Icons.map_outlined, color: Colors.black),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'اكتشف العروض القريبة منك',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.bold,
                     ),
-                    SizedBox(height: AppTheme.spacing4),
-                    Text(
-                      'شاهد جميع العروض والخصومات بالقرب منك على الخريطة',
-                      style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'شاهد جميع العروض والخصومات بالقرب منك على الخريطة',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12.sp,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 18.w),
-            ],
-          ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 18.w),
+          ],
         ),
       ),
     );

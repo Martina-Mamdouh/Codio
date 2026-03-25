@@ -1,10 +1,10 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../main_layout.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'email_verification_screen.dart';
 import '../widgets/social_login_button.dart';
@@ -45,7 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
       fullName: _emailController.text.trim().split('@')[0],
-      profession: _selectedProfession ?? '',
+      profession: _selectedProfession!,
     );
 
     if (!mounted) return;
@@ -69,9 +69,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       } else {
         // Logged In
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainLayout()),
+        );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,11 +93,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!mounted) return;
     if (success) {
-      // Pop back to let AuthWrapperApp show the authenticated MainLayout
-      // instead of creating a duplicate MainLayout outside the wrapper.
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainLayout()),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -119,8 +119,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               padding: EdgeInsets.only(
                 right: 16.w,
                 left: 16.w,
-                top: 60.h,
-                bottom: 12.h,
+                top: 85.h,
+                bottom: 16.h,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,10 +154,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 color: const Color(0xFF000000), // Pure Black
                 borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
               ),
-              padding: EdgeInsets.fromLTRB(16.w, 28.h, 16.w, 20.w),
+              padding: EdgeInsets.fromLTRB(16.w, 32.h, 16.w, 24.w),
               child: Form(
                 key: _formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
                   children: [
                     // Email
@@ -179,7 +178,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 16.h),
 
                     // Password
                     AuthTextField(
@@ -194,14 +193,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         if (value == null || value.isEmpty) {
                           return 'يرجى إدخال كلمة المرور';
                         }
-                        if (value.length < 10) {
-                          return 'كلمة المرور يجب أن تكون 10 أحرف على الأقل';
+                        if (value.length < 6) {
+                          return 'كلمة المرور قصيرة جداً';
                         }
                         return null;
                       },
                     ),
 
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 16.h),
 
                     // Profession Dropdown
                     Container(
@@ -271,10 +270,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 });
                               },
                               validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'يرجى اختيار المهنة';
+                                }
                                 return null;
                               },
                               icon: Padding(
-                                padding: EdgeInsetsDirectional.only(start: 8.w),
+                                padding: EdgeInsets.only(left: 8.w),
                                 child: Icon(
                                   Icons.keyboard_arrow_down_rounded,
                                   color: Colors.white.withAlpha(180),
@@ -287,7 +289,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 32.h),
 
                     // Register Button
                     Consumer<AuthViewModel>(
@@ -297,7 +299,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.black,
-                            padding: EdgeInsetsDirectional.only(end: 8.w),
+                            padding: EdgeInsets.only(right: 8.w),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(999.r),
                             ),
@@ -355,7 +357,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
 
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 32.h),
 
                     // Disclaimer Text (Privacy Policy)
                     RichText(
@@ -379,7 +381,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 32.h),
 
                     // Divider
                     Row(
@@ -396,55 +398,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ],
                     ),
 
-                    SizedBox(height: 16.h),
-
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 32.h),
 
                     // Social Buttons
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w),
                       child: Row(
                         children: [
-                          if (Platform.isAndroid) ...[
-                            const Spacer(flex: 1),
-                            SocialLoginButton(
-                              text: 'كوكل',
-                              icon: FontAwesomeIcons.google,
-                              onPressed: _handleGoogleLogin,
-                              flex: 2,
-                            ),
-                            const Spacer(flex: 1),
-                          ] else ...[
-                            SocialLoginButton(
-                              text: 'كوكل',
-                              icon: FontAwesomeIcons.google,
-                              onPressed: _handleGoogleLogin,
-                            ),
-                            if (Platform.isIOS) ...[
-                              SizedBox(width: 16.w),
-                              SocialLoginButton(
-                                text: 'أبل',
-                                icon: FontAwesomeIcons.apple,
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'تسجيل الدخول عبر أبل متاح قريباً',
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ],
+                          SocialLoginButton(
+                            text: 'جوجل',
+                            icon: FontAwesomeIcons.google,
+                            onPressed: _handleGoogleLogin,
+                          ),
+                          SizedBox(width: 16.w),
+                          SocialLoginButton(
+                            text: 'أبل',
+                            icon: FontAwesomeIcons.apple,
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('تسجيل الدخول عبر أبل قريباً'),
+                                ),
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
 
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 32.h),
 
                     // Login Link
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 20.h),
                     Center(
                       child: GestureDetector(
                         onTap: () {
@@ -462,6 +447,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: TextStyle(
                               color: Colors.white54,
                               fontSize: 14.sp,
+                              fontFamily: 'Cairo',
                             ),
                             children: [
                               TextSpan(
@@ -477,7 +463,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 12.h),
+                    SizedBox(height: 20.h),
                   ],
                 ),
               ),

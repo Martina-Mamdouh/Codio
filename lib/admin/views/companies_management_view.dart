@@ -243,6 +243,11 @@ class _CompaniesTableState extends State<CompaniesTable> {
         ),
         DataColumn(
           label: Expanded(
+            child: Center(child: Text('عدد الفروع', style: headerStyle)),
+          ),
+        ),
+        DataColumn(
+          label: Expanded(
             child: Center(child: Text('عدد العروض', style: headerStyle)),
           ),
         ),
@@ -402,6 +407,29 @@ class _CompaniesTableState extends State<CompaniesTable> {
                   company.workingHours ?? '-',
                   cellStyle,
                   maxWidth: 120,
+                ),
+              ),
+            ),
+
+            // عدد الفروع
+            DataCell(
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.kElectricLime.withAlpha(51),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${company.branches?.length ?? 0}',
+                    style: cellStyle.copyWith(
+                      color: AppTheme.kElectricLime,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),

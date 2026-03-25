@@ -19,9 +19,16 @@ class _CompanyDealsTabState extends State<CompanyDealsTab> {
   @override
   void initState() {
     super.initState();
-    // Removed redundant loadDeals() as it's already handled by loadCompanyData
-    if (kDebugMode) {
-      print('CompanyDealsTab: Deals count = ${widget.viewModel.deals.length}');
+    // Load deals if not loaded
+    if (widget.viewModel.deals.isEmpty && !widget.viewModel.isDealsLoading) {
+      if (kDebugMode) {
+        print('CompanyDealsTab initState: loading deals for company ${widget.viewModel.company?.name ?? 'unknown'}');
+      }
+      widget.viewModel.loadDeals();
+    } else {
+      if (kDebugMode) {
+        print('CompanyDealsTab initState: deals already loaded: ${widget.viewModel.deals.length}');
+      }
     }
   }
 
@@ -44,34 +51,27 @@ class _CompanyDealsTabState extends State<CompanyDealsTab> {
     return RefreshIndicator(
       onRefresh: widget.viewModel.refreshDeals,
       color: AppTheme.kElectricLime,
-      child: GridView.builder(
-        padding: EdgeInsets.only(
-          top: 16.h,
-          left: 16.w,
-          right: 16.w,
-          bottom: MediaQuery.of(context).padding.bottom + 16.h,
-        ),
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
         itemCount: widget.viewModel.deals.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio:
-              MediaQuery.of(context).orientation == Orientation.portrait
-              ? 0.85
-              : 0.9,
-          crossAxisSpacing: 12.w,
-          mainAxisSpacing: 12.h,
-        ),
         itemBuilder: (context, index) {
           final deal = widget.viewModel.deals[index];
-          return DealCard(
-            deal: deal,
-            showCategory: true,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => DealDetailsView(deal: deal)),
-              );
-            },
+          return Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width - 32.w,
+            ),
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: DealCard(
+              deal: deal,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DealDetailsView(deal: deal),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),

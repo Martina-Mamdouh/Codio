@@ -12,10 +12,10 @@ class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
 
   @override
-  State<MainLayout> createState() => _MainLayoutState();
+  @override
+  State<MainLayout> createState() => MainLayoutState();
 }
-
-class _MainLayoutState extends State<MainLayout> {
+class MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
@@ -33,6 +33,13 @@ class _MainLayoutState extends State<MainLayout> {
       tablet: (context) => _buildTabletLayout(),
       desktop: (context) => _buildDesktopLayout(),
     );
+  }
+
+  /// Public API to allow other widgets to switch the main tab.
+  void switchToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
   Widget _buildMobileLayout() {

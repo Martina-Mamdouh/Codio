@@ -279,6 +279,23 @@ class SupabaseService {
     }
   }
 
+  /// Stream of notifications. Emits current notifications periodically.
+  /// This is a simple implementation that polls every [interval].
+  Stream<List<NotificationModel>> getNotificationsStream({Duration interval = const Duration(seconds: 10)}) async* {
+    while (true) {
+      try {
+        final list = await getNotifications();
+        yield list;
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error streaming notifications: $e');
+        }
+        yield [];
+      }
+      await Future.delayed(interval);
+    }
+  }
+
   Future<Map<String, String>> getAppSettings() async {
     try {
       final data = await _client.from('app_settings').select();
@@ -395,6 +412,17 @@ class SupabaseService {
         print('Error uploading image: $e');
       }
       throw Exception('Failed to upload image. Please check connection.');
+    }
+  }
+
+  /// Simple diagnostics helper used by viewmodels during debugging.
+  Future<String> runDiagnostics() async {
+    try {
+      final user = _client.auth.currentUser;
+      return 'Supabase client user=${user?.id ?? 'none'}';
+    } catch (e) {
+      if (kDebugMode) print('Diagnostics error: $e');
+      return 'Diagnostics failed: $e';
     }
   }
 

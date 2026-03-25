@@ -14,6 +14,7 @@ class DealCard extends StatelessWidget {
   // ⭐ New fields
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
+  final bool showCategory;
 
   const DealCard({
     super.key,
@@ -21,6 +22,7 @@ class DealCard extends StatelessWidget {
     this.onTap,
     this.isFavorite = false,
     this.onFavoriteToggle,
+    this.showCategory = false,
   });
 
   @override
@@ -213,6 +215,18 @@ class DealCard extends StatelessWidget {
                         fontSize: 14.sp,
                       ),
                     ),
+                    if (showCategory && (deal.categoryName != null && deal.categoryName!.isNotEmpty))
+                      SizedBox(height: 6.h),
+                    if (showCategory && (deal.categoryName != null && deal.categoryName!.isNotEmpty))
+                      Text(
+                        deal.categoryName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11.sp,
+                        ),
+                      ),
                     SizedBox(height: 8.h),
                     Row(
                       children: [

@@ -740,8 +740,45 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                     // Show Directions button (appears RIGHT in RTL)
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          widget.viewModel.showAllBranches(company);
+                        onPressed: () async {
+                          // Prefer the first branch if available, otherwise use main company location
+                          double lat = company.lat;
+                          double lng = company.lng;
+                          if (company.branches != null && company.branches!.isNotEmpty) {
+                            final b = company.branches!.first;
+                            if (b.lat != 0 && b.lng != 0) {
+                              lat = b.lat;
+                              lng = b.lng;
+                            }
+                          }
+
+                          if (lat == 0 && lng == 0) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('لا توجد إحداثيات لعرض الاتجاهات')),
+                              );
+                            }
+                            return;
+                          }
+
+                          final googleMaps = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
+                          if (await canLaunchUrl(googleMaps)) {
+                            await launchUrl(googleMaps, mode: LaunchMode.externalApplication);
+                            return;
+                          }
+
+                          // Fallback to geo: intent
+                          final geo = Uri.parse('geo:$lat,$lng?q=$lat,$lng(${Uri.encodeComponent(company.name)})');
+                          if (await canLaunchUrl(geo)) {
+                            await launchUrl(geo, mode: LaunchMode.externalApplication);
+                            return;
+                          }
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('تعذّر فتح تطبيق الخرائط')),
+                            );
+                          }
                         },
                         icon: const Icon(Icons.directions, size: 20),
                         label: const Text('عرض الاتجاهات'),

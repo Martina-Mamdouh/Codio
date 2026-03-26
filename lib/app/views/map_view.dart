@@ -121,7 +121,9 @@ class _MapViewState extends State<MapView> {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.blue.withValues(alpha: 0.4),
+                                        color: Colors.blue.withValues(
+                                          alpha: 0.4,
+                                        ),
                                         blurRadius: 8,
                                         spreadRadius: 2,
                                       ),
@@ -155,7 +157,9 @@ class _MapViewState extends State<MapView> {
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.3),
+                                            color: Colors.black.withValues(
+                                              alpha: 0.3,
+                                            ),
                                             blurRadius: 4,
                                           ),
                                         ],
@@ -492,8 +496,8 @@ class _MapIconButton extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white70,
-            fontSize: 11.sp,
+            color: Colors.black,
+            fontSize: 10.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -506,10 +510,7 @@ class _SelectedCompanyCard extends StatefulWidget {
   final MapViewModel viewModel;
   final VoidCallback onClose;
 
-  const _SelectedCompanyCard({
-    required this.viewModel,
-    required this.onClose,
-  });
+  const _SelectedCompanyCard({required this.viewModel, required this.onClose});
 
   @override
   State<_SelectedCompanyCard> createState() => _SelectedCompanyCardState();
@@ -614,7 +615,7 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
             topRight: Radius.circular(26.r),
           ),
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(14.w, 10.h, 14.w, 14.h),
+            padding: EdgeInsets.fromLTRB(14.w, 6.h, 14.w, 14.h),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -640,93 +641,99 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                   ),
                 ),
 
-                // ─── Close button (left side) ───
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: InkWell(
-                    onTap: widget.onClose,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      child: const Icon(Icons.close, color: Colors.white70, size: 22),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 8.h),
-
-                // ─── Company Logo + Name + Category (RTL: logo right, text left) ───
+                // ─── Header: Close + Company Logo + Name + Category ───
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Logo
-                    Container(
-                      width: 60.w,
-                      height: 60.w,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(color: Colors.white12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 6,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          // Logo
+                          Container(
+                            width: 60.w,
+                            height: 60.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16.r),
+                              border: Border.all(color: Colors.white12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(14.r),
+                              child:
+                                  company.logoUrl != null &&
+                                      company.logoUrl!.isNotEmpty
+                                  ? CachedNetworkImage(
+                                      imageUrl: company.logoUrl!,
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) => const Icon(
+                                        Icons.store,
+                                        color: Colors.grey,
+                                        size: 28,
+                                      ),
+                                      errorWidget: (_, __, ___) => const Icon(
+                                        Icons.store,
+                                        color: Colors.grey,
+                                        size: 28,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.store,
+                                      color: Colors.grey,
+                                      size: 28,
+                                    ),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                          // Name + Category
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  company.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18.sp,
+                                  ),
+                                ),
+                                if (company.categoryName != null) ...[
+                                  SizedBox(height: 3.h),
+                                  Text(
+                                    company.categoryName!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                         ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14.r),
-                        child: company.logoUrl != null &&
-                                company.logoUrl!.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: company.logoUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => const Icon(
-                                  Icons.store,
-                                  color: Colors.grey,
-                                  size: 28,
-                                ),
-                                errorWidget: (_, __, ___) => const Icon(
-                                  Icons.store,
-                                  color: Colors.grey,
-                                  size: 28,
-                                ),
-                              )
-                            : const Icon(
-                                Icons.store,
-                                color: Colors.grey,
-                                size: 28,
-                              ),
                       ),
                     ),
-                    SizedBox(width: 12.w),
-                    // Name + Category
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            company.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18.sp,
-                            ),
-                          ),
-                          if (company.categoryName != null) ...[
-                            SizedBox(height: 3.h),
-                            Text(
-                              company.categoryName!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white60,
-                                fontSize: 12.sp,
-                              ),
-                            ),
-                          ],
-                        ],
+                    SizedBox(width: 8.w),
+                    InkWell(
+                      onTap: widget.onClose,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white70,
+                          size: 22,
+                        ),
                       ),
                     ),
                   ],
@@ -739,91 +746,125 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                   children: [
                     // Show Directions button (appears RIGHT in RTL)
                     Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          // Prefer the first branch if available, otherwise use main company location
-                          double lat = company.lat;
-                          double lng = company.lng;
-                          if (company.branches != null && company.branches!.isNotEmpty) {
-                            final b = company.branches!.first;
-                            if (b.lat != 0 && b.lng != 0) {
-                              lat = b.lat;
-                              lng = b.lng;
+                      child: SizedBox(
+                        height: 48.h,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            // Prefer the first branch if available, otherwise use main company location
+                            double lat = company.lat;
+                            double lng = company.lng;
+                            if (company.branches != null &&
+                                company.branches!.isNotEmpty) {
+                              final b = company.branches!.first;
+                              if (b.lat != 0 && b.lng != 0) {
+                                lat = b.lat;
+                                lng = b.lng;
+                              }
                             }
-                          }
 
-                          if (lat == 0 && lng == 0) {
+                            if (lat == 0 && lng == 0) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'لا توجد إحداثيات لعرض الاتجاهات',
+                                    ),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+
+                            final googleMaps = Uri.parse(
+                              'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving',
+                            );
+                            if (await canLaunchUrl(googleMaps)) {
+                              await launchUrl(
+                                googleMaps,
+                                mode: LaunchMode.externalApplication,
+                              );
+                              return;
+                            }
+
+                            // Fallback to geo: intent
+                            final geo = Uri.parse(
+                              'geo:$lat,$lng?q=$lat,$lng(${Uri.encodeComponent(company.name)})',
+                            );
+                            if (await canLaunchUrl(geo)) {
+                              await launchUrl(
+                                geo,
+                                mode: LaunchMode.externalApplication,
+                              );
+                              return;
+                            }
+
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('لا توجد إحداثيات لعرض الاتجاهات')),
+                                const SnackBar(
+                                  content: Text('تعذّر فتح تطبيق الخرائط'),
+                                ),
                               );
                             }
-                            return;
-                          }
-
-                          final googleMaps = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
-                          if (await canLaunchUrl(googleMaps)) {
-                            await launchUrl(googleMaps, mode: LaunchMode.externalApplication);
-                            return;
-                          }
-
-                          // Fallback to geo: intent
-                          final geo = Uri.parse('geo:$lat,$lng?q=$lat,$lng(${Uri.encodeComponent(company.name)})');
-                          if (await canLaunchUrl(geo)) {
-                            await launchUrl(geo, mode: LaunchMode.externalApplication);
-                            return;
-                          }
-
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('تعذّر فتح تطبيق الخرائط')),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.directions, size: 20),
-                        label: const Text('عرض الاتجاهات'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.kElectricLime,
-                          foregroundColor: Colors.black,
-                          minimumSize: Size(double.infinity, 48.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14.r),
-                          ),
-                          textStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.sp,
+                          },
+                          icon: const Icon(Icons.directions, size: 20),
+                          label: const Text('عرض الاتجاهات'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.kElectricLime,
+                            foregroundColor: Colors.black,
+                            fixedSize: Size.fromHeight(48.h),
+                            minimumSize: Size.fromHeight(48.h),
+                            maximumSize: Size.fromHeight(48.h),
+                            padding: EdgeInsets.symmetric(horizontal: 12.w),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                            textStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14.sp,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     SizedBox(width: 10.w),
-                    // Call button (appears LEFT in RTL)
-                    InkWell(
-                      onTap: hasPhone
-                          ? () {
-                              final uri = Uri(
-                                scheme: 'tel',
-                                path: company.phone!.trim(),
-                              );
-                              launchUrl(uri, mode: LaunchMode.externalApplication);
-                            }
-                          : null,
-                      borderRadius: BorderRadius.circular(14.r),
-                      child: Container(
-                        width: 52.w,
-                        height: 48.h,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(14.r),
-                          border: Border.all(color: Colors.white12),
-                        ),
-                        child: Icon(
-                          Icons.phone,
-                          color: hasPhone
+                    // Call button (fixed size to match directions button height)
+                    SizedBox(
+                      width: 52.w,
+                      height: 48.h,
+                      child: ElevatedButton(
+                        onPressed: hasPhone
+                            ? () {
+                                final uri = Uri(
+                                  scheme: 'tel',
+                                  path: company.phone!.trim(),
+                                );
+                                launchUrl(
+                                  uri,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: Colors.white.withValues(alpha: 0.08),
+                          disabledBackgroundColor: Colors.white.withValues(
+                            alpha: 0.04,
+                          ),
+                          foregroundColor: hasPhone
                               ? AppTheme.kElectricLime
                               : Colors.white30,
-                          size: 22.w,
+                          minimumSize: Size(52.w, 48.h),
+                          fixedSize: Size(52.w, 48.h),
+                          maximumSize: Size(52.w, 48.h),
+                          padding: EdgeInsets.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r),
+                            side: const BorderSide(color: Colors.white12),
+                          ),
                         ),
+                        child: Icon(Icons.phone, size: 22.w),
                       ),
                     ),
                   ],

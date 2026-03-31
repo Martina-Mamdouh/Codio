@@ -104,31 +104,31 @@ class CompaniesManagementViewModel extends ChangeNotifier {
         companyData['cover_image_url'] = coverUrl;
       }
 
-      await _supabaseService.addCompany(companyData).then((newId) async {
-        // حفظ الفروع لو موجودة
-        if (branches.isNotEmpty) {
-          // رفع صور الفروع أولاً
-          for (var branch in branches) {
-            if (branch['_imageBytes'] != null) {
-              final imgBytes = branch['_imageBytes'] as Uint8List;
-              branch.remove('_imageBytes');
-              final imgPath =
-                  'branches/${DateTime.now().millisecondsSinceEpoch}_${branch['name']}.png';
-              branch['image_url'] = await _supabaseService.uploadImageBytes(
-                imgBytes,
-                imgPath,
-              );
-            } else {
-              branch.remove('_imageBytes');
-            }
+      final newId = await _supabaseService.addCompany(companyData);
+      // حفظ الفروع لو موجودة
+      if (branches.isNotEmpty) {
+        // رفع صور الفروع أولاً
+        for (var branch in branches) {
+          if (branch['_imageBytes'] != null) {
+            final imgBytes = branch['_imageBytes'] as Uint8List;
+            branch.remove('_imageBytes');
+            final imgPath =
+                'branches/${DateTime.now().millisecondsSinceEpoch}_${branch['name']}.png';
+            branch['image_url'] = await _supabaseService.uploadImageBytes(
+              imgBytes,
+              imgPath,
+            );
+          } else {
+            branch.remove('_imageBytes');
           }
-          await _supabaseService.saveCompanyBranches(newId, branches);
         }
-      });
+        await _supabaseService.saveCompanyBranches(newId, branches);
+      }
       _companies = await _supabaseService.getCompanies();
       hideEditor();
     } catch (e) {
       _errorMessage = e.toString();
+      throw Exception(e.toString());
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -189,6 +189,7 @@ class CompaniesManagementViewModel extends ChangeNotifier {
       hideEditor();
     } catch (e) {
       _errorMessage = e.toString();
+      throw Exception(e); // Rethrow to show snackbar in form
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -206,6 +207,7 @@ class CompaniesManagementViewModel extends ChangeNotifier {
       hideEditor();
     } catch (e) {
       _errorMessage = e.toString();
+      throw Exception(e); // Rethrow to show snackbar
     } finally {
       _isLoading = false;
       notifyListeners();

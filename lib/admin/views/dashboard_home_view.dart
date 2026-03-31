@@ -911,19 +911,47 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                                 ),
                               ),
                               DataCell(
-                                Text(
-                                  banner['impressions']?.toString() ?? '0',
-                                  style: const TextStyle(
-                                    color: Colors.blueAccent,
-                                  ),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      banner['impressions']?.toString() ?? '0',
+                                      style: const TextStyle(
+                                        color: Colors.blueAccent,
+                                      ),
+                                    ),
+                                    if (banner['unique_viewers'] != null && banner['unique_viewers'] > 0)
+                                      Text(
+                                        '(${banner['unique_viewers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               DataCell(
-                                Text(
-                                  banner['clicks']?.toString() ?? '0',
-                                  style: const TextStyle(
-                                    color: Colors.orangeAccent,
-                                  ),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      banner['clicks']?.toString() ?? '0',
+                                      style: const TextStyle(
+                                        color: Colors.orangeAccent,
+                                      ),
+                                    ),
+                                    if (banner['unique_clickers'] != null && banner['unique_clickers'] > 0)
+                                      Text(
+                                        '(${banner['unique_clickers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               DataCell(

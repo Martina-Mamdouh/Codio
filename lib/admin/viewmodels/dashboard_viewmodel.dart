@@ -36,9 +36,9 @@ class DashboardViewModel extends ChangeNotifier {
 
       final rawTopDeals = results[0];
       final rawCompanyPerformance = results[1];
-      bannerPerformance = results[2];
       socialBreakdown = results[3];
       final uniqueStats = results[4];
+      final rawBannerPerformance = results[2];
 
       // Merge unique stats dynamically to avoid breaking existing DB schemas via dropped views
       topDeals = rawTopDeals.map((rawDeal) {
@@ -93,6 +93,33 @@ class DashboardViewModel extends ChangeNotifier {
               : 0;
         }
         return company;
+      }).toList();
+
+      bannerPerformance = rawBannerPerformance.map((rawBanner) {
+        final banner = Map<String, dynamic>.from(rawBanner);
+        final bannerId = banner['banner_id'];
+        if (bannerId != null) {
+          final viewStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'banner' &&
+                s['entity_id'] == bannerId &&
+                s['event_type'] == 'banner_impression',
+          );
+          banner['unique_viewers'] = viewStats.isNotEmpty
+              ? viewStats.first['unique_users']
+              : 0;
+
+          final clickStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'banner' &&
+                s['entity_id'] == bannerId &&
+                s['event_type'] == 'banner_click',
+          );
+          banner['unique_clickers'] = clickStats.isNotEmpty
+              ? clickStats.first['unique_users']
+              : 0;
+        }
+        return banner;
       }).toList();
 
       // Calculate simple totals from performance if needed

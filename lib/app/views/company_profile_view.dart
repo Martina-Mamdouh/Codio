@@ -182,16 +182,29 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            vm.company!.name,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16.sp,
-                                              fontWeight: FontWeight.bold,
-                                              //  // Inherited
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  vm.company!.name,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 16.sp,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              if (vm.company!.isPartner == true) ...[
+                                                SizedBox(width: 4.w),
+                                                Icon(
+                                                  Icons.verified,
+                                                  color: AppTheme.kElectricLime,
+                                                  size: 16.sp,
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                           SizedBox(height: 2.h),
                                           Text(

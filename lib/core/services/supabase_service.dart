@@ -20,7 +20,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
           )
           .order('created_at', ascending: false);
 
@@ -463,7 +463,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
           )
           .order('created_at', ascending: false)
           .limit(5);
@@ -481,7 +481,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
           )
           .eq('is_featured', true)
           .order('created_at', ascending: false);
@@ -502,7 +502,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
           )
           .gte('expires_at', now.toIso8601String())
           .lte('expires_at', sevenDaysLater.toIso8601String())
@@ -521,7 +521,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
           ) // ✨
           .eq('company_id', companyId)
           .order('created_at', ascending: false);
@@ -544,7 +544,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
           )
           .eq('id', dealId)
           .single();
@@ -671,7 +671,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
           ) // ✨
           .eq('category_id', categoryId)
           .order('created_at', ascending: false);

@@ -19,6 +19,7 @@ class DealModel {
   final bool isForStudents;
   final String? companyName;
   final String? companyLogo;
+  final bool companyIsPartner; // ✅ Partner Mark
   final String? linkUrl;
 
   // ✨ الحقول الجديدة
@@ -60,6 +61,7 @@ class DealModel {
     this.discountValue = '',
     this.isForStudents = false,
     this.companyName,
+    this.companyIsPartner = false, // ✅ Partner Mark
     this.linkUrl,
     this.categoryId,
     this.categoryName,
@@ -109,6 +111,13 @@ class DealModel {
                       json['companies']['logo_url'] as String?,
                     ))
             : null,
+        companyIsPartner: json['companies'] != null
+            ? (json['companies'] is List
+                  ? (json['companies'] as List).isNotEmpty
+                        ? (json['companies'] as List).first['is_partner'] == true
+                        : false
+                  : json['companies']['is_partner'] == true)
+            : false, // ✅ Partner mark
         linkUrl: json['link_url'] as String?,
 
         // ✨ الحقول الجديدة
@@ -173,6 +182,7 @@ class DealModel {
     bool? isForStudents,
     String? companyName,
     String? companyLogo,
+    bool? companyIsPartner,
     String? linkUrl,
     int? categoryId,
     String? categoryName,
@@ -200,6 +210,7 @@ class DealModel {
       isForStudents: isForStudents ?? this.isForStudents,
       companyName: companyName ?? this.companyName,
       companyLogo: companyLogo ?? this.companyLogo,
+      companyIsPartner: companyIsPartner ?? this.companyIsPartner, // ✅
       linkUrl: linkUrl ?? this.linkUrl,
       categoryId: categoryId ?? this.categoryId,
       categoryName: categoryName ?? this.categoryName,

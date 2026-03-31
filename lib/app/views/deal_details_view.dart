@@ -164,7 +164,7 @@ class _DealDetailsViewState extends State<DealDetailsView> {
               children: [
                 if (widget.deal.discountValue.isNotEmpty)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: Colors.redAccent,
                       borderRadius: BorderRadius.only(
@@ -178,14 +178,14 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 12.sp,
+                        fontSize: 10.sp,
                       ),
                     ),
                   ),
                 const Spacer(),
                 if (widget.deal.isForStudents)
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                     decoration: BoxDecoration(
                       color: AppTheme.kElectricLime.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8.r),
@@ -193,14 +193,14 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.school, size: 12.w, color: AppTheme.kElectricLime),
+                        Icon(Icons.school, size: 10.w, color: AppTheme.kElectricLime),
                         SizedBox(width: 4.w),
                         Text(
                           'للطلاب',
                           style: TextStyle(
                             color: AppTheme.kElectricLime,
                             fontWeight: FontWeight.bold,
-                            fontSize: 11.sp,
+                            fontSize: 9.sp,
                           ),
                         ),
                       ],
@@ -210,14 +210,28 @@ class _DealDetailsViewState extends State<DealDetailsView> {
             ),
           SizedBox(height: 12.h),
 
-          // Company Name
-          Text(
-            widget.deal.companyName ?? 'متجر غير معروف',
-            style: TextStyle(
-              color: AppTheme.kElectricLime,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
+          // Company Name & Partner Badge
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  widget.deal.companyName ?? 'متجر غير معروف',
+                  style: TextStyle(
+                    color: AppTheme.kElectricLime,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (widget.deal.companyIsPartner) ...[
+                SizedBox(width: 4.w),
+                Icon(
+                  Icons.verified,
+                  color: AppTheme.kElectricLime,
+                  size: 16.sp,
+                ),
+              ],
+            ],
           ),
           SizedBox(height: 4.h),
 
@@ -773,13 +787,27 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.deal.companyName ?? 'متجر',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            widget.deal.companyName ?? 'متجر',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        if (widget.deal.companyIsPartner) ...[
+                          SizedBox(width: 6.w),
+                          Icon(
+                            Icons.verified,
+                            color: AppTheme.kElectricLime,
+                            size: 20.sp,
+                          ),
+                        ],
+                      ],
                     ),
                     SizedBox(height: 4.h),
                     Text(

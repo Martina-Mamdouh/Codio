@@ -151,8 +151,8 @@ class _DealCardState extends State<DealCard>
                       start: AppTheme.spacing8,
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: AppTheme.spacing8,
-                          vertical: AppTheme.spacing4,
+                          horizontal: 6.w,
+                          vertical: 2.h,
                         ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -175,7 +175,7 @@ class _DealCardState extends State<DealCard>
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: isLandscape ? 8.sp : 10.sp,
+                            fontSize: isLandscape ? 7.sp : 9.sp,
                           ),
                         ),
                       ),
@@ -186,7 +186,7 @@ class _DealCardState extends State<DealCard>
                     end: AppTheme.spacing8,
                     child: _FavoriteButton(
                       isFavorite: widget.isFavorite,
-                      size: isLandscape ? 14.w : 18.w,
+                      size: isLandscape ? 12.w : 15.w,
                       onTap: () {
                         if (authService.currentUser == null) {
                           AppSnackbar.loginRequired(
@@ -222,16 +222,31 @@ class _DealCardState extends State<DealCard>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Company Name
+                        // Company Name & Partner Badge
                         if (widget.deal.companyName != null)
-                          Text(
-                            widget.deal.companyName!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: AppTheme.kSubtleText,
-                              fontSize: isLandscape ? 9.sp : 10.sp,
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  widget.deal.companyName!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: AppTheme.kSubtleText,
+                                    fontSize: isLandscape ? 9.sp : 10.sp,
+                                  ),
+                                ),
+                              ),
+                              if (widget.deal.companyIsPartner) ...[
+                                SizedBox(width: 4.w),
+                                Icon(
+                                  Icons.verified,
+                                  color: AppTheme.kElectricLime,
+                                  size: isLandscape ? 10.sp : 12.sp,
+                                ),
+                              ],
+                            ],
                           ),
 
                         // Title
@@ -351,7 +366,7 @@ class _FavoriteButtonState extends State<_FavoriteButton>
         widget.onTap();
       },
       child: Container(
-        padding: EdgeInsets.all(AppTheme.spacing8),
+        padding: EdgeInsets.all(6.w),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.5),
           shape: BoxShape.circle,

@@ -26,6 +26,7 @@ class CompanyModel {
   final List<int>? categoryIds; // ✅ New Field
   final int? primaryCategoryId; // ✅ New Field
   final String? instagramUrl; // ✅ New Field
+  final bool? isPartner; // ✅ New Field
   final List<BranchModel>? branches; // ✅ Branches
 
   CompanyModel({
@@ -52,6 +53,7 @@ class CompanyModel {
     this.categoryIds, // ✅ New Field
     this.primaryCategoryId, // ✅ New Field
     this.instagramUrl, // ✅ New Field
+    this.isPartner = false, // ✅ Partner Mark
     this.branches, // ✅ Branches
   });
 
@@ -104,6 +106,7 @@ class CompanyModel {
         primaryCategoryId: (json['primary_category_id'] as num?)
             ?.toInt(), // ✅ New Field
         instagramUrl: json['instagram_url'], // ✅ New Field
+        isPartner: (json['company_is_partner'] ?? json['is_partner']) == true, // ✅ Partner Mark
         branches: (json['company_branches'] as List<dynamic>?)
             ?.map((b) => BranchModel.fromJson(b as Map<String, dynamic>))
             .toList(),
@@ -140,6 +143,7 @@ class CompanyModel {
       'category_ids': categoryIds, // ✅ New Field
       'primary_category_id': primaryCategoryId, // ✅ New Field
       'instagram_url': instagramUrl, // ✅ New Field
+      'is_partner': isPartner,
     };
   }
 
@@ -167,6 +171,7 @@ class CompanyModel {
     List<int>? categoryIds, // ✅ New Field
     int? primaryCategoryId, // ✅ New Field
     String? instagramUrl, // ✅ New Field
+    bool? isPartner,
     List<BranchModel>? branches, // ✅ Branches
   }) {
     return CompanyModel(
@@ -194,6 +199,7 @@ class CompanyModel {
       primaryCategoryId:
           primaryCategoryId ?? this.primaryCategoryId, // ✅ New Field
       instagramUrl: instagramUrl ?? this.instagramUrl, // ✅ New Field
+      isPartner: isPartner ?? this.isPartner,
       branches: branches ?? this.branches, // ✅ Branches
     );
   }

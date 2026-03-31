@@ -56,6 +56,9 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
   Set<int> _selectedCategoryIds = {}; // ✅ Multi-select
   int? _selectedPrimaryCategoryId; // ✅ Primary category
 
+  // ✅ Partner
+  bool _isPartner = false; // ✅
+
   // ✅ Branches
   List<Map<String, dynamic>> _branches = [];
 
@@ -89,6 +92,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
       _selectedCategoryIds =
           company.categoryIds?.toSet() ?? {}; // ✅ Multi-select
       _selectedPrimaryCategoryId = company.primaryCategoryId; // ✅ Primary
+      _isPartner = company.isPartner ?? false; // ✅
       _latController.text = company.lat.toString();
       _lngController.text = company.lng.toString();
       _descriptionController.text = company.description ?? '';
@@ -151,6 +155,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
       _selectedCoverBytes = null; // ✅
       _selectedCategoryIds = {}; // ✅
       _selectedPrimaryCategoryId = null; // ✅
+      _isPartner = false; // ✅
       _branches = []; // ✅ Branches
     }
   }
@@ -279,6 +284,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
       'instagram_url': _igController.text.trim().isEmpty
           ? null
           : _igController.text.trim(), // ✅
+      'is_partner': _isPartner, // ✅
       'social_links': {
         'facebook': _fbController.text.trim(),
         'whatsapp': _waController.text.trim(),
@@ -480,6 +486,36 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                 hint: 'أدخل اسم الشركة',
                 icon: Icons.business,
                 validator: (val) => val!.isEmpty ? 'اسم الشركة مطلوب' : null,
+              ),
+              const SizedBox(height: 16),
+
+              // ✅ شريك متعاون
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.kDarkBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.kCardBorder),
+                ),
+                child: SwitchListTile(
+                  title: const Text(
+                    'شريك متعاون',
+                    style: TextStyle(
+                      color: AppTheme.kLightText,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'إظهار علامة التوثيق الدالة على الشراكة بجوار اسم هذه الشركة في العروض.',
+                    style: TextStyle(color: AppTheme.kSubtleText, fontSize: 12),
+                  ),
+                  value: _isPartner,
+                  onChanged: (val) {
+                    setState(() {
+                      _isPartner = val;
+                    });
+                  },
+                  activeColor: AppTheme.kElectricLime,
+                ),
               ),
               const SizedBox(height: 16),
 

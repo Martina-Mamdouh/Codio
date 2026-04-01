@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/deal_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -61,6 +62,19 @@ class _DealDetailsViewState extends State<DealDetailsView> {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
+  }
+
+  Future<void> _openGoogleMaps(double lat, double lng) async {
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تعذر فتح خرائط جوجل')),
+        );
+      }
+    }
   }
 
   @override
@@ -621,8 +635,33 @@ class _DealDetailsViewState extends State<DealDetailsView> {
       );
     }
     
+    // Combine Main Company and Branches
+    final List<dynamic> allLocations = [];
+    
+    if (viewModel.company != null) {
+      allLocations.add({
+        'name': '${viewModel.company!.name} (الفرع الرئيسي)',
+        'address': viewModel.company!.address,
+        'phone': viewModel.company!.phone,
+        'lat': viewModel.company!.lat,
+        'lng': viewModel.company!.lng,
+        'isMain': true,
+      });
+    }
+    
     final branches = viewModel.company?.branches ?? [];
-    if (branches.isEmpty) {
+    for (var b in branches) {
+      allLocations.add({
+        'name': b.name,
+        'address': b.address,
+        'phone': b.phone,
+        'lat': b.lat,
+        'lng': b.lng,
+        'isMain': false,
+      });
+    }
+
+    if (allLocations.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -640,27 +679,39 @@ class _DealDetailsViewState extends State<DealDetailsView> {
 
     return ListView.builder(
       padding: EdgeInsets.all(16.w),
-      itemCount: branches.length,
+      itemCount: allLocations.length,
       itemBuilder: (context, index) {
-        final branch = branches[index];
+        final loc = allLocations[index];
+        final double lat = (loc['lat'] as num?)?.toDouble() ?? 0.0;
+        final double lng = (loc['lng'] as num?)?.toDouble() ?? 0.0;
+        final bool hasCoords = lat != 0 && lng != 0;
+
         return Container(
           margin: EdgeInsets.only(bottom: 12.h),
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: const Color(0xFF2C2C2E),
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: Colors.white10),
+            border: Border.all(
+              color: loc['isMain'] == true 
+                  ? AppTheme.kElectricLime.withAlpha(77)
+                  : Colors.white10,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(Icons.location_on, color: AppTheme.kElectricLime, size: 20.w),
+                  Icon(
+                    loc['isMain'] == true ? Icons.home_work : Icons.location_on, 
+                    color: AppTheme.kElectricLime, 
+                    size: 20.w
+                  ),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      branch.name,
+                      loc['name'],
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16.sp,
@@ -668,26 +719,61 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                       ),
                     ),
                   ),
+                  if (hasCoords)
+                    IconButton(
+                      icon: const Icon(Icons.directions, color: AppTheme.kElectricLime),
+                      tooltip: 'الاتجاهات',
+                      onPressed: () => _openGoogleMaps(lat, lng),
+                    ),
                 ],
               ),
-              if (branch.address != null && branch.address!.isNotEmpty) ...[
-                SizedBox(height: 8.h),
+              if (loc['address'] != null && loc['address'].isNotEmpty) ...[
+                SizedBox(height: 4.h),
                 Text(
-                  branch.address!,
+                  loc['address'],
                   style: TextStyle(color: Colors.grey[400], fontSize: 13.sp),
                 ),
               ],
-              if (branch.phone != null && branch.phone!.isNotEmpty) ...[
+              if (loc['phone'] != null && loc['phone'].isNotEmpty) ...[
                 SizedBox(height: 8.h),
                 Row(
                   children: [
                     Icon(Icons.phone, color: Colors.grey, size: 16.w),
                     SizedBox(width: 6.w),
                     Text(
-                      branch.phone!,
+                      loc['phone'],
                       style: TextStyle(color: Colors.grey[300], fontSize: 13.sp),
                     ),
                   ],
+                ),
+              ],
+              if (hasCoords) ...[
+                SizedBox(height: 12.h),
+                InkWell(
+                  onTap: () => _openGoogleMaps(lat, lng),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
+                    decoration: BoxDecoration(
+                      color: AppTheme.kElectricLime.withAlpha(25),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border: Border.all(color: AppTheme.kElectricLime.withAlpha(51)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.map, size: 16, color: AppTheme.kElectricLime),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'فتح في خرائط جوجل',
+                          style: TextStyle(
+                            color: AppTheme.kElectricLime,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ],

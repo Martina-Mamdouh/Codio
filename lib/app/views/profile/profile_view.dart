@@ -134,6 +134,7 @@ class _ProfileViewState extends State<ProfileView> {
     UserProfileViewModel profileVm,
     AuthViewModel authVm,
   ) {
+    // Use standard bottom gap so screens align with Companies view
     return RefreshIndicator(
       onRefresh: () async {
         await profileVm.loadProfileData();
@@ -145,7 +146,7 @@ class _ProfileViewState extends State<ProfileView> {
           top: 24.w,
           left: 24.w,
           right: 24.w,
-          bottom: kBottomNavigationBarHeight + 40.h,
+          bottom: AppTheme.bottomNavGap,
         ),
         children: [
           _buildHeader(user),

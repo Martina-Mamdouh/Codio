@@ -94,7 +94,7 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
                         right: 16.w,
                         top: 24.h,
                         // ✅ Increased bottom padding to account for floating nav bar
-                        bottom: 140.h,
+                        bottom: AppTheme.bottomNavGap,
                       ),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

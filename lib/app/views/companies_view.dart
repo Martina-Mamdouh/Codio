@@ -116,12 +116,12 @@ class _CompaniesViewState extends State<CompaniesView> {
                   ),
                   slivers: [
                     SliverPadding(
-                      padding: EdgeInsets.only(
+                        padding: EdgeInsets.only(
                         left: 16.w,
                         right: 16.w,
                         top: 24.h,
                         // ✅ Increased bottom padding to account for floating nav bar
-                        bottom: 140.h,
+                        bottom: AppTheme.bottomNavGap,
                       ),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

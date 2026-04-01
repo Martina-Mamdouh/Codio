@@ -96,7 +96,7 @@ class _CategoriesViewState extends State<CategoriesView> {
                       padding: EdgeInsets.only(
                         top: 24.h,
                         // ✅ Increased bottom padding to clear the floating nav bar
-                        bottom: 140.h,
+                        bottom: AppTheme.bottomNavGap,
                         left: 16.w,
                         right: 16.w,
                       ),

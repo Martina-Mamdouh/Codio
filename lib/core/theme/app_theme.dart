@@ -53,6 +53,9 @@ class AppTheme {
   static double get spacing56 => 56.w;
   static double get spacing64 => 64.w;
 
+  // Bottom gap used across screens to clear the floating bottom nav
+  static double get bottomNavGap => 140.h;
+
   // ═══════════════════════════════════════════════════════════════════════════
   // BORDER RADIUS
   // ═══════════════════════════════════════════════════════════════════════════

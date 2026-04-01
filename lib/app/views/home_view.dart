@@ -275,7 +275,9 @@ class HomeView extends StatelessWidget {
                       );
                     },
                   ),
-                  SizedBox(height: 20.h),
+                  
+                  // ✅ Added extra space at the end of the scroll to clear the floating nav bar
+                  SizedBox(height: 120.h),
                 ],
               ),
             ),
@@ -297,8 +299,7 @@ class HomeView extends StatelessWidget {
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     const SearchView(),
-                transitionDuration: const Duration(milliseconds: 300),
-                reverseTransitionDuration: const Duration(milliseconds: 250),
+                transitionDuration: const Duration(milliseconds: 300), reverseTransitionDuration: const Duration(milliseconds: 250),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                       const begin = Offset(

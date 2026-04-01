@@ -95,9 +95,10 @@ class _CategoriesViewState extends State<CategoriesView> {
                     SliverPadding(
                       padding: EdgeInsets.only(
                         top: 24.h,
-                        bottom: kBottomNavigationBarHeight + 40.h,
+                        // ✅ Increased bottom padding to clear the floating nav bar
+                        bottom: 140.h,
                         left: 16.w,
-                        right: 8.w,
+                        right: 16.w,
                       ),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

@@ -6,6 +6,7 @@ import '../../core/models/deal_model.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
+import '../viewmodels/home_view_model.dart';
 import 'widgets/deal_card.dart';
 import 'deal_details_view.dart';
 
@@ -364,6 +365,10 @@ class _SearchViewState extends State<SearchView> {
       );
     }
 
+    final homeVm = context.read<HomeViewModel>();
+    final width = MediaQuery.of(context).size.width;
+    final crossAxisCount = width < 340 ? 1 : 2;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -380,21 +385,30 @@ class _SearchViewState extends State<SearchView> {
               return RefreshIndicator(
                 onRefresh: () => _performSearch(_searchController.text),
                 color: AppTheme.kElectricLime,
-                child: ListView.separated(
+                child: GridView.builder(
                   padding: EdgeInsets.symmetric(
                     vertical: 16.h,
                     horizontal: 16.w,
                   ),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: 16.h,
+                    crossAxisSpacing: 16.w,
+                    childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait 
+                        ? 0.75 // ✅ Matches Home card feel
+                        : 1.1,
+                  ),
                   itemCount: _searchResults.length,
-                  separatorBuilder: (context, index) => SizedBox(height: 16.h),
                   itemBuilder: (context, index) {
                     final deal = _searchResults[index];
                     final isFav = profileVm.isDealFavorite(deal.id);
+                    final distance = homeVm.calculateDistance(deal);
 
                     return DealCard(
                       deal: deal,
                       isFavorite: isFav,
-                      showCategory: true,
+                      showCategory: false, // ✅ Set to false to match Home
+                      distance: distance > 0 ? distance : null,
                       onTap: () {
                         Navigator.push(
                           context,

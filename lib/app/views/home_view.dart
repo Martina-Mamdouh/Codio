@@ -154,7 +154,6 @@ class HomeView extends StatelessWidget {
                   HomeBannerSlider(banners: viewModel.banners),
                   SizedBox(height: 16.h),
 
-                  // Discover Nearby Offers button
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
                     child: _DiscoverNearbyCard(
@@ -170,7 +169,33 @@ class HomeView extends StatelessWidget {
                   ),
                   SizedBox(height: 16.h),
 
+
+                  // Nearby Slider Section ✅
+                  if (viewModel.nearbyDeals.isNotEmpty) ...[
+                    DealSection(
+                      title: 'عروض قريبة منك',
+                      deals: viewModel.nearbyDeals,
+                      isNearby: true,
+                      onSeeAllTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ViewAllDealsScreen(
+                              title: 'عروض قريبة منك',
+                              deals: viewModel.allNearbyDeals,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 16.h),
+                  ],
+
                   SizedBox(height: 6.h),
+                  
+                  // Nearby Banner button moved here ✅
+
+
                   DealSection(
                     title: 'عروض جديدة',
                     deals: viewModel.newDeals,

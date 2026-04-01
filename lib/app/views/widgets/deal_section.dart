@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/models/deal_model.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
+import '../../viewmodels/home_view_model.dart';
 import '../deal_details_view.dart';
 import '../view_all_deals_screen.dart';
 import 'deal_card.dart';
@@ -12,17 +13,20 @@ class DealSection extends StatelessWidget {
   final String title;
   final List<DealModel> deals;
   final VoidCallback? onSeeAllTap;
+  final bool isNearby; // ✅ New flag
 
   const DealSection({
     super.key,
     required this.title,
     required this.deals,
     this.onSeeAllTap,
+    this.isNearby = false, // ✅
   });
 
   @override
   Widget build(BuildContext context) {
     if (deals.isEmpty) return const SizedBox.shrink();
+    final homeVm = context.read<HomeViewModel>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,6 +84,9 @@ class DealSection extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final deal = deals[index];
                   final isFav = profileVm.isDealFavorite(deal.id);
+                  
+                  // ✅ Calculate distance if it's the nearby section
+                  final double? distance = isNearby ? homeVm.calculateDistance(deal) : null;
 
                   return SizedBox(
                     width:
@@ -90,6 +97,7 @@ class DealSection extends StatelessWidget {
                     child: DealCard(
                       deal: deal,
                       isFavorite: isFav,
+                      distance: distance, // ✅ Pass distance to card
                       onTap: () {
                         debugPrint('Pressed on deal: ${deal.title}');
                         Navigator.push(

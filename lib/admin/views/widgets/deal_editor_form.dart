@@ -34,6 +34,7 @@ class DealEditorFormState extends State<DealEditorForm> {
   String? _existingImageUrl;
   bool _isEditing = false;
   bool _isFeatured = false;
+  bool _showInMap = true;
   bool _isForStudents = false;
   int? _selectedCategoryId;
   int? _selectedCompanyId;
@@ -81,6 +82,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _discountValueController.text = deal.discountValue;
       _linkUrlController.text = deal.linkUrl ?? '';
       _isFeatured = deal.isFeatured;
+      _showInMap = deal.showInMap; // ✅ New Field
       _isForStudents = deal.isForStudents;
       _selectedCategoryId = deal.categoryId;
       _additionalImageBytesList = [];
@@ -100,6 +102,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _discountValueController.clear();
       _linkUrlController.clear();
       _isFeatured = false;
+      _showInMap = false; // ✅ New Field
       _isForStudents = false;
       _selectedCategoryId = null;
       _selectedImageBytes = null;
@@ -210,6 +213,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       'publish_location': 'home', // Default value since input was removed
       'discount_value': _discountValueController.text.trim(),
       'is_featured': _isFeatured,
+      'show_in_map': _showInMap, // ✅ New Field
       'is_for_students': _isForStudents,
       'category_id': _selectedCategoryId,
       'link_url': (_selectedDealType == 'both' || _selectedDealType == 'link')
@@ -417,6 +421,15 @@ class DealEditorFormState extends State<DealEditorForm> {
                 onChanged: (val) => setState(() => _isFeatured = val),
                 icon: Icons.star,
                 activeColor: Colors.orangeAccent,
+              ),
+              const SizedBox(height: 12),
+
+              _buildSwitchTile(
+                title: 'إظهار في الخريطة',
+                value: _showInMap,
+                onChanged: (val) => setState(() => _showInMap = val),
+                icon: Icons.map,
+                activeColor: Colors.blueAccent,
               ),
               const SizedBox(height: 24),
 
@@ -667,7 +680,7 @@ class DealEditorFormState extends State<DealEditorForm> {
 
   Widget _buildCategoryDropdown(DealsManagementViewModel vm) {
     return DropdownButtonFormField<int>(
-      initialValue: _selectedCategoryId,
+      value: _selectedCategoryId,
       decoration: InputDecoration(
         labelText: 'الفئة',
         prefixIcon: const Icon(Icons.category, color: AppTheme.kElectricLime),
@@ -705,7 +718,7 @@ class DealEditorFormState extends State<DealEditorForm> {
 
   Widget _buildDealTypeDropdown() {
     return DropdownButtonFormField<String>(
-      initialValue: _selectedDealType,
+      value: _selectedDealType,
       decoration: InputDecoration(
         labelText: 'نوع العرض *',
         prefixIcon: const Icon(Icons.category, color: AppTheme.kElectricLime),

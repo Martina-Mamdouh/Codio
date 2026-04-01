@@ -90,7 +90,7 @@ class MapViewModel extends ChangeNotifier {
 
     try {
       final results = await Future.wait([
-        _supabaseService.getCompanies(),
+        _supabaseService.getCompaniesWithMapDeals(),
         _supabaseService.getDeals(),
         _supabaseService.getCategories(),
       ]);
@@ -103,16 +103,6 @@ class MapViewModel extends ChangeNotifier {
         print(
           '🗺️ MapVM loaded: ${companies.length} companies, ${deals.length} deals, ${categories.length} categories',
         );
-        if (deals.isNotEmpty) {
-          print(
-            '🗺️ First deal: id=${deals.first.id}, companyId=${deals.first.companyId}, title=${deals.first.title}',
-          );
-        }
-        if (companies.isNotEmpty) {
-          print(
-            '🗺️ First company: id=${companies.first.id}, name=${companies.first.name}',
-          );
-        }
       }
 
       _buildDiscountLookup();
@@ -234,7 +224,7 @@ class MapViewModel extends ChangeNotifier {
       }
 
       userPosition = await Geolocator.getCurrentPosition(
-        locationSettings: LocationSettings(
+        locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high
         ),
       );
@@ -295,20 +285,44 @@ class MapViewModel extends ChangeNotifier {
   String _pickBestDiscount(List<DealModel> companyDeals) {
     if (companyDeals.isEmpty) return '';
 
-    companyDeals.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    // Sort: Featured first, then by date (most recent)
+    companyDeals.sort((a, b) {
+      if (a.isFeatured != b.isFeatured) {
+        return a.isFeatured ? -1 : 1;
+      }
+      return b.createdAt.compareTo(a.createdAt);
+    });
 
     String bestLabel = '';
     double bestValue = -1;
 
     for (final deal in companyDeals) {
-      final candidate =
-          (deal.discountValue.isNotEmpty ? deal.discountValue : deal.dealValue)
-              .trim();
-      if (candidate.isEmpty) continue;
+      // ✅ Strategy: 
+      // 1. Try discountValue (e.g. 50%)
+      // 2. If empty, try dealValue (e.g. SR 10)
+      // 3. If still empty, use a snippet from Title
+      
+      String candidate = deal.discountValue.trim();
+      if (candidate.isEmpty) {
+        candidate = deal.dealValue.trim();
+      }
+      
+      if (candidate.isEmpty) {
+        // Fallback to title if no values specified
+        candidate = deal.title.length > 8 
+            ? '${deal.title.substring(0, 7)}...' 
+            : deal.title;
+      }
 
       final parsed = _parseDiscount(candidate);
+      
+      // If we found a numeric value higher than current best, update
       if (parsed > bestValue) {
         bestValue = parsed;
+        bestLabel = candidate;
+      } 
+      // If no best label yet, set it anyway to ensure we show something
+      else if (bestLabel.isEmpty) {
         bestLabel = candidate;
       }
     }
@@ -317,10 +331,18 @@ class MapViewModel extends ChangeNotifier {
   }
 
   double _parseDiscount(String value) {
-    final match = RegExp(r"([0-9]+\.?[0-9]*)").firstMatch(value);
-    if (match != null) {
-      return double.tryParse(match.group(1) ?? '') ?? -1;
+    // Try to find a percentage first
+    final percentMatch = RegExp(r"([0-9]+\.?[0-9]*)\s*%").firstMatch(value);
+    if (percentMatch != null) {
+      return (double.tryParse(percentMatch.group(1) ?? '') ?? 0) + 1000; // Boost percentage
     }
+
+    // Try to find any number
+    final numberMatch = RegExp(r"([0-9]+\.?[0-9]*)").firstMatch(value);
+    if (numberMatch != null) {
+      return double.tryParse(numberMatch.group(1) ?? '') ?? -1;
+    }
+    
     return -1;
   }
 
@@ -328,11 +350,6 @@ class MapViewModel extends ChangeNotifier {
 
   List<DealModel> dealsForCompany(int companyId) {
     final result = deals.where((d) => d.companyId == companyId).toList();
-    if (kDebugMode) {
-      print(
-        '🗺️ dealsForCompany($companyId): found ${result.length} out of ${deals.length} total deals',
-      );
-    }
     return result;
   }
 

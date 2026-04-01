@@ -20,28 +20,15 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
           .order('created_at', ascending: false);
 
       if (kDebugMode) {
         print('📊 getDeals: ${data.length} raw rows');
-        if (data.isNotEmpty) {
-          print('📊 First deal raw: ${data.first}');
-        }
       }
 
       final deals = data.map((item) => DealModel.fromJson(item)).toList();
-
-      if (kDebugMode) {
-        print('📊 getDeals: parsed ${deals.length} deals');
-        if (deals.isNotEmpty) {
-          print(
-            '📊 First parsed deal: id=${deals.first.id}, companyId=${deals.first.companyId}',
-          );
-        }
-      }
-
       return deals;
     } catch (e) {
       if (kDebugMode) {
@@ -75,8 +62,6 @@ class SupabaseService {
 
   Future<void> deleteDeal(int id) async {
     try {
-      // ✨ PRE-DELETE: Handle Foreign Key Constraints (favorites and notifications)
-      // This prevents "Failed to delete deal" when the deal is referenced elsewhere.
       try {
         await _client.from('favorites_deals').delete().eq('deal_id', id);
         await _client.from('notifications').delete().eq('deal_id', id);
@@ -84,10 +69,7 @@ class SupabaseService {
         if (kDebugMode) {
           print('Error deleting related records for deal $id: $e');
         }
-        // Continue even if this fails, as the table might not have those records
       }
-
-      // NOW DELETE THE DEAL
       await _client.from('deals').delete().eq('id', id);
     } catch (e) {
       if (kDebugMode) {
@@ -99,13 +81,11 @@ class SupabaseService {
 
   Future<List<CompanyModel>> getCompanies() async {
     try {
-      // 1. Fetch companies with deals count (Keep this as it was working)
       final companiesData = await _client
           .from('companies')
           .select('*, deals(count), company_branches(*)')
           .order('created_at', ascending: false);
 
-      // 2. Fetch all categories to map names manually (Safest approach due to DB FK issues)
       final categoriesData = await _client
           .from('categories')
           .select('id, name');
@@ -120,7 +100,6 @@ class SupabaseService {
       final companies = rawList.map((item) {
         final Map<String, dynamic> json = Map<String, dynamic>.from(item);
 
-        // Map Deal Count
         if (json['deals'] != null && json['deals'] is List) {
           final dealsList = json['deals'] as List;
           json['deal_count'] = dealsList.isNotEmpty
@@ -128,7 +107,6 @@ class SupabaseService {
               : 0;
         }
 
-        // 3. Resolve Primary Category Name manually
         final primaryId = json['primary_category_id'] as int?;
         if (primaryId != null && categoryMap.containsKey(primaryId)) {
           json['category_name'] = categoryMap[primaryId];
@@ -141,6 +119,40 @@ class SupabaseService {
     } catch (e) {
       if (kDebugMode) {
         print('❌ Error getting companies: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<List<CompanyModel>> getCompaniesWithMapDeals() async {
+    try {
+      final data = await _client
+          .from('companies')
+          .select('*, deals!inner(show_in_map), company_branches(*)')
+          .eq('deals.show_in_map', true);
+
+      return (data as List).map((item) => CompanyModel.fromJson(item)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error getCompaniesWithMapDeals: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<List<DealModel>> getNearbyDeals(double lat, double lng) async {
+    try {
+      final data = await _client
+          .from('deals')
+          .select('*, companies!inner(*), categories(name)')
+          .not('companies.lat', 'is', null)
+          .not('companies.lng', 'is', null);
+
+      List<DealModel> deals = (data as List).map((item) => DealModel.fromJson(item)).toList();
+      return deals;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error getNearbyDeals: $e');
       }
       return [];
     }
@@ -225,7 +237,6 @@ class SupabaseService {
     }
   }
 
-  // Top-level function for compute
   List<BannerModel> parseBanners(List<dynamic> data) {
     return data.map((item) => BannerModel.fromJson(item)).toList();
   }
@@ -236,7 +247,6 @@ class SupabaseService {
           .from('banners')
           .select()
           .order('created_at', ascending: false);
-      // Parse directly without compute - data is already List<dynamic>
       return (data as List)
           .map((item) => BannerModel.fromJson(item as Map<String, dynamic>))
           .toList();
@@ -281,35 +291,16 @@ class SupabaseService {
     }
   }
 
-  // notifications functions
-
-  // 1) جلب كل إشعارات المستخدم الحالي (Inbox)
   Future<List<NotificationModel>> getNotifications() async {
     try {
       final userId = _client.auth.currentUser?.id;
-      if (userId == null) {
-        if (kDebugMode) {
-          print('⚠️ getNotifications: No authenticated user - returning empty');
-        }
-        return [];
-      }
-
-      if (kDebugMode) {
-        print('🔔 getNotifications: Fetching for user $userId');
-      }
+      if (userId == null) return [];
 
       final data = await _client
           .from('notifications')
           .select('*')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
-
-      if (kDebugMode) {
-        print('🔔 getNotifications: Got ${(data as List).length} notifications from Supabase');
-        if ((data as List).isNotEmpty) {
-          print('🔔 First notification: ${data.first}');
-        }
-      }
 
       return (data as List)
           .map(
@@ -324,7 +315,6 @@ class SupabaseService {
     }
   }
 
-  // 2) جعل كل إشعارات المستخدم الحالي كمقروءة
   Future<void> markAllNotificationsAsRead() async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -343,7 +333,6 @@ class SupabaseService {
     }
   }
 
-  // 3) جعل إشعار واحد كمقروء
   Future<void> markNotificationAsRead(int id) async {
     try {
       await _client
@@ -357,7 +346,6 @@ class SupabaseService {
     }
   }
 
-  // 2.5) جلب الإشعارات كـ Stream (Real-time)
   Stream<List<NotificationModel>> getNotificationsStream() {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
@@ -375,61 +363,31 @@ class SupabaseService {
         );
   }
 
-  // مفيدة لو في إشعارات inside-app غير OneSignal
   Future<void> logNotificationForCurrentUser(
     String title,
     String body, {
-    int? dealId, // Optional: link notification to a specific deal
+    int? dealId,
   }) async {
-    // Guard: Silently fail if no authenticated user (defensive - prevents crashes)
     final userId = _client.auth.currentUser?.id;
-    if (userId == null) {
-      if (kDebugMode) {
-        print('⚠️ Cannot save notification: No authenticated user');
-      }
-      return; // Exit early without throwing
-    }
+    if (userId == null) return;
 
     try {
-      if (kDebugMode) {
-        print('🔔 Saving notification: title="$title", body="$body", userId=$userId, dealId=$dealId');
-      }
-
       await _client.from('notifications').insert({
         'user_id': userId,
         'title': title,
         'body': body,
         if (dealId != null) 'deal_id': dealId,
       });
-
-      if (kDebugMode) {
-        print(
-          '✅ Notification saved successfully${dealId != null ? ' (linked to deal $dealId)' : ''}',
-        );
-      }
     } catch (e) {
-      // If FK constraint fails (deal was deleted), retry WITHOUT deal_id
       if (dealId != null && e.toString().contains('23503')) {
-        if (kDebugMode) {
-          print('⚠️ Deal $dealId not found in DB, saving notification without deal link...');
-        }
         try {
           await _client.from('notifications').insert({
             'user_id': userId,
             'title': title,
             'body': body,
           });
-          if (kDebugMode) {
-            print('✅ Notification saved successfully (without deal link)');
-          }
         } catch (retryError) {
-          if (kDebugMode) {
-            print('❌ Retry also failed: $retryError');
-          }
-        }
-      } else {
-        if (kDebugMode) {
-          print('❌ Error saving notification to Supabase: $e');
+          if (kDebugMode) print('❌ Retry failed: $retryError');
         }
       }
     }
@@ -463,7 +421,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
           .order('created_at', ascending: false)
           .limit(5);
@@ -481,7 +439,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
           .eq('is_featured', true)
           .order('created_at', ascending: false);
@@ -502,7 +460,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
           .gte('expires_at', now.toIso8601String())
           .lte('expires_at', sevenDaysLater.toIso8601String())
@@ -521,14 +479,10 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
-          ) // ✨
+            '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
+          )
           .eq('company_id', companyId)
           .order('created_at', ascending: false);
-
-      if (kDebugMode) {
-        print('getCompanyDeals for companyId $companyId: ${data.length} deals');
-      }
 
       return data.map((item) => DealModel.fromJson(item)).toList();
     } catch (e) {
@@ -544,7 +498,7 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
+            '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
           .eq('id', dealId)
           .single();
@@ -559,23 +513,16 @@ class SupabaseService {
 
   Future<CompanyModel?> getCompanyById(int companyId) async {
     try {
-      // ✅ optimized: single query with join
       final data = await _client
           .from('companies')
           .select('*, deals(count), categories(name)')
           .eq('id', companyId)
           .maybeSingle();
 
-      if (data == null) {
-        if (kDebugMode) {
-          print('Company with id $companyId not found');
-        }
-        return null;
-      }
+      if (data == null) return null;
 
       final json = Map<String, dynamic>.from(data);
 
-      // ✅ Map Deal Count from join
       if (json['deals'] != null && json['deals'] is List) {
         final dealsList = json['deals'] as List;
         json['deal_count'] = dealsList.isNotEmpty
@@ -583,7 +530,6 @@ class SupabaseService {
             : 0;
       }
 
-      // ✅ Map Category Name from join
       if (json['categories'] != null) {
         if (json['categories'] is List &&
             (json['categories'] as List).isNotEmpty) {
@@ -602,24 +548,15 @@ class SupabaseService {
     }
   }
 
-  // ================== Categories =========================
-
-  // جلب كل الفئات
   Future<List<CategoryModel>> getCategories() async {
     try {
       final data = await _client
           .from('categories')
           .select()
           .order('name', ascending: true);
-
-      if (kDebugMode) {
-        print('📊 Raw Categories Data: $data');
-      }
-
-      final categories = data
+      return data
           .map((item) => CategoryModel.fromJson(item))
           .toList();
-      return categories;
     } catch (e) {
       if (kDebugMode) {
         print('Error getting categories: $e');
@@ -627,8 +564,6 @@ class SupabaseService {
       return [];
     }
   }
-
-  // ==================== Admin Categories CRUD ====================
 
   Future<void> addCategory(Map<String, dynamic> categoryData) async {
     try {
@@ -663,16 +598,13 @@ class SupabaseService {
     }
   }
 
-  // ==================== End Admin Categories CRUD ================
-
-  // جلب عروض فئة معينة
   Future<List<DealModel>> getDealsByCategory(int categoryId) async {
     try {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url, is_partner), categories(name)',
-          ) // ✨
+            '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
+          )
           .eq('category_id', categoryId)
           .order('created_at', ascending: false);
 
@@ -686,21 +618,13 @@ class SupabaseService {
     }
   }
 
-  // ================== End Categories ======================
-
-  // ==================== Favorite Deals ====================
-  // ==================== Favorite Deals ====================
   Future<List<DealModel>> getFavoriteDeals() async {
     try {
       final userId = _client.auth.currentUser?.id;
       if (userId == null) return [];
 
-      // Use deep select to fetch deals directly through the foreign key
-      // 'deals!inner' ensures we only get rows where the deal still exists
       final data = await _client
-          .from(
-            'favorites_deals',
-          ) // assuming FK name is 'deal_id' -> relation 'deals'
+          .from('favorites_deals')
           .select('deals!inner(*, companies(*), categories(name))')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
@@ -715,7 +639,6 @@ class SupabaseService {
     }
   }
 
-  /// هل العرض ده في المفضّلة للمستخدم الحالي؟
   Future<bool> isDealFavorite(int dealId) async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -735,7 +658,6 @@ class SupabaseService {
     }
   }
 
-  /// إضافة عرض للمفضّلة
   Future<bool> addDealToFavorites(int dealId) async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -745,8 +667,6 @@ class SupabaseService {
         'user_id': userId,
         'deal_id': dealId,
       });
-
-      debugPrint('✅ Deal $dealId added to favorites');
       return true;
     } catch (e) {
       debugPrint('❌ Error adding deal to favorites: $e');
@@ -754,7 +674,6 @@ class SupabaseService {
     }
   }
 
-  /// حذف عرض من المفضّلة
   Future<bool> removeDealFromFavorites(int dealId) async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -765,8 +684,6 @@ class SupabaseService {
           .delete()
           .eq('user_id', userId)
           .eq('deal_id', dealId);
-
-      debugPrint('✅ Deal $dealId removed from favorites');
       return true;
     } catch (e) {
       debugPrint('❌ Error removing deal from favorites: $e');
@@ -774,11 +691,9 @@ class SupabaseService {
     }
   }
 
-  /// Toggle (لو مضاف يشيله، لو مش مضاف يضيفه)
   Future<bool> toggleDealFavorite(int dealId) async {
     try {
       final isFav = await isDealFavorite(dealId);
-
       if (isFav) {
         return await removeDealFromFavorites(dealId);
       } else {
@@ -790,7 +705,6 @@ class SupabaseService {
     }
   }
 
-  /// جلب كل مفضّلات المستخدم (اختياري لشاشة المفضّلات)
   Future<List<int>> getFavoriteDealIds() async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -808,8 +722,6 @@ class SupabaseService {
     }
   }
 
-  // ==================== Following Companies ====================
-  // هل المستخدم الحالي متابع الشركة؟
   Future<bool> isCompanyFollowed(int companyId) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return false;
@@ -824,14 +736,11 @@ class SupabaseService {
 
       return data != null;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error isCompanyFollowed: $e');
-      }
+      if (kDebugMode) print('Error isCompanyFollowed: $e');
       return false;
     }
   }
 
-  // تبديل حالة المتابعة
   Future<bool> toggleCompanyFollow(int companyId) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return false;
@@ -855,9 +764,7 @@ class SupabaseService {
         return true;
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error toggleCompanyFollow: $e');
-      }
+      if (kDebugMode) print('Error toggleCompanyFollow: $e');
       return await isCompanyFollowed(companyId);
     }
   }
@@ -866,11 +773,6 @@ class SupabaseService {
     try {
       final userId = _client.auth.currentUser?.id;
       if (userId == null) return [];
-
-      // Deep select: Fetch companies via 'following' table
-      // relationships: following -> companies (FK: company_id)
-      // companies -> deals (for count)
-      // companies -> categories (for category name) - assuming FK exists
 
       final data = await _client
           .from('following')
@@ -887,8 +789,6 @@ class SupabaseService {
       return (data as List).map((row) {
         final companyJson = row['companies'] as Map<String, dynamic>;
 
-        // Handle Deal Count
-        // Supabase returns {count: X} or [{count: X}]
         if (companyJson['deals'] != null) {
           final dealsData = companyJson['deals'];
           if (dealsData is List && dealsData.isNotEmpty) {
@@ -900,8 +800,6 @@ class SupabaseService {
           }
         }
 
-        // Handle Category Name
-        // Supabase returns {name: "Foo"} or null
         if (companyJson['categories'] != null) {
           final catData = companyJson['categories'];
           if (catData is Map) {
@@ -912,14 +810,11 @@ class SupabaseService {
         return CompanyModel.fromJson(companyJson);
       }).toList();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error getFollowedCompanies: $e');
-      }
+      if (kDebugMode) print('Error getFollowedCompanies: $e');
       rethrow;
     }
   }
 
-  // IDs الشركات اللي المستخدم متابعها (لو حبيت تستخدمها في لستة)
   Future<Set<int>> getFollowedCompanyIds() async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return <int>{};
@@ -932,18 +827,11 @@ class SupabaseService {
 
       return (data as List).map((row) => row['company_id'] as int).toSet();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error getFollowedCompanyIds: $e');
-      }
+      if (kDebugMode) print('Error getFollowedCompanyIds: $e');
       return <int>{};
     }
   }
 
-  // ==================== End Following Companies ====================
-
-  // ==================== Reviews ====================
-
-  // جلب مراجعات شركة
   Future<List<ReviewModel>> getCompanyReviews(int companyId) async {
     try {
       final data = await _client
@@ -962,7 +850,6 @@ class SupabaseService {
     }
   }
 
-  // إضافة/تعديل مراجعة
   Future<ReviewModel> upsertReview({
     required int companyId,
     required int rating,
@@ -994,7 +881,6 @@ class SupabaseService {
     }
   }
 
-  // حذف مراجعة
   Future<void> deleteReview(int companyId) async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -1011,7 +897,6 @@ class SupabaseService {
     }
   }
 
-  // التحقق من وجود مراجعة للمستخدم
   Future<ReviewModel?> getUserReview(int companyId) async {
     try {
       final userId = _client.auth.currentUser?.id;
@@ -1033,20 +918,16 @@ class SupabaseService {
       return null;
     }
   }
-  // ==================== Admin: Manage Reviews ====================
 
-  /// للإدمن فقط: حذف أي تقييم بالـ ID
   Future<void> deleteReviewById(int reviewId) async {
     try {
       await _client.from('reviews').delete().eq('id', reviewId);
-      debugPrint('✅ Review $reviewId deleted by admin');
     } catch (e) {
       debugPrint('❌ Error admin deleting review: $e');
       rethrow;
     }
   }
 
-  /// للإدمن فقط: تعديل تقييم معين
   Future<void> updateReviewById(
     int reviewId, {
     int? rating,
@@ -1059,15 +940,12 @@ class SupabaseService {
       data['updated_at'] = DateTime.now().toIso8601String();
 
       await _client.from('reviews').update(data).eq('id', reviewId);
-
-      debugPrint('✅ Review $reviewId updated by admin');
     } catch (e) {
       debugPrint('❌ Error admin updating review: $e');
       rethrow;
     }
   }
 
-  /// للإدمن فقط: جلب كل التقييمات مع تفاصيل المستخدم والشركة
   Future<List<Map<String, dynamic>>> getAllReviewsForAdmin() async {
     try {
       final response = await _client
@@ -1086,11 +964,6 @@ class SupabaseService {
     }
   }
 
-  // ==================== End Admin Reviews ====================
-
-  // ==================== End Reviews ====================
-
-  // ==================== Search ======================
   Future<List<DealModel>> searchDeals(String query) async {
     try {
       if (query.trim().isEmpty) return [];
@@ -1098,8 +971,8 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select(
-            '*, companies(name, logo_url, cover_image_url), categories(name)',
-          ) // ✨
+            '*, companies(name, logo_url, cover_image_url, lat, lng), categories(name)',
+          )
           .or('title.ilike.%$query%,description.ilike.%$query%')
           .order('created_at', ascending: false)
           .limit(50);
@@ -1107,93 +980,29 @@ class SupabaseService {
       final deals = data.map((item) => DealModel.fromJson(item)).toList();
       return deals;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error searching deals: $e');
-      }
+      if (kDebugMode) print('Error searching deals: $e');
       return [];
     }
   }
 
-  // ==================== End Search ==================
-  // ==================== Diagnostics ====================
   Future<String> runDiagnostics() async {
     final StringBuffer report = StringBuffer();
     report.writeln('--- Diagnostics Report ---');
-    report.writeln('Timestamp: ${DateTime.now().toIso8601String()}');
-
     final user = _client.auth.currentUser;
-    if (user == null) {
-      report.writeln('❌ Auth Status: Not Authenticated');
-      return report.toString();
-    }
-    report.writeln('✅ Auth Status: Authenticated (${user.id})');
-    report.writeln('Email: ${user.email}');
+    if (user == null) return '❌ Not Authenticated';
 
     try {
-      // Check Favorites Count (Raw)
       final favRows = await _client
           .from('favorites_deals')
           .select('deal_id')
           .eq('user_id', user.id);
-
-      final count = (favRows as List).length;
-      report.writeln('✅ Favorites Table Row Count: $count');
-
-      if (count > 0) {
-        // Check visibility of first deal
-        final firstDealId = favRows.first['deal_id'];
-        report.writeln('🔍 Checking visibility for Deal ID: $firstDealId');
-
-        final dealCheck = await _client
-            .from('deals')
-            .select('id')
-            .eq('id', firstDealId)
-            .maybeSingle();
-
-        if (dealCheck != null) {
-          report.writeln('✅ Deal $firstDealId is VISIBLE via standard select.');
-        } else {
-          report.writeln(
-            '❌ Deal $firstDealId is NOT VISIBLE (RLS or Deleted).',
-          );
-        }
-      }
-
-      // Check Following Count
-      final followRows = await _client
-          .from('following')
-          .select('id')
-          .eq('user_id', user.id);
-
-      report.writeln(
-        '✅ Following Table Row Count: ${(followRows as List).length}',
-      );
-
-      // ---------------------------------------------------------
-      // TEST MAIN QUERY
-      report.writeln('🔍 Testing getFavoriteDeals() query...');
-      try {
-        final deals = await getFavoriteDeals();
-        report.writeln('✅ getFavoriteDeals returned: ${deals.length} items');
-        if (deals.isNotEmpty) {
-          report.writeln('   First Item: ${deals.first.title}');
-        }
-      } catch (e) {
-        report.writeln('❌ getFavoriteDeals FAILED:');
-        report.writeln('   $e');
-      }
-      // ---------------------------------------------------------
+      report.writeln('✅ Favorites count: ${(favRows as List).length}');
     } catch (e) {
-      report.writeln('❌ Error running diagnostics: $e');
+      report.writeln('❌ Error: $e');
     }
-
-    report.writeln('--------------------------');
     return report.toString();
   }
 
-  // ==================== App Settings (Social Links) ====================
-
-  /// جلب كل إعدادات التطبيق من جدول app_settings
   Future<Map<String, String>> getAppSettings() async {
     try {
       final data = await _client.from('app_settings').select('key, value');
@@ -1207,7 +1016,6 @@ class SupabaseService {
     }
   }
 
-  /// تحديث إعداد واحد في جدول app_settings
   Future<void> updateAppSetting(String key, String value) async {
     try {
       await _client.from('app_settings').upsert({
@@ -1219,6 +1027,4 @@ class SupabaseService {
       rethrow;
     }
   }
-
-  // ==================== End App Settings ====================
 }

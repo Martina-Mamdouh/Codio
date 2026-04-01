@@ -15,12 +15,17 @@ class DealModel {
   final DateTime startsAt;
   final String publishLocation;
   final bool isFeatured;
+  final bool showInMap; // ✅ New Field
   final String discountValue;
   final bool isForStudents;
   final String? companyName;
   final String? companyLogo;
   final bool companyIsPartner; // ✅ Partner Mark
   final String? linkUrl;
+  
+  // ✅ New Fields for distance calculation
+  final double? companyLat;
+  final double? companyLng;
 
   // ✨ الحقول الجديدة
   final int? categoryId;
@@ -58,11 +63,14 @@ class DealModel {
     required this.publishLocation,
     this.companyLogo,
     this.isFeatured = false,
+    this.showInMap = false,
     this.discountValue = '',
     this.isForStudents = false,
     this.companyName,
     this.companyIsPartner = false, // ✅ Partner Mark
     this.linkUrl,
+    this.companyLat,
+    this.companyLng,
     this.categoryId,
     this.categoryName,
     this.successRate,
@@ -74,6 +82,8 @@ class DealModel {
 
   factory DealModel.fromJson(Map<String, dynamic> json) {
     try {
+      final companyData = json['companies'];
+      
       return DealModel(
         id: (json['id'] as num?)?.toInt() ?? 0,
         title: json['title'] ?? 'No Title',
@@ -90,35 +100,48 @@ class DealModel {
         startsAt: DateTime.tryParse(json['starts_at'] ?? '') ?? DateTime.now(),
         publishLocation: json['publish_location'] ?? 'home',
         isFeatured: json['is_featured'] ?? false,
+        showInMap: json['show_in_map'] ?? false,
         discountValue: json['discount_value'] ?? '',
         isForStudents: json['is_for_students'] ?? false,
-        companyName: json['companies'] != null
-            ? (json['companies'] is List
-                  ? (json['companies'] as List).isNotEmpty
-                        ? (json['companies'] as List).first['name']
+        companyName: companyData != null
+            ? (companyData is List
+                  ? (companyData as List).isNotEmpty
+                        ? (companyData as List).first['name']
                         : null
-                  : json['companies']['name'])
+                  : companyData['name'])
             : null,
-        companyLogo: json['companies'] != null
-            ? (json['companies'] is List
-                  ? (json['companies'] as List).isNotEmpty
+        companyLogo: companyData != null
+            ? (companyData is List
+                  ? (companyData as List).isNotEmpty
                         ? UrlUtils.constructFullUrl(
-                            (json['companies'] as List).first['logo_url']
+                            (companyData as List).first['logo_url']
                                 as String?,
                           )
                         : null
                   : UrlUtils.constructFullUrl(
-                      json['companies']['logo_url'] as String?,
+                      companyData['logo_url'] as String?,
                     ))
             : null,
-        companyIsPartner: json['companies'] != null
-            ? (json['companies'] is List
-                  ? (json['companies'] as List).isNotEmpty
-                        ? (json['companies'] as List).first['is_partner'] == true
+        companyIsPartner: companyData != null
+            ? (companyData is List
+                  ? (companyData as List).isNotEmpty
+                        ? (companyData as List).first['is_partner'] == true
                         : false
-                  : json['companies']['is_partner'] == true)
+                  : companyData['is_partner'] == true)
             : false, // ✅ Partner mark
         linkUrl: json['link_url'] as String?,
+
+        // Extract company location for nearby sorting
+        companyLat: companyData != null
+            ? (companyData is List && companyData.isNotEmpty
+                ? (companyData.first['lat'] as num?)?.toDouble()
+                : (companyData is Map ? (companyData['lat'] as num?)?.toDouble() : null))
+            : null,
+        companyLng: companyData != null
+            ? (companyData is List && companyData.isNotEmpty
+                ? (companyData.first['lng'] as num?)?.toDouble()
+                : (companyData is Map ? (companyData['lng'] as num?)?.toDouble() : null))
+            : null,
 
         // ✨ الحقول الجديدة
         categoryId: (json['category_id'] as num?)?.toInt(),
@@ -156,8 +179,6 @@ class DealModel {
       if (kDebugMode) {
         print('❌ Error parsing DealModel: $e');
         print('JSON INPUT → $json');
-        print('IMAGE URL KEY: ${json['image_url']}');
-        print('COMPANIES KEY: ${json['companies']}');
       }
       rethrow;
     }
@@ -178,12 +199,15 @@ class DealModel {
     DateTime? startsAt,
     String? publishLocation,
     bool? isFeatured,
+    bool? showInMap,
     String? discountValue,
     bool? isForStudents,
     String? companyName,
     String? companyLogo,
     bool? companyIsPartner,
     String? linkUrl,
+    double? companyLat,
+    double? companyLng,
     int? categoryId,
     String? categoryName,
     double? successRate,
@@ -206,12 +230,15 @@ class DealModel {
       startsAt: startsAt ?? this.startsAt,
       publishLocation: publishLocation ?? this.publishLocation,
       isFeatured: isFeatured ?? this.isFeatured,
+      showInMap: showInMap ?? this.showInMap,
       discountValue: discountValue ?? this.discountValue,
       isForStudents: isForStudents ?? this.isForStudents,
       companyName: companyName ?? this.companyName,
       companyLogo: companyLogo ?? this.companyLogo,
       companyIsPartner: companyIsPartner ?? this.companyIsPartner, // ✅
       linkUrl: linkUrl ?? this.linkUrl,
+      companyLat: companyLat ?? this.companyLat,
+      companyLng: companyLng ?? this.companyLng,
       categoryId: categoryId ?? this.categoryId,
       categoryName: categoryName ?? this.categoryName,
       successRate: successRate ?? this.successRate,

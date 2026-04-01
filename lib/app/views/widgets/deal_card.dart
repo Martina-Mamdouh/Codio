@@ -19,6 +19,7 @@ class DealCard extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
   final bool showCategory;
+  final double? distance; // ✅ New: Distance in KM
 
   const DealCard({
     super.key,
@@ -27,6 +28,7 @@ class DealCard extends StatefulWidget {
     this.isFavorite = false,
     this.onFavoriteToggle,
     this.showCategory = false,
+    this.distance, // ✅
   });
 
   @override
@@ -225,27 +227,44 @@ class _DealCardState extends State<DealCard>
                         // Company Name & Partner Badge
                         if (widget.deal.companyName != null)
                           Row(
-                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Flexible(
-                                child: Text(
-                                  widget.deal.companyName!,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: AppTheme.kSubtleText,
-                                    fontSize: isLandscape ? 9.sp : 10.sp,
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        widget.deal.companyName!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: isLandscape ? 9.sp : 10.sp,
+                                        ),
+                                      ),
+                                    ),
+                                    if (widget.deal.companyIsPartner) ...[
+                                      SizedBox(width: 4.w),
+                                      Icon(
+                                        Icons.verified,
+                                        color: AppTheme.kElectricLime,
+                                        size: isLandscape ? 10.sp : 12.sp,
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
-                              if (widget.deal.companyIsPartner) ...[
-                                SizedBox(width: 4.w),
-                                Icon(
-                                  Icons.verified,
-                                  color: AppTheme.kElectricLime,
-                                  size: isLandscape ? 10.sp : 12.sp,
+                              // ✅ Distance Label
+                              if (widget.distance != null)
+                                Text(
+                                  '${widget.distance!.toStringAsFixed(1)} كم',
+                                  style: TextStyle(
+                                    color: AppTheme.kElectricLime,
+                                    fontSize: isLandscape ? 9.sp : 10.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ],
                             ],
                           ),
 

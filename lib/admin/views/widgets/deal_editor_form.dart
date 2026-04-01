@@ -680,7 +680,7 @@ class DealEditorFormState extends State<DealEditorForm> {
 
   Widget _buildCategoryDropdown(DealsManagementViewModel vm) {
     return DropdownButtonFormField<int>(
-      value: _selectedCategoryId,
+      initialValue: _selectedCategoryId,
       decoration: InputDecoration(
         labelText: 'الفئة',
         prefixIcon: const Icon(Icons.category, color: AppTheme.kElectricLime),
@@ -718,7 +718,7 @@ class DealEditorFormState extends State<DealEditorForm> {
 
   Widget _buildDealTypeDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedDealType,
+      initialValue: _selectedDealType,
       decoration: InputDecoration(
         labelText: 'نوع العرض *',
         prefixIcon: const Icon(Icons.category, color: AppTheme.kElectricLime),

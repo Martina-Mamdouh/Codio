@@ -105,16 +105,16 @@ class DealModel {
         isForStudents: json['is_for_students'] ?? false,
         companyName: companyData != null
             ? (companyData is List
-                  ? (companyData as List).isNotEmpty
-                        ? (companyData as List).first['name']
+                  ? companyData.isNotEmpty
+                        ? companyData.first['name']
                         : null
                   : companyData['name'])
             : null,
         companyLogo: companyData != null
             ? (companyData is List
-                  ? (companyData as List).isNotEmpty
+                  ? companyData.isNotEmpty
                         ? UrlUtils.constructFullUrl(
-                            (companyData as List).first['logo_url']
+                            companyData.first['logo_url']
                                 as String?,
                           )
                         : null
@@ -124,8 +124,8 @@ class DealModel {
             : null,
         companyIsPartner: companyData != null
             ? (companyData is List
-                  ? (companyData as List).isNotEmpty
-                        ? (companyData as List).first['is_partner'] == true
+                  ? companyData.isNotEmpty
+                        ? companyData.first['is_partner'] == true
                         : false
                   : companyData['is_partner'] == true)
             : false, // ✅ Partner mark

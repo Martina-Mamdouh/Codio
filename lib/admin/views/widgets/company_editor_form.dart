@@ -514,7 +514,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                       _isPartner = val;
                     });
                   },
-                  activeColor: AppTheme.kElectricLime,
+                  activeThumbColor: AppTheme.kElectricLime,
                 ),
               ),
               const SizedBox(height: 16),

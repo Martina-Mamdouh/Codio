@@ -93,10 +93,10 @@ class _MiniMapWidgetState extends State<MiniMapWidget> {
                       ),
                     // Company markers
                     MarkerLayer(
-                      markers: vm.filteredCompanies
-                          .where((c) => c.lat != 0 && c.lng != 0)
-                          .map((company) {
-                            return Marker(
+                      markers: [
+                        for (final company in vm.filteredCompanies) ...[
+                          if (company.lat != 0 && company.lng != 0)
+                            Marker(
                               point: LatLng(company.lat, company.lng),
                               width: 36,
                               height: 36,
@@ -118,8 +118,7 @@ class _MiniMapWidgetState extends State<MiniMapWidget> {
                                     ],
                                   ),
                                   child: ClipOval(
-                                    child:
-                                        company.logoUrl != null &&
+                                    child: company.logoUrl != null &&
                                             company.logoUrl!.isNotEmpty
                                         ? CachedNetworkImage(
                                             imageUrl: company.logoUrl!,
@@ -131,10 +130,10 @@ class _MiniMapWidgetState extends State<MiniMapWidget> {
                                             ),
                                             errorWidget: (_, __, ___) =>
                                                 const Icon(
-                                                  Icons.store,
-                                                  color: Colors.grey,
-                                                  size: 16,
-                                                ),
+                                              Icons.store,
+                                              color: Colors.grey,
+                                              size: 16,
+                                            ),
                                           )
                                         : const Icon(
                                             Icons.store,
@@ -144,9 +143,34 @@ class _MiniMapWidgetState extends State<MiniMapWidget> {
                                   ),
                                 ),
                               ),
-                            );
-                          })
-                          .toList(),
+                            ),
+                          if (company.branches != null)
+                            for (final branch in company.branches!)
+                              if (branch.lat != 0 && branch.lng != 0)
+                                Marker(
+                                  point: LatLng(branch.lat, branch.lng),
+                                  width: 20,
+                                  height: 20,
+                                  child: GestureDetector(
+                                    onTap: () => vm.selectCompany(company),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                        border: Border.all(
+                                            color: AppTheme.kElectricLime,
+                                            width: 1.5),
+                                      ),
+                                      child: const Icon(
+                                        Icons.location_on,
+                                        color: AppTheme.kElectricLime,
+                                        size: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                        ],
+                      ],
                     ),
                   ],
                 ),

@@ -333,7 +333,7 @@ class CompanyInfoTab extends StatelessWidget {
               _SocialLinks(socialLinks: c.socialLinks!, viewModel: viewModel),
             ],
 
-            // ✅ الفروع
+            // ✅ الفروع مجمعة حسب المدينة
             if ((c.branches ?? []).isNotEmpty) ...[
               const SizedBox(height: 20),
               const Text(
@@ -345,120 +345,169 @@ class CompanyInfoTab extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              ...c.branches!.map(
-                (branch) => Card(
-                  color: AppTheme.kLightBackground,
-                  margin: const EdgeInsets.only(bottom: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // اسم الفرع
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on,
+              ...viewModel.getBranchesGroupedByCity().entries.map((entry) {
+                final cityName = entry.key;
+                final cityBranches = entry.value;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_city,
+                            color: AppTheme.kElectricLime,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            cityName,
+                            style: const TextStyle(
                               color: AppTheme.kElectricLime,
-                              size: 18,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                branch.name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if ((branch.address ?? '').isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.map_outlined,
-                                color: AppTheme.kSubtleText,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  branch.address!,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
                         ],
-                        if ((branch.phone ?? '').isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          GestureDetector(
-                            onTap: () =>
-                                launchUrl(Uri.parse('tel:${branch.phone}')),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.phone_outlined,
-                                  color: AppTheme.kSubtleText,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  branch.phone!,
-                                  style: const TextStyle(
+                      ),
+                    ),
+                    ...cityBranches.map(
+                      (branch) => Card(
+                        color: AppTheme.kLightBackground,
+                        margin: const EdgeInsets.only(bottom: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // اسم الفرع
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on,
                                     color: AppTheme.kElectricLime,
-                                    fontSize: 12,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      branch.name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if ((branch.address ?? '').isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.map_outlined,
+                                      color: AppTheme.kSubtleText,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        branch.address!,
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    if (branch.lat != 0.0 && branch.lng != 0.0)
+                                      TextButton(
+                                        onPressed: () {
+                                          viewModel.incrementMapClicks();
+                                          final uri = Uri.parse(
+                                            'https://www.google.com/maps/search/?api=1&query=${branch.lat},${branch.lng}',
+                                          );
+                                          launchUrl(uri,
+                                              mode: LaunchMode.externalApplication);
+                                        },
+                                        child: const Text(
+                                          'فتح الخريطة',
+                                          style: TextStyle(
+                                            color: AppTheme.kElectricLime,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                              if ((branch.phone ?? '').isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                GestureDetector(
+                                  onTap: () =>
+                                      launchUrl(Uri.parse('tel:${branch.phone}')),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.phone_outlined,
+                                        color: AppTheme.kSubtleText,
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        branch.phone!,
+                                        style: const TextStyle(
+                                          color: AppTheme.kElectricLime,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                        ],
-                        if ((branch.workingHours ?? '').isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.access_time,
-                                color: AppTheme.kSubtleText,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                branch.workingHours!,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
+                              if ((branch.workingHours ?? '').isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.access_time,
+                                      color: AppTheme.kSubtleText,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      branch.workingHours!,
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
+                              ],
+                              // مواقع التواصل الاجتماعي للفرع
+                              if (branch.socialLinks != null &&
+                                  branch.socialLinks!.values.any(
+                                    (v) => (v as String? ?? '').isNotEmpty,
+                                  )) ...[
+                                const SizedBox(height: 10),
+                                const Divider(color: Colors.white10),
+                                const SizedBox(height: 6),
+                                _BranchSocialLinks(socialLinks: branch.socialLinks!),
+                              ],
                             ],
                           ),
-                        ],
-                        // مواقع التواصل الاجتماعي للفرع
-                        if (branch.socialLinks != null &&
-                            branch.socialLinks!.values.any(
-                              (v) => (v as String? ?? '').isNotEmpty,
-                            )) ...[
-                          const SizedBox(height: 10),
-                          const Divider(color: Colors.white10),
-                          const SizedBox(height: 6),
-                          _BranchSocialLinks(socialLinks: branch.socialLinks!),
-                        ],
-                      ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
+                  ],
+                );
+              }),
             ],
           ],
         ),

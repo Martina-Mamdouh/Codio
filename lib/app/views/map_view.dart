@@ -282,26 +282,87 @@ class _MapViewState extends State<MapView> {
   }
 
   List<Marker> _buildCompanyMarkers(MapViewModel vm) {
-    return vm.filteredCompanies.where((c) => c.lat != 0 && c.lng != 0).map((
-      company,
-    ) {
-      final discount = vm.discountLabelFor(company.id);
-      final isSelected = vm.selectedCompany?.id == company.id;
+    final List<Marker> markers = [];
+    
+    for (final company in vm.filteredCompanies) {
+      // Main company marker
+      if (company.lat != 0 && company.lng != 0) {
+        final discount = vm.discountLabelFor(company.id);
+        final isSelected = vm.selectedCompany?.id == company.id;
 
-      return Marker(
-        point: LatLng(company.lat, company.lng),
-        width: discount.isNotEmpty ? 128 : 56,
-        height: discount.isNotEmpty ? 126 : 56,
-        child: GestureDetector(
-          onTap: () => vm.selectCompany(company),
-          child: _CompanyMarkerWidget(
-            company: company,
-            discount: discount,
-            isSelected: isSelected,
+        markers.add(
+          Marker(
+            point: LatLng(company.lat, company.lng),
+            width: discount.isNotEmpty ? 128 : 56,
+            height: discount.isNotEmpty ? 126 : 56,
+            child: GestureDetector(
+              onTap: () => vm.selectCompany(company),
+              child: _CompanyMarkerWidget(
+                company: company,
+                discount: discount,
+                isSelected: isSelected,
+              ),
+            ),
           ),
-        ),
-      );
-    }).toList();
+        );
+      }
+
+      // Branch markers
+      if (company.branches != null) {
+        for (final branch in company.branches!) {
+          if (branch.lat != 0 && branch.lng != 0) {
+            markers.add(
+              Marker(
+                point: LatLng(branch.lat, branch.lng),
+                width: 140,
+                height: 60,
+                child: GestureDetector(
+                  onTap: () => vm.selectCompany(company),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.kElectricLime,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          branch.name.isNotEmpty ? branch.name : company.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.location_on,
+                        color: AppTheme.kElectricLime,
+                        size: 28.w,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+        }
+      }
+    }
+    
+    return markers;
   }
 }
 

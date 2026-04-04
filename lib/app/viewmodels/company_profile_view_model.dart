@@ -2,8 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/models/company_model.dart';
+import '../../core/models/branch_model.dart'; // ✅ Import BranchModel
 import '../../core/models/deal_model.dart';
-import '../../core/models/category_model.dart'; // ✅ Import CategoryModel
+import '../../core/models/category_model.dart';
+import '../../core/models/city_model.dart'; // ✅ Import CityModel
 import '../../core/services/supabase_service.dart';
 import '../../core/services/analytics_service.dart';
 
@@ -15,6 +17,7 @@ class CompanyProfileViewModel extends ChangeNotifier {
   CompanyModel? company;
   List<DealModel> deals = [];
   List<CategoryModel> allCategories = []; // ✅ قائمة بكل التصنيفات
+  List<CityModel> allCities = []; // ✅ قائمة بكل المدن
 
   bool isLoading = false;
   bool isDealsLoading = false;
@@ -77,6 +80,9 @@ class CompanyProfileViewModel extends ChangeNotifier {
       // Fetch all categories for tags
       allCategories = await _supabaseService.getCategories();
 
+      // Fetch all cities for branch grouping
+      allCities = await _supabaseService.getCities();
+
       if (company == null) {
         errorMessage = 'لم يتم العثور على هذه الشركة';
         return;
@@ -98,8 +104,6 @@ class CompanyProfileViewModel extends ChangeNotifier {
         socialClicks = stats['social_click_count'] ?? 0;
         mapClicks = stats['map_click_count'] ?? 0;
       }
-
-      // ... existing code ...
 
       _subscribeToCompany();
     } catch (e) {
@@ -328,5 +332,31 @@ class CompanyProfileViewModel extends ChangeNotifier {
     }
 
     return matchingCategories.map((cat) => cat.name).toList();
+  }
+
+  // ✅ Helper to group branches by city
+  Map<String, List<BranchModel>> getBranchesGroupedByCity() {
+    if (company == null || company!.branches == null || company!.branches!.isEmpty) {
+      return {};
+    }
+
+    final Map<String, List<BranchModel>> grouped = {};
+    for (var branch in company!.branches!) {
+      String cityName = 'فروع أخرى'; // Default name if no city ID or city not found
+      if (branch.cityId != null) {
+        final city = allCities.firstWhere(
+          (c) => c.id == branch.cityId,
+          orElse: () => CityModel(id: branch.cityId!, nameEn: cityName, nameAr: cityName),
+        );
+        cityName = city.nameAr; // You can change to nameEn depending on language preference, but assuming Arabic
+      }
+
+      if (!grouped.containsKey(cityName)) {
+        grouped[cityName] = [];
+      }
+      grouped[cityName]!.add(branch);
+    }
+
+    return grouped;
   }
 }

@@ -516,7 +516,7 @@ class SupabaseService {
     try {
       final data = await _client
           .from('companies')
-          .select('*, deals(count), categories(name)')
+          .select('*, deals(count), categories(name), company_branches(*)')
           .eq('id', companyId)
           .maybeSingle();
 

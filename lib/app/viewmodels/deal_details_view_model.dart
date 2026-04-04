@@ -4,6 +4,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/models/company_model.dart';
 import '../../core/models/deal_model.dart';
+import '../../core/models/city_model.dart'; // ✅ Import
+
 import '../../core/services/supabase_service.dart';
 import '../../core/services/analytics_service.dart';
 
@@ -13,6 +15,7 @@ class DealDetailsViewModel extends ChangeNotifier {
 
   CompanyModel? company;
   bool isLoadingCompany = false;
+  List<CityModel> allCities = []; // ✅ قائمة بكل المدن
 
   // Counters for interaction tracking (kept for backward compatibility)
   int copyCodeCount = 0;
@@ -42,6 +45,7 @@ class DealDetailsViewModel extends ChangeNotifier {
       // Load all data in parallel
       await Future.wait([
         _supabaseService.getCompanyById(companyId).then((res) => company = res),
+        _supabaseService.getCities().then((res) => allCities = res),
         loadDealStats(dealId),
         loadEmojiFeedbackStats(dealId),
       ]);
@@ -216,5 +220,59 @@ class DealDetailsViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Error sharing deal: $e');
     }
+  }
+
+  // ✅ Helper to group branches by city
+  Map<String, List<Map<String, dynamic>>> getBranchesGroupedByCity() {
+    final Map<String, List<Map<String, dynamic>>> grouped = {};
+    
+    // Add Main Company
+    if (company != null) {
+      String mainCityName = 'فروع أخرى'; 
+      if (company!.cityId != null) {
+        final city = allCities.firstWhere(
+          (c) => c.id == company!.cityId,
+          orElse: () => CityModel(id: company!.cityId!, nameEn: mainCityName, nameAr: mainCityName),
+        );
+        mainCityName = city.nameAr; 
+      }
+      
+      grouped[mainCityName] = [
+        {
+          'name': '${company!.name} (الفرع الرئيسي)',
+          'address': company!.address,
+          'phone': company!.phone,
+          'lat': company!.lat,
+          'lng': company!.lng,
+          'isMain': true,
+        }
+      ];
+    }
+    
+    final branches = company?.branches ?? [];
+    for (var b in branches) {
+      String cityName = 'فروع أخرى'; 
+      if (b.cityId != null) {
+        final city = allCities.firstWhere(
+          (c) => c.id == b.cityId,
+          orElse: () => CityModel(id: b.cityId!, nameEn: cityName, nameAr: cityName),
+        );
+        cityName = city.nameAr; 
+      }
+
+      if (!grouped.containsKey(cityName)) {
+        grouped[cityName] = [];
+      }
+      grouped[cityName]!.add({
+        'name': b.name,
+        'address': b.address,
+        'phone': b.phone,
+        'lat': b.lat,
+        'lng': b.lng,
+        'isMain': false,
+      });
+    }
+
+    return grouped;
   }
 }

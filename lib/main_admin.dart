@@ -10,6 +10,7 @@ import 'admin/viewmodels/auth_viewmodel.dart';
 import 'admin/viewmodels/banners_management_viewmodel.dart';
 import 'admin/viewmodels/companies_management_viewmodel.dart';
 import 'admin/viewmodels/deals_management_viewmodel.dart';
+import 'admin/viewmodels/cities_management_viewmodel.dart';
 import 'admin/viewmodels/dashboard_viewmodel.dart';
 import 'core/theme/app_theme.dart';
 
@@ -33,6 +34,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => BannersManagementViewModel()),
         ChangeNotifierProvider(create: (_) => CategoriesManagementViewModel()),
         ChangeNotifierProvider(create: (_) => DashboardViewModel()),
+        ChangeNotifierProvider(create: (_) => CitiesManagementViewModel()),
       ],
       child: const MyApp(),
     ),

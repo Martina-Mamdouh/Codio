@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/banner_model.dart';
 import '../models/category_model.dart';
 import '../models/company_model.dart';
+import '../models/city_model.dart'; // ✅ Added
 import '../models/deal_model.dart';
 import '../models/notification_model.dart';
 import '../models/review_model.dart';
@@ -595,6 +596,56 @@ class SupabaseService {
         print('Error deleting category: $e');
       }
       throw Exception('Failed to delete category. Please try again.');
+    }
+  }
+
+  // ✅ CITIES CRUD
+
+  Future<List<CityModel>> getCities() async {
+    try {
+      final data = await _client
+          .from('cities')
+          .select()
+          .order('name_en', ascending: true);
+      return data.map((item) => CityModel.fromJson(item)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting cities: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<void> addCity(Map<String, dynamic> cityData) async {
+    try {
+      await _client.from('cities').insert(cityData);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding city: $e');
+      }
+      throw Exception('Failed to add city. Please try again.');
+    }
+  }
+
+  Future<void> updateCity(int id, Map<String, dynamic> cityData) async {
+    try {
+      await _client.from('cities').update(cityData).eq('id', id);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating city: $e');
+      }
+      throw Exception('Failed to update city. Please try again.');
+    }
+  }
+
+  Future<void> deleteCity(int id) async {
+    try {
+      await _client.from('cities').delete().eq('id', id);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting city: $e');
+      }
+      throw Exception('Failed to delete city. Please try again.');
     }
   }
 

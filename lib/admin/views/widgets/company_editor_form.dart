@@ -9,6 +9,8 @@ import 'package:kodio_app/core/theme/app_theme.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:kodio_app/core/models/category_model.dart'; // ✅ Added import
+import 'package:kodio_app/admin/viewmodels/cities_management_viewmodel.dart'; // ✅ Added import
+import 'package:kodio_app/core/models/city_model.dart'; // ✅ Added import
 
 class CompanyEditorForm extends StatefulWidget {
   const CompanyEditorForm({super.key});
@@ -59,6 +61,9 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
   // ✅ Partner
   bool _isPartner = false; // ✅
 
+  // ✅ City
+  int? _selectedCityId; // ✅
+
   // ✅ Branches
   List<Map<String, dynamic>> _branches = [];
 
@@ -93,6 +98,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
           company.categoryIds?.toSet() ?? {}; // ✅ Multi-select
       _selectedPrimaryCategoryId = company.primaryCategoryId; // ✅ Primary
       _isPartner = company.isPartner ?? false; // ✅
+      _selectedCityId = company.cityId; // ✅
       _latController.text = company.lat.toString();
       _lngController.text = company.lng.toString();
       _descriptionController.text = company.description ?? '';
@@ -156,6 +162,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
       _selectedCategoryIds = {}; // ✅
       _selectedPrimaryCategoryId = null; // ✅
       _isPartner = false; // ✅
+      _selectedCityId = null; // ✅
       _branches = []; // ✅ Branches
     }
   }
@@ -285,6 +292,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
           ? null
           : _igController.text.trim(), // ✅
       'is_partner': _isPartner, // ✅
+      'city_id': _selectedCityId, // ✅
       'social_links': {
         'facebook': _fbController.text.trim(),
         'whatsapp': _waController.text.trim(),
@@ -537,6 +545,11 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
               if (_selectedCategoryIds.isNotEmpty)
                 _buildPrimaryCategoryDropdown(vm.categories),
               if (_selectedCategoryIds.isNotEmpty) const SizedBox(height: 16),
+              
+              // ✅ المدينة (City)
+              _buildCityDropdown(),
+              const SizedBox(height: 16),
+              
               const SizedBox(height: 16),
 
               // رقم الهاتف
@@ -911,6 +924,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
     final addressCtrl = TextEditingController(text: existing['address'] ?? '');
     final phoneCtrl = TextEditingController(text: existing['phone'] ?? '');
     final descCtrl = TextEditingController(text: existing['description'] ?? '');
+    int? selectedBranchCityId = existing['city_id'] as int?; // ✅ Branch City
     final hoursFromCtrl = TextEditingController();
     final hoursToCtrl = TextEditingController();
 
@@ -1095,6 +1109,13 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                           label: 'العنوان',
                           hint: 'عنوان الفرع التفصيلي',
                           icon: Icons.map_outlined,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // ✅ مدينة الفرع
+                        _buildBranchCityDropdown(
+                          initialValue: selectedBranchCityId,
+                          onChanged: (val) => setDialogState(() => selectedBranchCityId = val),
                         ),
                         const SizedBox(height: 12),
 
@@ -1292,6 +1313,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                               'description': descCtrl.text.trim().isEmpty
                                   ? null
                                   : descCtrl.text.trim(),
+                              'city_id': selectedBranchCityId, // ✅ City Link
                               'working_hours': workingHours,
                               'image_url': pickedImageBytes != null
                                   ? null
@@ -1335,7 +1357,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
             ),
           ),
         ),
-      ),
+      )
     );
   }
 
@@ -1785,6 +1807,119 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
           ),
         ),
       ],
+    );
+  }
+
+  // ✅ Company City Dropdown
+  Widget _buildCityDropdown() {
+    return Consumer<CitiesManagementViewModel>(
+      builder: (context, citiesVm, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'المدينة',
+              style: TextStyle(
+                color: AppTheme.kLightText,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              value: _selectedCityId,
+              items: citiesVm.cities.map((city) {
+                return DropdownMenuItem<int>(
+                  value: city.id,
+                  child: Text(city.nameAr),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCityId = value;
+                });
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: AppTheme.kDarkBackground,
+                prefixIcon: const Icon(Icons.location_city, color: AppTheme.kElectricLime, size: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
+                ),
+              ),
+              dropdownColor: AppTheme.kLightBackground,
+              style: const TextStyle(color: AppTheme.kLightText),
+              hint: Text(
+                'اختر المدينة (اختياري)',
+                style: TextStyle(color: AppTheme.kSubtleText.withAlpha(128)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ✅ Branch City Dropdown
+  Widget _buildBranchCityDropdown({
+    required int? initialValue,
+    required ValueChanged<int?> onChanged,
+  }) {
+    return Consumer<CitiesManagementViewModel>(
+      builder: (context, citiesVm, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'المدينة',
+              style: TextStyle(
+                color: AppTheme.kLightText,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              value: initialValue,
+              items: citiesVm.cities.map((city) {
+                return DropdownMenuItem<int>(
+                  value: city.id,
+                  child: Text(city.nameAr),
+                );
+              }).toList(),
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: AppTheme.kLightBackground,
+                prefixIcon: const Icon(Icons.location_city_outlined, color: AppTheme.kElectricLime, size: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.kElectricLime),
+                ),
+              ),
+              dropdownColor: AppTheme.kDarkBackground,
+              style: const TextStyle(color: AppTheme.kLightText),
+              hint: Text(
+                'اختر المدينة للفرع (اختياري)',
+                style: TextStyle(color: AppTheme.kSubtleText.withAlpha(128)),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

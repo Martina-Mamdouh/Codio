@@ -9,6 +9,7 @@ import 'categories_management_view.dart';
 import 'map_management_view.dart';
 import 'dashboard_home_view.dart';
 import 'social_links_management_view.dart';
+import 'cities_management_view.dart'; // ✅ Added
 
 class AdminDashboardView extends StatefulWidget {
   const AdminDashboardView({super.key});
@@ -37,6 +38,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       BannersManagementView(),
       const SocialLinksManagementView(),
       const MapManagementView(),
+      const CitiesManagementView(), // ✅ Added
     ];
 
     final List<String> pageTitles = [
@@ -48,6 +50,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       'إدارة البانرات',
       'روابط التواصل',
       'إدارة المواقع',
+      'إدارة المدن', // ✅ Added
     ];
 
     return PopScope(
@@ -167,6 +170,11 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                                         icon: Icon(Icons.map_outlined),
                                         selectedIcon: Icon(Icons.map),
                                         label: Text('المواقع'),
+                                      ),
+                                      NavigationRailDestination(
+                                        icon: Icon(Icons.location_city_outlined),
+                                        selectedIcon: Icon(Icons.location_city),
+                                        label: Text('المدن'), // ✅ Added
                                       ),
                                     ],
                                   ),

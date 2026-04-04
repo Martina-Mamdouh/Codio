@@ -10,6 +10,7 @@ class BranchModel {
   final String? imageUrl;
   final String? description;
   final Map<String, dynamic>? socialLinks; // ✅ Social Links
+  final int? cityId; // ✅ City Link
 
   BranchModel({
     this.id,
@@ -23,6 +24,7 @@ class BranchModel {
     this.imageUrl,
     this.description,
     this.socialLinks,
+    this.cityId, // ✅ City Link
   });
 
   factory BranchModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class BranchModel {
       imageUrl: json['image_url'] as String?,
       description: json['description'] as String?,
       socialLinks: json['social_links'] as Map<String, dynamic>?,
+      cityId: (json['city_id'] as num?)?.toInt(), // ✅ City Link
     );
   }
 
@@ -54,6 +57,7 @@ class BranchModel {
       'image_url': imageUrl,
       'description': description,
       'social_links': socialLinks,
+      'city_id': cityId, // ✅ City Link
     };
   }
 
@@ -69,6 +73,7 @@ class BranchModel {
     String? imageUrl,
     String? description,
     Map<String, dynamic>? socialLinks,
+    int? cityId, // ✅ City Link
   }) {
     return BranchModel(
       id: id ?? this.id,
@@ -82,6 +87,7 @@ class BranchModel {
       imageUrl: imageUrl ?? this.imageUrl,
       description: description ?? this.description,
       socialLinks: socialLinks ?? this.socialLinks,
+      cityId: cityId ?? this.cityId, // ✅ City Link
     );
   }
 }

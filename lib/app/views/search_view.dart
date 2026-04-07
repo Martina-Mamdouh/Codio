@@ -29,12 +29,9 @@ class _SearchViewState extends State<SearchView> {
   static const String _recentSearchesKey = 'recent_searches';
 
   final List<String> _popularSearches = [
-    'نايكي',
-    'أمازون',
-    'ستاربكس',
-    'ملابس',
-    'إلكترونيات',
-    'طعام',
+    'سينما',
+    'فانتوم',
+    'طلباتي',
   ];
 
   @override

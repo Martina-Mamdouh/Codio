@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:kodio_app/admin/views/ads_management_view.dart';
 import 'package:kodio_app/admin/views/deals_management_view.dart';
 import 'package:kodio_app/admin/views/reviews_management_view.dart';
 import 'package:kodio_app/core/theme/app_theme.dart';
@@ -39,6 +40,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       const SocialLinksManagementView(),
       const MapManagementView(),
       const CitiesManagementView(), // ✅ Added
+      const AdsManagementView(),
     ];
 
     final List<String> pageTitles = [
@@ -51,6 +53,7 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
       'روابط التواصل',
       'إدارة المواقع',
       'إدارة المدن', // ✅ Added
+      'إدارة الإعلانات',
     ];
 
     return PopScope(
@@ -175,6 +178,11 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                                         icon: Icon(Icons.location_city_outlined),
                                         selectedIcon: Icon(Icons.location_city),
                                         label: Text('المدن'), // ✅ Added
+                                      ),
+                                      NavigationRailDestination(
+                                        icon: Icon(Icons.campaign_outlined),
+                                        selectedIcon: Icon(Icons.campaign),
+                                        label: Text('الإعلانات'),
                                       ),
                                     ],
                                   ),

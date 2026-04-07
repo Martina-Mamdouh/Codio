@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/ad_model.dart';
 import '../models/banner_model.dart';
 import '../models/category_model.dart';
 import '../models/company_model.dart';
@@ -646,6 +647,56 @@ class SupabaseService {
         print('Error deleting city: $e');
       }
       throw Exception('Failed to delete city. Please try again.');
+    }
+  }
+
+  // ✅ ADS CRUD
+
+  Future<List<AdModel>> getAds() async {
+    try {
+      final data = await _client
+          .from('advertisements')
+          .select('*, deals(title)')
+          .order('id', ascending: false);
+      return (data as List).map((item) => AdModel.fromJson(item)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting ads: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<void> addAd(Map<String, dynamic> adData) async {
+    try {
+      await _client.from('advertisements').insert(adData);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding ad: $e');
+      }
+      throw Exception('Failed to add ad. Please try again.');
+    }
+  }
+
+  Future<void> updateAd(int id, Map<String, dynamic> adData) async {
+    try {
+      await _client.from('advertisements').update(adData).eq('id', id);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating ad: $e');
+      }
+      throw Exception('Failed to update ad. Please try again.');
+    }
+  }
+
+  Future<void> deleteAd(int id) async {
+    try {
+      await _client.from('advertisements').delete().eq('id', id);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting ad: $e');
+      }
+      throw Exception('Failed to delete ad. Please try again.');
     }
   }
 

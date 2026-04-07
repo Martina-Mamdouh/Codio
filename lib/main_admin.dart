@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'admin/viewmodels/ads_management_viewmodel.dart';
 import 'admin/viewmodels/categories_management_viewmodel.dart';
 import 'admin/views/widgets/auth_wrapper.dart';
 import 'firebase_options.dart';
@@ -32,6 +33,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => DealsManagementViewModel()),
         ChangeNotifierProvider(create: (_) => CompaniesManagementViewModel()),
         ChangeNotifierProvider(create: (_) => BannersManagementViewModel()),
+        ChangeNotifierProvider(create: (_) => AdsManagementViewModel()),
         ChangeNotifierProvider(create: (_) => CategoriesManagementViewModel()),
         ChangeNotifierProvider(create: (_) => DashboardViewModel()),
         ChangeNotifierProvider(create: (_) => CitiesManagementViewModel()),

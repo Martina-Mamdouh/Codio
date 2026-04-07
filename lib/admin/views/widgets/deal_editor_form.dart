@@ -5,6 +5,7 @@ import 'package:kodio_app/admin/viewmodels/deals_management_viewmodel.dart';
 import 'package:kodio_app/admin/viewmodels/companies_management_viewmodel.dart';
 import 'package:kodio_app/core/models/deal_model.dart';
 import 'package:kodio_app/core/models/company_model.dart';
+import 'package:kodio_app/core/models/branch_model.dart';
 import 'package:kodio_app/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 
@@ -39,6 +40,7 @@ class DealEditorFormState extends State<DealEditorForm> {
   int? _selectedCategoryId;
   int? _selectedCompanyId;
   DealModel? _currentDeal;
+  List<int> _selectedBranchIds = []; // ✅ New Field
 
   // Multi-image support
   List<Uint8List> _additionalImageBytesList = [];
@@ -85,6 +87,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _showInMap = deal.showInMap; // ✅ New Field
       _isForStudents = deal.isForStudents;
       _selectedCategoryId = deal.categoryId;
+      _selectedBranchIds = deal.branchIds != null ? List<int>.from(deal.branchIds!) : [];
       _additionalImageBytesList = [];
       _existingAdditionalImageUrls = List<String>.from(deal.imageUrls);
     } else {
@@ -105,6 +108,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _showInMap = false; // ✅ New Field
       _isForStudents = false;
       _selectedCategoryId = null;
+      _selectedBranchIds = []; // ✅ Clear branches
       _selectedImageBytes = null;
       _additionalImageBytesList = [];
       _existingAdditionalImageUrls = [];
@@ -216,6 +220,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       'show_in_map': _showInMap, // ✅ New Field
       'is_for_students': _isForStudents,
       'category_id': _selectedCategoryId,
+      'branch_ids': _selectedBranchIds, // ✅ New Field
       'link_url': (_selectedDealType == 'both' || _selectedDealType == 'link')
           ? _linkUrlController.text.trim()
           : null,
@@ -313,6 +318,12 @@ class DealEditorFormState extends State<DealEditorForm> {
               // الشركة (Autocomplete)
               _buildCompanyAutocomplete(companiesVM),
               const SizedBox(height: 16),
+
+              // اختيار الفروع (Branches)
+              if (_selectedCompanyId != null) ...[
+                _buildBranchSelection(companiesVM),
+                const SizedBox(height: 16),
+              ],
 
               // الفئة
               _buildCategoryDropdown(vm),
@@ -561,6 +572,7 @@ class DealEditorFormState extends State<DealEditorForm> {
         setState(() {
           _selectedCompanyId = company.id;
           _companyNameController.text = company.name;
+          _selectedBranchIds = []; // Reset on company change
         });
       },
       fieldViewBuilder:
@@ -622,7 +634,10 @@ class DealEditorFormState extends State<DealEditorForm> {
               onChanged: (value) {
                 _companyNameController.text = value;
                 if (value != _companyNameController.text) {
-                  setState(() => _selectedCompanyId = null);
+                  setState(() {
+                    _selectedCompanyId = null;
+                    _selectedBranchIds = [];
+                  });
                 }
               },
             );
@@ -713,6 +728,96 @@ class DealEditorFormState extends State<DealEditorForm> {
         );
       }).toList(),
       onChanged: (value) => setState(() => _selectedCategoryId = value),
+    );
+  }
+
+  Widget _buildBranchSelection(CompaniesManagementViewModel companiesVM) {
+    // Find the currently selected company
+    final selectedCompany = companiesVM.companies.firstWhere(
+      (c) => c.id == _selectedCompanyId,
+      orElse: () => CompanyModel(
+        id: -1,
+        name: '',
+        lat: 0.0,
+        lng: 0.0,
+      ),
+    );
+
+    if (selectedCompany.id == -1) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.kDarkBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.kSubtleText.withAlpha(51)),
+        ),
+        child: const Text(
+          'لا توجد فروع لهذه الشركة',
+          style: TextStyle(color: AppTheme.kSubtleText),
+        ),
+      );
+    }
+
+    // Add main company as branch ID 0
+    final List<BranchModel> allBranches = [
+      BranchModel(
+        id: 0,
+        companyId: selectedCompany.id,
+        name: 'الفرع الرئيسي',
+        lat: selectedCompany.lat,
+        lng: selectedCompany.lng,
+      ),
+      if (selectedCompany.branches != null) ...selectedCompany.branches!,
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.kDarkBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.kSubtleText.withAlpha(51)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'الفروع المتاح بها العرض (اختياري)',
+            style: TextStyle(color: AppTheme.kLightText, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: allBranches.map((BranchModel branch) {
+              final branchId = branch.id ?? -1;
+              if (branchId == -1) return const SizedBox.shrink(); // safety check
+              
+              final isSelected = _selectedBranchIds.contains(branchId);
+              return FilterChip(
+                label: Text(branch.name, style: TextStyle(color: isSelected ? AppTheme.kDarkBackground : AppTheme.kLightText)),
+                selected: isSelected,
+                selectedColor: AppTheme.kElectricLime,
+                backgroundColor: AppTheme.kDarkBackground,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(
+                    color: isSelected ? AppTheme.kElectricLime : AppTheme.kSubtleText.withAlpha(51),
+                  ),
+                ),
+                onSelected: (bool selected) {
+                  setState(() {
+                    if (selected) {
+                      _selectedBranchIds.add(branchId);
+                    } else {
+                      _selectedBranchIds.remove(branchId);
+                    }
+                  });
+                },
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -994,7 +1099,7 @@ class DealEditorFormState extends State<DealEditorForm> {
                     ],
                   ),
                 );
-              }),
+             }),
 
               // Newly picked images (not yet uploaded)
               ..._additionalImageBytesList.asMap().entries.map((entry) {

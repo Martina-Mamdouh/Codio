@@ -10,7 +10,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:kodio_app/core/models/category_model.dart'; // ✅ Added import
 import 'package:kodio_app/admin/viewmodels/cities_management_viewmodel.dart'; // ✅ Added import
-import 'package:kodio_app/core/models/city_model.dart'; // ✅ Added import
 
 class CompanyEditorForm extends StatefulWidget {
   const CompanyEditorForm({super.key});
@@ -1827,7 +1826,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<int>(
-              value: _selectedCityId,
+              initialValue  : _selectedCityId,
               items: citiesVm.cities.map((city) {
                 return DropdownMenuItem<int>(
                   value: city.id,
@@ -1885,7 +1884,7 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<int>(
-              value: initialValue,
+              initialValue: initialValue,
               items: citiesVm.cities.map((city) {
                 return DropdownMenuItem<int>(
                   value: city.id,

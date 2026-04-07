@@ -634,8 +634,8 @@ class _DealDetailsViewState extends State<DealDetailsView> {
         child: CircularProgressIndicator(color: AppTheme.kElectricLime),
       );
     }
-    
-    final groupedBranches = viewModel.getBranchesGroupedByCity();
+
+    final groupedBranches = viewModel.getBranchesGroupedByCity(widget.deal);
 
     if (groupedBranches.isEmpty) {
       return Center(

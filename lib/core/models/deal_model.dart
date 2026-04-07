@@ -39,6 +39,9 @@ class DealModel {
 
   // Multi-image support
   final List<String> imageUrls;
+  
+  // Specific branches
+  final List<int>? branchIds;
 
   /// Returns all images: primary image + additional images
   List<String> get allImages {
@@ -78,6 +81,7 @@ class DealModel {
     this.feedbackNeutral,
     this.feedbackSad,
     this.imageUrls = const [],
+    this.branchIds,
   });
 
   factory DealModel.fromJson(Map<String, dynamic> json) {
@@ -174,6 +178,11 @@ class DealModel {
                 .where((url) => url.isNotEmpty)
                 .toList()
             : [],
+            
+        // Specific branches
+        branchIds: json['branch_ids'] != null
+            ? List<int>.from(json['branch_ids'])
+            : null,
       );
     } catch (e) {
       if (kDebugMode) {
@@ -215,6 +224,7 @@ class DealModel {
     double? feedbackNeutral,
     double? feedbackSad,
     List<String>? imageUrls,
+    List<int>? branchIds,
   }) {
     return DealModel(
       id: id ?? this.id,
@@ -246,6 +256,7 @@ class DealModel {
       feedbackNeutral: feedbackNeutral ?? this.feedbackNeutral,
       feedbackSad: feedbackSad ?? this.feedbackSad,
       imageUrls: imageUrls ?? this.imageUrls,
+      branchIds: branchIds ?? this.branchIds,
     );
   }
 }

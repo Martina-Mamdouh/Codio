@@ -222,21 +222,24 @@ class DealDetailsViewModel extends ChangeNotifier {
     }
   }
 
-  // ✅ Helper to group branches by city
-  Map<String, List<Map<String, dynamic>>> getBranchesGroupedByCity() {
+  // œ… Helper to group branches by city
+  Map<String, List<Map<String, dynamic>>> getBranchesGroupedByCity(DealModel deal) {
     final Map<String, List<Map<String, dynamic>>> grouped = {};
-    
+
+    // Deal branches IDs
+    final List<int>? allowedBranches = deal.branchIds;
+
     // Add Main Company
-    if (company != null) {
-      String mainCityName = 'فروع أخرى'; 
+    if (company != null && (allowedBranches == null || allowedBranches.contains(0) || allowedBranches.isEmpty)) {
+      String mainCityName = 'فرع غير محدد';
       if (company!.cityId != null) {
         final city = allCities.firstWhere(
           (c) => c.id == company!.cityId,
           orElse: () => CityModel(id: company!.cityId!, nameEn: mainCityName, nameAr: mainCityName),
         );
-        mainCityName = city.nameAr; 
+        mainCityName = city.nameAr;
       }
-      
+
       grouped[mainCityName] = [
         {
           'name': '${company!.name} (الفرع الرئيسي)',
@@ -248,16 +251,20 @@ class DealDetailsViewModel extends ChangeNotifier {
         }
       ];
     }
-    
+
     final branches = company?.branches ?? [];
     for (var b in branches) {
-      String cityName = 'فروع أخرى'; 
+      if (allowedBranches != null && allowedBranches.isNotEmpty && !allowedBranches.contains(b.id)) {
+        continue;
+      }
+
+      String cityName = 'فرع غير محدد';
       if (b.cityId != null) {
         final city = allCities.firstWhere(
           (c) => c.id == b.cityId,
           orElse: () => CityModel(id: b.cityId!, nameEn: cityName, nameAr: cityName),
         );
-        cityName = city.nameAr; 
+        cityName = city.nameAr;
       }
 
       if (!grouped.containsKey(cityName)) {

@@ -67,73 +67,75 @@ class HomeView extends StatelessWidget {
                           ),
                         ),
                         // Logo & Notifs
-                        SafeArea(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16.w,
-                              vertical: 8.h,
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/slogan.png',
-                                  width: 120.w,
-                                  height:
-                                      MediaQuery.of(context).orientation ==
-                                          Orientation.landscape
-                                      ? 50.h
-                                      : 60.h,
-                                  fit: BoxFit.contain,
-                                ),
-                                const Spacer(),
-                                Consumer<NotificationsViewModel>(
-                                  builder: (context, notificationsVm, _) {
-                                    return Stack(
-                                      clipBehavior: Clip.none,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.notifications_none,
-                                            color: Colors.black,
-                                            size: 28,
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: SafeArea(
+                            bottom: false,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 8.h,
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/slogan.png',
+                                    width: 120.w,
+                                    height: 50.h,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  const Spacer(),
+                                  Consumer<NotificationsViewModel>(
+                                    builder: (context, notificationsVm, _) {
+                                      return Stack(
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.notifications_none,
+                                              color: Colors.black,
+                                              size: 28,
+                                            ),
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      const NotificationsView(),
+                                                ),
+                                              );
+                                            },
                                           ),
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const NotificationsView(),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                        if (notificationsVm
-                                            .newNotifications
-                                            .isNotEmpty)
-                                          Positioned(
-                                            top: 8,
-                                            right: 8,
-                                            child: Container(
-                                              width: 10.w,
-                                              height: 10.w,
-                                              decoration: BoxDecoration(
-                                                color: Colors.red,
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: const Color(
-                                                    0xFFE5FF17,
+                                          if (notificationsVm
+                                              .newNotifications
+                                              .isNotEmpty)
+                                            Positioned(
+                                              top: 8,
+                                              right: 8,
+                                              child: Container(
+                                                width: 10.w,
+                                                height: 10.w,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red,
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: const Color(
+                                                      0xFFE5FF17,
+                                                    ),
+                                                    width: 1.5,
                                                   ),
-                                                  width: 1.5,
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ],
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

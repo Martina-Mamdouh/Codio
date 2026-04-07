@@ -348,6 +348,16 @@ class MapViewModel extends ChangeNotifier {
 
   String discountLabelFor(int companyId) => _discountLookup[companyId] ?? '';
 
+  bool companyHasDealsAtMainBranch(int companyId) {
+    final companyDeals = dealsForCompany(companyId);
+    return companyDeals.any((d) => d.branchIds == null || d.branchIds!.isEmpty || d.branchIds!.contains(0));
+  }
+
+  bool companyHasDealsAtBranch(int companyId, int branchId) {
+    final companyDeals = dealsForCompany(companyId);
+    return companyDeals.any((d) => d.branchIds == null || d.branchIds!.isEmpty || d.branchIds!.contains(branchId));
+  }
+
   List<DealModel> dealsForCompany(int companyId) {
     final result = deals.where((d) => d.companyId == companyId).toList();
     return result;

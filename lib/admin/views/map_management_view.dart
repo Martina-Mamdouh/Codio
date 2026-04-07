@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/models/company_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/companies_management_viewmodel.dart';
 import '../viewmodels/deals_management_viewmodel.dart';
@@ -34,6 +35,18 @@ class _MapManagementViewState extends State<MapManagementView> {
     }
   }
 
+  LatLng _getCompanyLocation(CompanyModel company) {
+    if (company.lat != 0 && company.lng != 0) {
+      return LatLng(company.lat, company.lng);
+    }
+    if (company.branches != null) {
+      for (var b in company.branches!) {
+        if (b.lat != 0 && b.lng != 0) return LatLng(b.lat, b.lng);
+      }
+    }
+    return _fallbackCenter;
+  }
+
   @override
   Widget build(BuildContext context) {
     final companiesVm = context.watch<CompaniesManagementViewModel>();
@@ -53,7 +66,7 @@ class _MapManagementViewState extends State<MapManagementView> {
         : companiesVm.companies;
 
     final validCompanies = visibleCompanies
-        .where((c) => c.lat != 0 && c.lng != 0)
+        .where((c) => (c.lat != 0 && c.lng != 0) || (c.branches?.any((b) => b.lat != 0 && b.lng != 0) ?? false))
         .toList();
 
     final selectedCompany = companiesVm.selectedCompany;
@@ -62,10 +75,53 @@ class _MapManagementViewState extends State<MapManagementView> {
         : false;
 
     final LatLng center = selectedCompany != null && selectedCompanyIsVisible
-        ? LatLng(selectedCompany.lat, selectedCompany.lng)
+        ? _getCompanyLocation(selectedCompany)
         : validCompanies.isNotEmpty
-        ? LatLng(validCompanies.first.lat, validCompanies.first.lng)
+        ? _getCompanyLocation(validCompanies.first)
         : _fallbackCenter;
+
+    final List<Marker> mapMarkers = [];
+    for (var company in validCompanies) {
+      final isSelected = companiesVm.selectedCompany?.id == company.id;
+      if (company.lat != 0 && company.lng != 0) {
+        mapMarkers.add(
+          Marker(
+            point: LatLng(company.lat, company.lng),
+            width: 44,
+            height: 44,
+            child: GestureDetector(
+              onTap: () => companiesVmRead.selectCompanyForEdit(company),
+              child: Icon(
+                Icons.location_pin,
+                color: isSelected ? AppTheme.kElectricLime : Colors.redAccent,
+                size: isSelected ? 42 : 34,
+              ),
+            ),
+          ),
+        );
+      }
+      if (company.branches != null) {
+        for (var branch in company.branches!) {
+          if (branch.lat != 0 && branch.lng != 0) {
+            mapMarkers.add(
+              Marker(
+                point: LatLng(branch.lat, branch.lng),
+                width: 44,
+                height: 44,
+                child: GestureDetector(
+                  onTap: () => companiesVmRead.selectCompanyForEdit(company),
+                  child: Icon(
+                    Icons.location_pin,
+                    color: isSelected ? AppTheme.kElectricLime : Colors.orangeAccent,
+                    size: isSelected ? 38 : 30,
+                  ),
+                ),
+              ),
+            );
+          }
+        }
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.kDarkBackground,
@@ -119,26 +175,7 @@ class _MapManagementViewState extends State<MapManagementView> {
                                     userAgentPackageName: 'com.kodio.app',
                                   ),
                                   MarkerLayer(
-                                    markers: validCompanies.map((company) {
-                                      final isSelected =
-                                          companiesVm.selectedCompany?.id == company.id;
-                                      return Marker(
-                                        point: LatLng(company.lat, company.lng),
-                                        width: 44,
-                                        height: 44,
-                                        child: GestureDetector(
-                                          onTap: () =>
-                                              companiesVmRead.selectCompanyForEdit(company),
-                                          child: Icon(
-                                            Icons.location_pin,
-                                            color: isSelected
-                                                ? AppTheme.kElectricLime
-                                                : Colors.redAccent,
-                                            size: isSelected ? 42 : 34,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
+                                    markers: mapMarkers,
                                   ),
                                 ],
                               ),

@@ -331,9 +331,13 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
     }
   }
 
-  Future<void> _openLocationPicker() async {
-    final initialLat = double.tryParse(_latController.text) ?? 24.7136;
-    final initialLng = double.tryParse(_lngController.text) ?? 46.6753;
+  Future<void> _openLocationPicker({
+    double? inputLat,
+    double? inputLng,
+    void Function(double lat, double lng)? onSelected,
+  }) async {
+    final initialLat = inputLat ?? double.tryParse(_latController.text) ?? 24.7136;
+    final initialLng = inputLng ?? double.tryParse(_lngController.text) ?? 46.6753;
 
     LatLng selectedPoint = LatLng(initialLat, initialLng);
 
@@ -423,12 +427,16 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              setState(() {
-                                _latController.text = selectedPoint.latitude
-                                    .toStringAsFixed(6);
-                                _lngController.text = selectedPoint.longitude
-                                    .toStringAsFixed(6);
-                              });
+                              if (onSelected != null) {
+                                onSelected(selectedPoint.latitude, selectedPoint.longitude);
+                              } else {
+                                setState(() {
+                                  _latController.text = selectedPoint.latitude
+                                      .toStringAsFixed(6);
+                                  _lngController.text = selectedPoint.longitude
+                                      .toStringAsFixed(6);
+                                });
+                              }
                               Navigator.of(sheetContext).pop();
                             },
                             icon: const Icon(Icons.check),
@@ -1183,19 +1191,16 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
                                 double.tryParse(latCtrl.text) ?? 24.7136;
                             final initialLng =
                                 double.tryParse(lngCtrl.text) ?? 46.6753;
-                            Navigator.of(ctx).pop();
                             await _openLocationPickerForBranch(
                               initialLat: initialLat,
                               initialLng: initialLng,
                               onSelected: (lat, lng) {
-                                latCtrl.text = lat.toStringAsFixed(6);
-                                lngCtrl.text = lng.toStringAsFixed(6);
+                                setDialogState(() {
+                                  latCtrl.text = lat.toStringAsFixed(6);
+                                  lngCtrl.text = lng.toStringAsFixed(6);
+                                });
                               },
                             );
-                            // Re-open dialog with updated values
-                            if (mounted) {
-                              await _showBranchDialog(index: index);
-                            }
                           },
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(
@@ -1416,13 +1421,11 @@ class CompanyEditorFormState extends State<CompanyEditorForm> {
     required double initialLng,
     required void Function(double lat, double lng) onSelected,
   }) async {
-    await _openLocationPicker();
-    // After picker closes, we update the branch coords from the main controllers
-    final lat = double.tryParse(_latController.text);
-    final lng = double.tryParse(_lngController.text);
-    if (lat != null && lng != null) {
-      onSelected(lat, lng);
-    }
+    await _openLocationPicker(
+      inputLat: initialLat,
+      inputLng: initialLng,
+      onSelected: onSelected,
+    );
   }
 
   Widget _buildTextField({

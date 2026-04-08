@@ -214,111 +214,115 @@ class _DealCardState extends State<DealCard>
               ),
               // -------------------- INFO SECTION --------------------
               Expanded(
-                child: ClipRect(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppTheme.spacing8,
-                      vertical: AppTheme.spacing4,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Company Name & Partner Badge
-                        if (widget.deal.companyName != null)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Flexible(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        widget.deal.companyName!,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: AppTheme.kSubtleText,
-                                          fontSize: isLandscape ? 9.sp : 10.sp,
+                child: MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 1.1,
+                  child: ClipRect(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppTheme.spacing8,
+                        vertical: AppTheme.spacing4,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Company Name & Partner Badge
+                          if (widget.deal.companyName != null)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          widget.deal.companyName!,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: AppTheme.kSubtleText,
+                                            fontSize: isLandscape ? 9.sp : 10.sp,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    if (widget.deal.companyIsPartner) ...[
-                                      SizedBox(width: 4.w),
-                                      Icon(
-                                        Icons.verified,
-                                        color: AppTheme.kElectricLime,
-                                        size: isLandscape ? 10.sp : 12.sp,
-                                      ),
+                                      if (widget.deal.companyIsPartner) ...[
+                                        SizedBox(width: 4.w),
+                                        Icon(
+                                          Icons.verified,
+                                          color: AppTheme.kElectricLime,
+                                          size: isLandscape ? 10.sp : 12.sp,
+                                        ),
+                                      ],
                                     ],
-                                  ],
-                                ),
-                              ),
-                              // ✅ Distance Label
-                              if (widget.distance != null)
-                                Text(
-                                  '${widget.distance!.toStringAsFixed(1)} كم',
-                                  style: TextStyle(
-                                    color: AppTheme.kElectricLime,
-                                    fontSize: isLandscape ? 9.sp : 10.sp,
-                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                            ],
-                          ),
-
-                        // Title
-                        Text(
-                          widget.deal.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: AppTheme.kLightText,
-                            fontWeight: FontWeight.bold,
-                            fontSize: isLandscape ? 10.sp : 11.sp,
-                            height: 1.2,
-                          ),
-                        ),
-
-                        const Spacer(),
-
-                        // 1. Category
-                        Text(
-                          (widget.deal.categoryName != null && widget.deal.categoryName!.isNotEmpty)
-                              ? widget.deal.categoryName!
-                              : 'عرض',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: AppTheme.kElectricLime,
-                            fontSize: isLandscape ? 9.sp : 10.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        
-                        // 2. Expiry Date
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.timer_outlined,
-                              size: isLandscape ? 10.w : 11.w,
-                              color: Colors.redAccent,
+                                // ✅ Distance Label
+                                if (widget.distance != null)
+                                  Text(
+                                    '${widget.distance!.toStringAsFixed(1)} كم',
+                                    style: TextStyle(
+                                      color: AppTheme.kElectricLime,
+                                      fontSize: isLandscape ? 9.sp : 10.sp,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                              ],
                             ),
-                            SizedBox(width: AppTheme.spacing4),
-                            Text(
-                              formattedDate,
+
+                          // Title
+                          Flexible(
+                            child: Text(
+                              widget.deal.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: Colors.redAccent,
-                                fontSize: isLandscape ? 9.sp : 10.sp,
-                                fontWeight: FontWeight.w600,
+                                color: AppTheme.kLightText,
+                                fontWeight: FontWeight.bold,
+                                fontSize: isLandscape ? 10.sp : 11.sp,
+                                height: 1.2,
                               ),
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+
+                          SizedBox(height: 4.h),
+
+                          // 1. Category
+                          Text(
+                            (widget.deal.categoryName != null && widget.deal.categoryName!.isNotEmpty)
+                                ? widget.deal.categoryName!
+                                : 'عرض',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: AppTheme.kElectricLime,
+                              fontSize: isLandscape ? 9.sp : 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: 2.h),
+                          
+                          // 2. Expiry Date
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.timer_outlined,
+                                size: isLandscape ? 10.w : 11.w,
+                                color: Colors.redAccent,
+                              ),
+                              SizedBox(width: AppTheme.spacing4),
+                              Text(
+                                formattedDate,
+                                style: TextStyle(
+                                  color: Colors.redAccent,
+                                  fontSize: isLandscape ? 9.sp : 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

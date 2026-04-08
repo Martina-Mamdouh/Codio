@@ -36,6 +36,7 @@ class DealEditorFormState extends State<DealEditorForm> {
   bool _isEditing = false;
   bool _isFeatured = false;
   bool _showInApp = true;
+  bool _showInMap = false;
   bool _isForStudents = false;
   int? _selectedCategoryId;
   int? _selectedCompanyId;
@@ -85,6 +86,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _linkUrlController.text = deal.linkUrl ?? '';
       _isFeatured = deal.isFeatured;
       _showInApp = deal.showInApp;
+      _showInMap = deal.showInMap;
       _isForStudents = deal.isForStudents;
       _selectedCategoryId = deal.categoryId;
       _selectedBranchIds = deal.branchIds != null ? List<int>.from(deal.branchIds!) : [];
@@ -106,6 +108,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _linkUrlController.clear();
       _isFeatured = false;
       _showInApp = true;
+      _showInMap = false;
       _isForStudents = false;
       _selectedCategoryId = null;
       _selectedBranchIds = []; // ✅ Clear branches
@@ -218,6 +221,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       'discount_value': _discountValueController.text.trim(),
       'is_featured': _isFeatured,
       'show_in_app': _showInApp,
+      'show_in_map': _showInMap,
       'is_for_students': _isForStudents,
       'category_id': _selectedCategoryId,
       'branch_ids': _selectedBranchIds, // ✅ New Field
@@ -441,6 +445,15 @@ class DealEditorFormState extends State<DealEditorForm> {
                 onChanged: (val) => setState(() => _showInApp = val),
                 icon: Icons.visibility,
                 activeColor: Colors.blueAccent,
+              ),
+              const SizedBox(height: 12),
+
+              _buildSwitchTile(
+                title: 'إظهار في الخريطة',
+                value: _showInMap,
+                onChanged: (val) => setState(() => _showInMap = val),
+                icon: Icons.map,
+                activeColor: Colors.green,
               ),
               const SizedBox(height: 24),
 

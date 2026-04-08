@@ -16,6 +16,7 @@ class DealModel {
   final String publishLocation;
   final bool isFeatured;
   final bool showInApp; // control visibility inside the app (Home / Deals). Map always shows all deals.
+  final bool showInMap; // control visibility on the map
   final String discountValue;
   final bool isForStudents;
   final String? companyName;
@@ -67,6 +68,7 @@ class DealModel {
     this.companyLogo,
     this.isFeatured = false,
     this.showInApp = true,
+    this.showInMap = false,
     this.discountValue = '',
     this.isForStudents = false,
     this.companyName,
@@ -104,9 +106,11 @@ class DealModel {
         startsAt: DateTime.tryParse(json['starts_at'] ?? '') ?? DateTime.now(),
         publishLocation: json['publish_location'] ?? 'home',
         isFeatured: json['is_featured'] ?? false,
-        // New unified flag: show_in_app. For backwards compatibility, fall back to
-        // old show_in_map if present (map-flag will be interpreted as app visibility).
+        // New flags: show_in_app and show_in_map.
+        // For backward compatibility: if show_in_app is missing but show_in_map exists,
+        // treat show_in_map as both map visibility and (fallback) app visibility.
         showInApp: json['show_in_app'] ?? json['show_in_map'] ?? true,
+        showInMap: json['show_in_map'] ?? false,
         discountValue: json['discount_value'] ?? '',
         isForStudents: json['is_for_students'] ?? false,
         companyName: companyData != null
@@ -245,6 +249,7 @@ class DealModel {
       isFeatured: isFeatured ?? this.isFeatured,
       // keep showInMap parameter to avoid breaking callers but prefer showInApp
       showInApp: showInApp ?? showInMap ?? this.showInApp,
+      showInMap: showInMap ?? this.showInMap,
       discountValue: discountValue ?? this.discountValue,
       isForStudents: isForStudents ?? this.isForStudents,
       companyName: companyName ?? this.companyName,

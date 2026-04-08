@@ -88,52 +88,58 @@ class HomeView extends StatelessWidget {
                                     fit: BoxFit.contain,
                                   ),
                                   const Spacer(),
-                                  Consumer<NotificationsViewModel>(
-                                    builder: (context, notificationsVm, _) {
-                                      return Stack(
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.notifications_none,
-                                              color: Colors.black,
-                                              size: 28,
-                                            ),
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      const NotificationsView(),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                          if (notificationsVm
-                                              .newNotifications
-                                              .isNotEmpty)
-                                            Positioned(
-                                              top: 8,
-                                              right: 8,
-                                              child: Container(
-                                                width: 10.w,
-                                                height: 10.w,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red,
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(
-                                                    color: const Color(
-                                                      0xFFE5FF17,
-                                                    ),
-                                                    width: 1.5,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      );
-                                    },
-                                  ),
+                                   Consumer<NotificationsViewModel>(
+                                     builder: (context, notificationsVm, _) {
+                                       return Stack(
+                                         clipBehavior: Clip.none,
+                                         children: [
+                                           // Make the notification icon use the same
+                                           // circular lime background & sizing used
+                                           // elsewhere for visual consistency.
+                                           Container(
+                                             padding: EdgeInsets.all(AppTheme.spacing12),
+                                             decoration: BoxDecoration(
+                                               color: AppTheme.kElectricLime,
+                                               shape: BoxShape.circle,
+                                               boxShadow: AppTheme.glowLime,
+                                             ),
+                                             child: IconButton(
+                                               icon: Icon(
+                                                 Icons.notifications_none,
+                                                 color: Colors.black,
+                                                 size: AppTheme.iconMd,
+                                               ),
+                                               onPressed: () {
+                                                 Navigator.push(
+                                                   context,
+                                                   MaterialPageRoute(
+                                                     builder: (_) => const NotificationsView(),
+                                                   ),
+                                                 );
+                                               },
+                                             ),
+                                           ),
+                                           if (notificationsVm.newNotifications.isNotEmpty)
+                                             Positioned(
+                                               top: 8,
+                                               right: 8,
+                                               child: Container(
+                                                 width: 10.w,
+                                                 height: 10.w,
+                                                 decoration: BoxDecoration(
+                                                   color: Colors.red,
+                                                   shape: BoxShape.circle,
+                                                   border: Border.all(
+                                                     color: AppTheme.kElectricLime,
+                                                     width: 1.5,
+                                                   ),
+                                                 ),
+                                               ),
+                                             ),
+                                         ],
+                                       );
+                                     },
+                                   ),
                                 ],
                               ),
                             ),

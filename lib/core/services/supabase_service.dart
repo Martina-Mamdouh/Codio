@@ -49,6 +49,26 @@ class SupabaseService {
     }
   }
 
+  /// Fetch deals intended for display on the map.
+  /// By default returns only deals where `show_in_map = true`.
+  Future<List<DealModel>> getMapDeals({bool onlyVisibleMap = true}) async {
+    try {
+      final query = _client
+          .from('deals')
+          .select(
+            '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
+          );
+
+      final filtered = onlyVisibleMap ? query.eq('show_in_map', true) : query;
+
+      final data = await filtered.order('created_at', ascending: false);
+      return (data as List).map((item) => DealModel.fromJson(item)).toList();
+    } catch (e) {
+      if (kDebugMode) print('❌ Error getting map deals: $e');
+      return [];
+    }
+  }
+
   Future<void> addDeal(Map<String, dynamic> dealData) async {
     try {
       await _client.from('deals').insert(dealData);
@@ -137,10 +157,11 @@ class SupabaseService {
 
   Future<List<CompanyModel>> getCompaniesWithMapDeals() async {
     try {
+      // Return companies that have at least one deal that should appear on the map
       final data = await _client
           .from('companies')
-          // Return companies that have at least one deal (no longer filter by show_in_map)
-          .select('*, deals!inner(*), company_branches(*)');
+          .select('*, deals!inner(*), company_branches(*)')
+          .eq('deals.show_in_map', true);
 
       return (data as List).map((item) => CompanyModel.fromJson(item)).toList();
     } catch (e) {
@@ -156,6 +177,8 @@ class SupabaseService {
       final data = await _client
           .from('deals')
           .select('*, companies!inner(*), categories(name)')
+          // Only include deals that are intended to appear on the map
+          .eq('show_in_map', true)
           .not('companies.lat', 'is', null)
           .not('companies.lng', 'is', null);
 

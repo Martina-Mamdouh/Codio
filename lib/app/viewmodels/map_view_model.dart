@@ -91,7 +91,8 @@ class MapViewModel extends ChangeNotifier {
     try {
       final results = await Future.wait([
         _supabaseService.getCompaniesWithMapDeals(),
-        _supabaseService.getDeals(),
+        // Map should show all deals regardless of the show_in_app flag
+        _supabaseService.getDeals(onlyVisible: false),
         _supabaseService.getCategories(),
       ]);
 

@@ -50,7 +50,7 @@ class BannersManagementViewModel extends ChangeNotifier {
   // ✨ جلب العروض (اختياري - للمساعدة في عرض أسماء العروض)
   Future<void> fetchDeals() async {
     try {
-      _deals = await _supabaseService.getDeals();
+      _deals = await _supabaseService.getDeals(onlyVisible: false);
       notifyListeners();
     } catch (e) {
       debugPrint('Error fetching deals: $e');

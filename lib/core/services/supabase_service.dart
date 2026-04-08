@@ -17,14 +17,23 @@ List<DealModel> parseDeals(List<dynamic> data) {
 class SupabaseService {
   final _client = Supabase.instance.client;
 
-  Future<List<DealModel>> getDeals() async {
+  /// Fetch deals.
+  ///
+  /// By default this returns only deals that should be visible inside the app
+  /// (rows where `show_in_app = true`). Pass [onlyVisible] = false to return
+  /// all deals (useful for admin panels or the map view which should show all)
+  Future<List<DealModel>> getDeals({bool onlyVisible = true}) async {
     try {
-      final data = await _client
+      final query = _client
           .from('deals')
           .select(
             '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
-          )
-          .order('created_at', ascending: false);
+          );
+
+      // Apply visibility filter only when requested
+      final filtered = onlyVisible ? query.eq('show_in_app', true) : query;
+
+      final data = await filtered.order('created_at', ascending: false);
 
       if (kDebugMode) {
         print('📊 getDeals: ${data.length} raw rows');
@@ -130,8 +139,8 @@ class SupabaseService {
     try {
       final data = await _client
           .from('companies')
-          .select('*, deals!inner(show_in_map), company_branches(*)')
-          .eq('deals.show_in_map', true);
+          // Return companies that have at least one deal (no longer filter by show_in_map)
+          .select('*, deals!inner(*), company_branches(*)');
 
       return (data as List).map((item) => CompanyModel.fromJson(item)).toList();
     } catch (e) {
@@ -425,6 +434,8 @@ class SupabaseService {
           .select(
             '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
+          // Only new deals that should be visible inside the app
+          .eq('show_in_app', true)
           .order('created_at', ascending: false)
           .limit(5);
       return data.map((item) => DealModel.fromJson(item)).toList();
@@ -444,6 +455,8 @@ class SupabaseService {
             '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
           .eq('is_featured', true)
+          // Only featured deals visible inside the app
+          .eq('show_in_app', true)
           .order('created_at', ascending: false);
       return data.map((item) => DealModel.fromJson(item)).toList();
     } catch (e) {
@@ -466,6 +479,8 @@ class SupabaseService {
           )
           .gte('expires_at', now.toIso8601String())
           .lte('expires_at', sevenDaysLater.toIso8601String())
+          // Only expiring deals visible inside the app
+          .eq('show_in_app', true)
           .order('expires_at', ascending: true);
       return data.map((item) => DealModel.fromJson(item)).toList();
     } catch (e) {
@@ -484,6 +499,8 @@ class SupabaseService {
             '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
           .eq('company_id', companyId)
+          // Only company deals that are supposed to be shown inside the app
+          .eq('show_in_app', true)
           .order('created_at', ascending: false);
 
       return data.map((item) => DealModel.fromJson(item)).toList();
@@ -708,6 +725,8 @@ class SupabaseService {
             '*, companies(name, logo_url, cover_image_url, is_partner, lat, lng), categories(name)',
           )
           .eq('category_id', categoryId)
+          // Respect show_in_app flag for category listing
+          .eq('show_in_app', true)
           .order('created_at', ascending: false);
 
       final deals = data.map((item) => DealModel.fromJson(item)).toList();
@@ -731,10 +750,12 @@ class SupabaseService {
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
-      return (data as List).map((row) {
-        final dealData = row['deals'] as Map<String, dynamic>;
-        return DealModel.fromJson(dealData);
-      }).toList();
+      // Map rows -> deal and filter out deals that are hidden in the app
+      return (data as List)
+          .map((row) => row['deals'] as Map<String, dynamic>)
+          .map((dealData) => DealModel.fromJson(dealData))
+          .where((deal) => deal.showInApp)
+          .toList();
     } catch (e) {
       debugPrint('❌ Error getting favorite deals: $e');
       rethrow;
@@ -1076,6 +1097,8 @@ class SupabaseService {
             '*, companies(name, logo_url, cover_image_url, lat, lng), categories(name)',
           )
           .or('title.ilike.%$query%,description.ilike.%$query%')
+          // Only allow searching visible deals
+          .eq('show_in_app', true)
           .order('created_at', ascending: false)
           .limit(50);
 

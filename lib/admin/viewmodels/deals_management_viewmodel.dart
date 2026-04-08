@@ -64,7 +64,7 @@ class DealsManagementViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _deals = await _supabaseService.getDeals();
+      _deals = await _supabaseService.getDeals(onlyVisible: false);
     } catch (e) {
       _errorMessage = 'Failed to load deals. Please try again.';
     } finally {
@@ -110,7 +110,7 @@ class DealsManagementViewModel extends ChangeNotifier {
       dealData['image_urls'] = allAdditionalUrls;
 
       await _supabaseService.addDeal(dealData);
-      _deals = await _supabaseService.getDeals();
+      _deals = await _supabaseService.getDeals(onlyVisible: false);
       hideEditor();
     } catch (e) {
       _errorMessage = e.toString();
@@ -156,7 +156,7 @@ class DealsManagementViewModel extends ChangeNotifier {
       dealData['image_urls'] = allAdditionalUrls;
 
       await _supabaseService.updateDeal(id, dealData);
-      _deals = await _supabaseService.getDeals();
+      _deals = await _supabaseService.getDeals(onlyVisible: false);
       hideEditor();
     } catch (e) {
       _errorMessage = e.toString();
@@ -173,7 +173,7 @@ class DealsManagementViewModel extends ChangeNotifier {
 
     try {
       await _supabaseService.deleteDeal(id);
-      _deals = await _supabaseService.getDeals();
+      _deals = await _supabaseService.getDeals(onlyVisible: false);
       hideEditor();
     } catch (e) {
       _errorMessage = e.toString();

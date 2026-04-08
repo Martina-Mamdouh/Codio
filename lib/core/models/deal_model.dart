@@ -15,7 +15,7 @@ class DealModel {
   final DateTime startsAt;
   final String publishLocation;
   final bool isFeatured;
-  final bool showInMap; // ✅ New Field
+  final bool showInApp; // control visibility inside the app (Home / Deals). Map always shows all deals.
   final String discountValue;
   final bool isForStudents;
   final String? companyName;
@@ -66,7 +66,7 @@ class DealModel {
     required this.publishLocation,
     this.companyLogo,
     this.isFeatured = false,
-    this.showInMap = false,
+    this.showInApp = true,
     this.discountValue = '',
     this.isForStudents = false,
     this.companyName,
@@ -104,7 +104,9 @@ class DealModel {
         startsAt: DateTime.tryParse(json['starts_at'] ?? '') ?? DateTime.now(),
         publishLocation: json['publish_location'] ?? 'home',
         isFeatured: json['is_featured'] ?? false,
-        showInMap: json['show_in_map'] ?? false,
+        // New unified flag: show_in_app. For backwards compatibility, fall back to
+        // old show_in_map if present (map-flag will be interpreted as app visibility).
+        showInApp: json['show_in_app'] ?? json['show_in_map'] ?? true,
         discountValue: json['discount_value'] ?? '',
         isForStudents: json['is_for_students'] ?? false,
         companyName: companyData != null
@@ -209,6 +211,7 @@ class DealModel {
     String? publishLocation,
     bool? isFeatured,
     bool? showInMap,
+    bool? showInApp,
     String? discountValue,
     bool? isForStudents,
     String? companyName,
@@ -240,7 +243,8 @@ class DealModel {
       startsAt: startsAt ?? this.startsAt,
       publishLocation: publishLocation ?? this.publishLocation,
       isFeatured: isFeatured ?? this.isFeatured,
-      showInMap: showInMap ?? this.showInMap,
+      // keep showInMap parameter to avoid breaking callers but prefer showInApp
+      showInApp: showInApp ?? showInMap ?? this.showInApp,
       discountValue: discountValue ?? this.discountValue,
       isForStudents: isForStudents ?? this.isForStudents,
       companyName: companyName ?? this.companyName,

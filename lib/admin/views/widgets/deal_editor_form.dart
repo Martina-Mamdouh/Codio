@@ -35,7 +35,7 @@ class DealEditorFormState extends State<DealEditorForm> {
   String? _existingImageUrl;
   bool _isEditing = false;
   bool _isFeatured = false;
-  bool _showInMap = true;
+  bool _showInApp = true;
   bool _isForStudents = false;
   int? _selectedCategoryId;
   int? _selectedCompanyId;
@@ -84,7 +84,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _discountValueController.text = deal.discountValue;
       _linkUrlController.text = deal.linkUrl ?? '';
       _isFeatured = deal.isFeatured;
-      _showInMap = deal.showInMap; // ✅ New Field
+      _showInApp = deal.showInApp;
       _isForStudents = deal.isForStudents;
       _selectedCategoryId = deal.categoryId;
       _selectedBranchIds = deal.branchIds != null ? List<int>.from(deal.branchIds!) : [];
@@ -105,7 +105,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       _discountValueController.clear();
       _linkUrlController.clear();
       _isFeatured = false;
-      _showInMap = false; // ✅ New Field
+      _showInApp = true;
       _isForStudents = false;
       _selectedCategoryId = null;
       _selectedBranchIds = []; // ✅ Clear branches
@@ -217,7 +217,7 @@ class DealEditorFormState extends State<DealEditorForm> {
       'publish_location': 'home', // Default value since input was removed
       'discount_value': _discountValueController.text.trim(),
       'is_featured': _isFeatured,
-      'show_in_map': _showInMap, // ✅ New Field
+      'show_in_app': _showInApp,
       'is_for_students': _isForStudents,
       'category_id': _selectedCategoryId,
       'branch_ids': _selectedBranchIds, // ✅ New Field
@@ -436,10 +436,10 @@ class DealEditorFormState extends State<DealEditorForm> {
               const SizedBox(height: 12),
 
               _buildSwitchTile(
-                title: 'إظهار في الخريطة',
-                value: _showInMap,
-                onChanged: (val) => setState(() => _showInMap = val),
-                icon: Icons.map,
+                title: 'إظهار في التطبيق',
+                value: _showInApp,
+                onChanged: (val) => setState(() => _showInApp = val),
+                icon: Icons.visibility,
                 activeColor: Colors.blueAccent,
               ),
               const SizedBox(height: 24),

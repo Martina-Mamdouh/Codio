@@ -26,65 +26,79 @@ class YellowScaffold extends StatelessWidget {
       backgroundColor: AppTheme.kDarkBackground, // Global Dark Background
       body: Column(
         children: [
-          // Yellow Header Container (Curved Bottom)
-          Container(
-            width: double.infinity,
+          // Yellow Header (Curved Bottom)
+          SizedBox(
             height: MediaQuery.of(context).orientation == Orientation.landscape
                 ? 160.h
                 : 140.h,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE5FF17),
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(18),
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child:
-                          titleWidget ??
-                          Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 24.sp,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.black,
-                              height: 1.1,
-                            ),
-                          ),
+            child: Stack(
+              children: [
+                // Yellow Background
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE5FF17),
+                    borderRadius: BorderRadius.vertical(
+                      bottom: Radius.circular(18),
                     ),
-
-                    if (actions != null) ...actions!,
-
-                    if (showBackButton) ...[
-                      SizedBox(
-                        width: 8.w,
-                      ), // Spacing before back text/icon if needed
-                      IconButton(
-                        icon: Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          color: Colors.black,
-                          size: 28.sp,
-                        ),
-                        onPressed:
-                            onBackTap ??
-                            () {
-                              if (Navigator.canPop(context)) {
-                                Navigator.pop(context);
-                              } else {
-                                Navigator.of(context).pop();
-                              }
-                            },
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
-              ),
+                // Content (Title, Actions, Back Button) — pinned to top
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child:
+                                titleWidget ??
+                                Text(
+                                  title,
+                                  style: TextStyle(
+                                    fontSize: 24.sp,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black,
+                                    height: 1.1,
+                                  ),
+                                ),
+                          ),
+
+                          if (actions != null) ...actions!,
+
+                          if (showBackButton) ...[
+                            SizedBox(
+                              width: 8.w,
+                            ), // Spacing before back text/icon if needed
+                            IconButton(
+                              icon: Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Colors.black,
+                                size: 28.sp,
+                              ),
+                              onPressed:
+                                  onBackTap ??
+                                  () {
+                                    if (Navigator.canPop(context)) {
+                                      Navigator.pop(context);
+                                    } else {
+                                      Navigator.of(context).pop();
+                                    }
+                                  },
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 

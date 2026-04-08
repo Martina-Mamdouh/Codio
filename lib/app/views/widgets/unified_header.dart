@@ -30,7 +30,7 @@ class UnifiedHeader extends StatelessWidget {
 
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    final double backgroundHeight = isLandscape ? 160.h : 130.h;
+    final double backgroundHeight = isLandscape ? 160.h : 140.h;
     final double totalHeight =
         backgroundHeight + 30.h; // Account for search bar straddle
 

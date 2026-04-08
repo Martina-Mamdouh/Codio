@@ -29,10 +29,13 @@ class YellowScaffold extends StatelessWidget {
           // Yellow Header Container (Curved Bottom)
           Container(
             width: double.infinity,
+            height: MediaQuery.of(context).orientation == Orientation.landscape
+                ? 160.h
+                : 140.h,
             decoration: BoxDecoration(
               color: const Color(0xFFE5FF17),
               borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(30.r),
+                bottom: Radius.circular(18),
               ),
             ),
             child: SafeArea(

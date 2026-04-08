@@ -147,7 +147,11 @@ class HomeView extends StatelessWidget {
                         ),
                         // Search Bar Positioned to straddle
                         Positioned(
-                          bottom: 0, // Match the bottom of the SizedBox
+                          top: (MediaQuery.of(context).orientation ==
+                                      Orientation.landscape
+                                  ? 160.h
+                                  : 140.h) -
+                              25.h,
                           left: 0,
                           right: 0,
                           child: Center(child: _buildSearchBar(context)),

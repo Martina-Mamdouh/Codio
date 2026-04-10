@@ -3,7 +3,7 @@ import 'dart:io';
 
 class StoreService {
   // غيّر هذه القيم لقيم تطبيقك
-  static const String androidPackageName = 'com.yourcompany.kodio';
+  static const String androidPackageName = 'com.codio.app';
   static const String iosAppId = '1234567890';
 
   static Future<void> openStorePage() async {
@@ -11,7 +11,7 @@ class StoreService {
 
     if (Platform.isAndroid) {
       url = Uri.parse(
-        'https://play.google.com/store/apps/details?id=$androidPackageName',
+        'https://play.google.com/store/apps/details?id=$androidPackageName&hl=en',
       );
     } else if (Platform.isIOS) {
       url = Uri.parse('https://apps.apple.com/app/id$iosAppId');

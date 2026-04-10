@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_utils.dart';
 import '../../viewmodels/company_profile_view_model.dart';
 import '../deal_details_view.dart';
 import '../widgets/deal_card.dart';
@@ -53,7 +54,12 @@ class _CompanyDealsTabState extends State<CompanyDealsTab> {
         ),
         itemCount: widget.viewModel.deals.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+          crossAxisCount: ResponsiveUtils.adaptiveCount(
+            availableWidth: MediaQuery.of(context).size.width - 32.w,
+            minTileWidth: ResponsiveUtils.isTablet(context) ? 220 : 170,
+            minCount: 1,
+            maxCount: 4,
+          ),
           childAspectRatio:
               MediaQuery.of(context).orientation == Orientation.portrait
               ? 0.85

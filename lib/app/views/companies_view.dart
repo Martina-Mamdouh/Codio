@@ -3,6 +3,7 @@ import '../main_layout.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../viewmodels/companies_viewmodel.dart';
 import '../viewmodels/map_view_model.dart';
 import 'company_profile_view.dart';
@@ -124,19 +125,16 @@ class _CompaniesViewState extends State<CompaniesView> {
                         bottom: AppTheme.bottomNavGap,
                       ),
                       sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount:
-                              MediaQuery.of(context).size.width < 600
-                              ? 2
-                              : (MediaQuery.of(context).size.width < 900
-                                    ? 3
-                                    : 4),
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: ResponsiveUtils.isTablet(context)
+                              ? 260
+                              : 220,
                           mainAxisSpacing: 12.h,
                           crossAxisSpacing: 12.w,
                           childAspectRatio:
                               MediaQuery.of(context).orientation ==
                                   Orientation.portrait
-                              ? 0.65
+                              ? 0.68
                               : 1.1,
                         ),
                         delegate: SliverChildBuilderDelegate((context, index) {

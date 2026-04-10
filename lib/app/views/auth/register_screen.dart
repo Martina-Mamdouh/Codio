@@ -112,8 +112,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE5FF17), // Custom Yellow
 
-      body: CustomScrollView(
-        slivers: [
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final maxWidth = constraints.maxWidth > 760 ? 560.0 : constraints.maxWidth;
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: CustomScrollView(
+                slivers: [
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.only(
@@ -483,7 +489,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
           ),
-        ],
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

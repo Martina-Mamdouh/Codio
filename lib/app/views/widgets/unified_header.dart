@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../core/utils/responsive_utils.dart';
 import '../../../core/theme/app_theme.dart';
 
 class UnifiedHeader extends StatelessWidget {
@@ -30,9 +31,12 @@ class UnifiedHeader extends StatelessWidget {
 
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
-    final double backgroundHeight = isLandscape ? 160.h : 140.h;
+    final bool isCompactHeight = ResponsiveUtils.isCompactHeight(context);
+    final double backgroundHeight = isLandscape ? 140.h : 128.h;
+    final double effectiveBackgroundHeight =
+        isCompactHeight ? backgroundHeight * 0.92 : backgroundHeight;
     final double totalHeight =
-        backgroundHeight + 30.h; // Account for search bar straddle
+        effectiveBackgroundHeight + 30.h; // Account for search bar straddle
 
     return SizedBox(
       height: totalHeight,
@@ -42,7 +46,7 @@ class UnifiedHeader extends StatelessWidget {
           // Yellow Background
           Container(
             width: double.infinity,
-            height: backgroundHeight,
+            height: effectiveBackgroundHeight,
             decoration: const BoxDecoration(
               color: Color(0xFFE5FF17),
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(18)),
@@ -67,6 +71,8 @@ class UnifiedHeader extends StatelessWidget {
                         children: [
                           Text(
                             title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: isLandscape ? 20.sp : 24.sp,
@@ -77,6 +83,8 @@ class UnifiedHeader extends StatelessWidget {
                           SizedBox(height: 4.h),
                           Text(
                             subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.black.withValues(alpha: 0.7),
                               fontSize: isLandscape ? 11.sp : 13.sp,
@@ -110,60 +118,65 @@ class UnifiedHeader extends StatelessWidget {
           // Search Bar
           Positioned(
             top:
-                backgroundHeight -
+                effectiveBackgroundHeight -
                 (isLandscape ? 20.h : 25.h), // Positioned to straddle
             left: 0,
             right: 0,
             child: Align(
               alignment: Alignment.center,
-              child: Container(
-                width:
-                    MediaQuery.of(context).size.width *
-                    (isLandscape ? 0.92 : 0.88),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 14.w,
-                  vertical: isLandscape ? 6.h : 8.h,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: ResponsiveUtils.maxContentWidth(context) * 0.92,
                 ),
-                decoration: BoxDecoration(
-                  color: AppTheme.kLightBackground,
-                  borderRadius: BorderRadius.circular(14.r),
-                  border: Border.all(color: Colors.white10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.search,
-                      color: AppTheme.kElectricLime,
-                      size: isLandscape ? 20.sp : 24.sp,
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: TextField(
-                        onChanged: onSearchChanged,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isLandscape ? 14.sp : 15.sp,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: searchHint,
-                          hintStyle: TextStyle(
-                            color: Colors.grey[400],
+                child: Container(
+                  width:
+                      MediaQuery.of(context).size.width *
+                      (isLandscape ? 0.92 : 0.88),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: isLandscape ? 6.h : 8.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.kLightBackground,
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(color: Colors.white10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.search,
+                        color: AppTheme.kElectricLime,
+                        size: isLandscape ? 20.sp : 24.sp,
+                      ),
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: TextField(
+                          onChanged: onSearchChanged,
+                          style: TextStyle(
+                            color: Colors.white,
                             fontSize: isLandscape ? 14.sp : 15.sp,
                           ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
+                          decoration: InputDecoration(
+                            hintText: searchHint,
+                            hintStyle: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: isLandscape ? 14.sp : 15.sp,
+                            ),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

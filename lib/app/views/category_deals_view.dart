@@ -6,6 +6,7 @@ import '../../core/models/category_model.dart';
 import '../../core/models/deal_model.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 import 'widgets/deal_card.dart';
 import 'widgets/yellow_scaffold.dart';
@@ -80,8 +81,10 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
                       SliverPadding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         sliver: SliverGrid(
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
+                          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: ResponsiveUtils.isTablet(context)
+                                ? 260
+                                : 220,
                             childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait
                                 ? 0.85
                                 : 0.9,

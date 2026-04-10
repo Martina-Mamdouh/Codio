@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kodio_app/core/models/deal_model.dart';
 import 'package:provider/provider.dart';
 import 'package:kodio_app/core/theme/app_theme.dart';
+import 'package:kodio_app/core/utils/responsive_utils.dart';
 import 'package:kodio_app/app/views/widgets/deal_card.dart';
 
 import '../viewmodels/user_profile_viewmodel.dart';
@@ -57,45 +58,56 @@ class ViewAllDealsScreen extends StatelessWidget {
             )
           : Consumer<UserProfileViewModel>(
               builder: (context, profileVm, _) {
-                return ListView.separated(
+                final crossAxisCount = ResponsiveUtils.adaptiveCount(
+                  availableWidth: MediaQuery.of(context).size.width - 32.w,
+                  minTileWidth: ResponsiveUtils.isTablet(context) ? 220 : 170,
+                  minCount: 1,
+                  maxCount: 4,
+                );
+
+                return GridView.builder(
                   padding: EdgeInsets.all(16.w),
                   itemCount: deals.length,
-                  separatorBuilder: (context, index) => SizedBox(height: 20.h),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 12.w,
+                    mainAxisSpacing: 12.h,
+                    childAspectRatio:
+                        MediaQuery.of(context).orientation == Orientation.portrait
+                        ? 0.85
+                        : 1.0,
+                  ),
                   itemBuilder: (context, index) {
                     final deal = deals[index];
                     final isFav = profileVm.isDealFavorite(deal.id);
 
-                    return SizedBox(
-                      // Properly calculated height based on typical device width to prevent overflow
-                      height: MediaQuery.of(context).orientation == Orientation.portrait ? 310.h : 400.h,
-                      child: DealCard(
-                        deal: deal,
-                        isFavorite: isFav,
-                        showCategory: true,
-                        onTap: () {
-                          debugPrint('Pressed on deal: ${deal.title}');
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DealDetailsView(deal: deal),
+                    return DealCard(
+                      deal: deal,
+                      isFavorite: isFav,
+                      showCategory: true,
+                      onTap: () {
+                        debugPrint('Pressed on deal: ${deal.title}');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DealDetailsView(deal: deal),
+                          ),
+                        );
+                      },
+                      onFavoriteToggle: () async {
+                        final success = await profileVm.toggleFavoriteForDeal(
+                          deal.id,
+                        );
+                        if (!success && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'تعذّر تحديث المفضّلة، حاول مرة أخرى',
+                              ),
                             ),
                           );
-                        },
-                        onFavoriteToggle: () async {
-                          final success = await profileVm.toggleFavoriteForDeal(
-                            deal.id,
-                          );
-                          if (!success && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'تعذّر تحديث المفضّلة، حاول مرة أخرى',
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                      ),
+                        }
+                      },
                     );
                   },
                 );

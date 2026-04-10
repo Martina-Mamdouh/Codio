@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/models/company_model.dart';
-import '../../core/models/deal_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/map_view_model.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
@@ -564,6 +563,13 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
   late ScrollController _scrollController;
   Timer? _carouselTimer;
 
+  double _dealCardWidth(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    if (width >= 1000) return 260;
+    if (width >= 700) return 220;
+    return 170.w;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -600,7 +606,7 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
       
       final currentScroll = _scrollController.offset;
       final maxScroll = _scrollController.position.maxScrollExtent;
-      final step = 170.w + 12.w; // Card width + separator spacing
+      final step = _dealCardWidth(context) + 12.w; // Card width + separator spacing
 
       // If we're near the end, reset back to the start smoothly
       if (currentScroll >= maxScroll - 10) {
@@ -833,10 +839,17 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                 SizedBox(height: 16.h),
 
                 // ─── Action Buttons: Call (left) + Show Directions (right) ───
-                Row(
+                Wrap(
+                  spacing: 10.w,
+                  runSpacing: 10.h,
                   children: [
                     // Show Directions button (appears RIGHT in RTL)
-                    Expanded(
+                    SizedBox(
+                      width: (hasPhone
+                          ? MediaQuery.sizeOf(context).width - 14.w * 2 - 52.w - 10.w
+                          : MediaQuery.sizeOf(context).width - 14.w * 2)
+                          .clamp(140.0, 520.0)
+                          .toDouble(),
                       child: ElevatedButton.icon(
                         onPressed: () async {
                           // Prefer the first branch if available, otherwise use main company location
@@ -898,9 +911,9 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                         ),
                       ),
                     ),
-                    SizedBox(width: 10.w),
                     // Call button (fixed size to match directions button height)
-                    SizedBox(
+                    if (hasPhone)
+                      SizedBox(
                       width: 52.w,
                       height: 48.h,
                       child: ElevatedButton(
@@ -990,7 +1003,7 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                             final deal = companyDeals[index];
                             final isFav = profileVm.isDealFavorite(deal.id);
                             return SizedBox(
-                              width: 170.w, // Fixed natural width constraint (prevents card from expanding weirdly)
+                              width: _dealCardWidth(context),
                               child: Padding(
                                 padding: EdgeInsets.symmetric(vertical: 4.h), // Removed horizontal padding, replaced by separator
                                 child: DealCard(

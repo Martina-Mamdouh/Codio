@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/models/deal_model.dart';
 import '../../core/services/supabase_service.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
 import '../viewmodels/home_view_model.dart';
 import 'widgets/deal_card.dart';
@@ -363,8 +364,6 @@ class _SearchViewState extends State<SearchView> {
     }
 
     final homeVm = context.read<HomeViewModel>();
-    final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width < 340 ? 1 : 2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,7 +387,12 @@ class _SearchViewState extends State<SearchView> {
                     horizontal: 16.w,
                   ),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
+                    crossAxisCount: ResponsiveUtils.adaptiveCount(
+                      availableWidth: MediaQuery.of(context).size.width - 32.w,
+                      minTileWidth: ResponsiveUtils.isTablet(context) ? 220 : 170,
+                      minCount: 1,
+                      maxCount: 4,
+                    ),
                     mainAxisSpacing: 16.h,
                     crossAxisSpacing: 16.w,
                     childAspectRatio: MediaQuery.of(context).orientation == Orientation.portrait 

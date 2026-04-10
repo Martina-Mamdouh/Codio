@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../widgets/yellow_scaffold.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/responsive_utils.dart';
 import '../../viewmodels/user_profile_viewmodel.dart';
 import '../../views/widgets/deal_card.dart';
 import '../deal_details_view.dart';
@@ -87,7 +88,12 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
               padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
               itemCount: profileVm.favoriteDeals.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+                crossAxisCount: ResponsiveUtils.adaptiveCount(
+                  availableWidth: MediaQuery.of(context).size.width - 32.w,
+                  minTileWidth: ResponsiveUtils.isTablet(context) ? 220 : 170,
+                  minCount: 1,
+                  maxCount: 4,
+                ),
                 childAspectRatio:
                     MediaQuery.of(context).orientation == Orientation.portrait
                     ? 0.85

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../core/utils/responsive_utils.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class YellowScaffold extends StatelessWidget {
@@ -22,15 +23,19 @@ class YellowScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final isCompactHeight = ResponsiveUtils.isCompactHeight(context);
+    final baseHeight = isLandscape ? 140.h : 128.h;
+    final headerHeight = isCompactHeight ? baseHeight * 0.92 : baseHeight;
+
     return Scaffold(
       backgroundColor: AppTheme.kDarkBackground, // Global Dark Background
       body: Column(
         children: [
           // Yellow Header (Curved Bottom)
           SizedBox(
-            height: MediaQuery.of(context).orientation == Orientation.landscape
-                ? 160.h
-                : 140.h,
+            height: headerHeight,
             child: Stack(
               children: [
                 // Yellow Background
@@ -61,6 +66,8 @@ class YellowScaffold extends StatelessWidget {
                                 titleWidget ??
                                 Text(
                                   title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 24.sp,
                                     fontWeight: FontWeight.w900,
@@ -103,7 +110,17 @@ class YellowScaffold extends StatelessWidget {
           ),
 
           // Body Content (Directly on Dark Background)
-          Expanded(child: body),
+          Expanded(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: ResponsiveUtils.maxContentWidth(context),
+                ),
+                child: body,
+              ),
+            ),
+          ),
         ],
       ),
     );

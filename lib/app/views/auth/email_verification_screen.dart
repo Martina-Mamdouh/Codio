@@ -111,11 +111,17 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(24.w),
-          child: Form(
-            key: _formKey,
-            child: Column(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxWidth = constraints.maxWidth > 700 ? 520.0 : constraints.maxWidth;
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(24.w),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: 20.h),
@@ -234,8 +240,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   ),
                 ),
               ],
-            ),
-          ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

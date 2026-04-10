@@ -3,6 +3,7 @@ import '../main_layout.dart';
 import 'widgets/company_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/responsive_utils.dart';
 import 'company_profile_view.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
@@ -75,9 +76,6 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
                 );
               }
 
-              final width = MediaQuery.of(context).size.width;
-              final crossAxisCount = width < 340 ? 1 : 2;
-
               return RefreshIndicator(
                 onRefresh: () async {
                   await profileVm.loadProfileData();
@@ -97,14 +95,16 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
                         bottom: AppTheme.bottomNavGap,
                       ),
                       sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: ResponsiveUtils.isTablet(context)
+                              ? 260
+                              : 220,
                           mainAxisSpacing: 12.h,
                           crossAxisSpacing: 12.w,
                           childAspectRatio:
                               MediaQuery.of(context).orientation ==
                                   Orientation.portrait
-                              ? 0.73
+                              ? 0.68
                               : 1.1,
                         ),
                         delegate: SliverChildBuilderDelegate((context, index) {

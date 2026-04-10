@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/category_model.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/responsive_utils.dart';
 import '../viewmodels/categories_viewmodel.dart';
 import 'category_deals_view.dart';
 import 'widgets/unified_header.dart'; // Import the new header
@@ -76,14 +77,6 @@ class _CategoriesViewState extends State<CategoriesView> {
                 );
               }
 
-              final width = MediaQuery.of(context).size.width;
-              int crossAxisCount = 2;
-              if (width > 900) {
-                crossAxisCount = 4;
-              } else if (width > 600) {
-                crossAxisCount = 3;
-              }
-
               return RefreshIndicator(
                 onRefresh: vm.loadCategories,
                 color: AppTheme.kElectricLime,
@@ -101,8 +94,10 @@ class _CategoriesViewState extends State<CategoriesView> {
                         right: 16.w,
                       ),
                       sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: ResponsiveUtils.isTablet(context)
+                              ? 250
+                              : 210,
                           crossAxisSpacing: 12.w,
                           mainAxisSpacing: 12.h,
                           childAspectRatio: 3.5,

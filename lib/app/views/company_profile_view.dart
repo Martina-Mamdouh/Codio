@@ -374,9 +374,10 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                 ],
                                 SizedBox(height: 24.h),
                                 // 3 Action Buttons
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
+                                Wrap(
+                                  spacing: 8.w,
+                                  runSpacing: 8.h,
+                                  alignment: WrapAlignment.spaceAround,
                                   children: [
                                     _ActionButton(
                                       icon: Icons.share_outlined,

@@ -103,6 +103,9 @@ class _CompaniesViewState extends State<CompaniesView> {
                 );
               }
 
+              final width = MediaQuery.of(context).size.width;
+              final crossAxisCount = width < 340 ? 1 : 2;
+
               return RefreshIndicator(
                 onRefresh: () async {
                   await Future.wait([
@@ -125,16 +128,14 @@ class _CompaniesViewState extends State<CompaniesView> {
                         bottom: AppTheme.bottomNavGap,
                       ),
                       sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: ResponsiveUtils.isTablet(context)
-                              ? 260
-                              : 220,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
                           mainAxisSpacing: 12.h,
                           crossAxisSpacing: 12.w,
                           childAspectRatio:
                               MediaQuery.of(context).orientation ==
                                   Orientation.portrait
-                              ? 0.68
+                              ? 0.73
                               : 1.1,
                         ),
                         delegate: SliverChildBuilderDelegate((context, index) {

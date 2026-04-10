@@ -160,7 +160,7 @@ class CompanyCard extends StatelessWidget {
                   ),
 
                   SizedBox(
-                    height: isLandscape ? 6.h : 8.h,
+                    height: isLandscape ? 2.h : 4.h,
                   ), // Space after logo area
                   // الفئة
                   if (company.categoryName != null &&
@@ -216,13 +216,15 @@ class CompanyCard extends StatelessWidget {
                           color: Colors.white54,
                         ),
                         SizedBox(width: 6.w),
-                        Text(
-                          '$followers متابع',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12.sp,
+                        Expanded(
+                          child: Text(
+                            '$followers متابع',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12.sp,
+                            ),
                           ),
                         ),
                       ],
@@ -232,13 +234,15 @@ class CompanyCard extends StatelessWidget {
                       children: [
                         Icon(Icons.star, size: 14.w, color: Colors.amber),
                         SizedBox(width: 6.w),
-                        Text(
-                          '${rating.toStringAsFixed(1)} ($reviewsCount)',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12.sp,
+                        Expanded(
+                          child: Text(
+                            '${rating.toStringAsFixed(1)} ($reviewsCount)',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12.sp,
+                            ),
                           ),
                         ),
                       ],

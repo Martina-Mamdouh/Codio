@@ -8,6 +8,7 @@ import '../viewmodels/notification_viewmodel.dart';
 import 'notifications_view.dart';
 import 'map_view.dart';
 import 'widgets/home_banner_slider.dart';
+import 'widgets/ads_slider.dart';
 import 'widgets/deal_section.dart';
 import 'widgets/state_widgets.dart';
 import 'widgets/shimmer_loading.dart';
@@ -254,6 +255,12 @@ class HomeView extends StatelessWidget {
                         ),
                       );
                     },
+                  ),
+                  SizedBox(height: 8.h),
+                  // Ads slider inserted before student deals
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: AdsSlider(),
                   ),
                   SizedBox(height: 8.h),
                   DealSection(

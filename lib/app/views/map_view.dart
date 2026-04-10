@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -10,7 +12,9 @@ import '../../core/models/company_model.dart';
 import '../../core/models/deal_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/map_view_model.dart';
+import '../viewmodels/user_profile_viewmodel.dart';
 import 'deal_details_view.dart';
+import 'widgets/deal_card.dart';
 
 class MapView extends StatefulWidget {
   final bool startNearby;
@@ -551,6 +555,64 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
   bool _isDraggingHandle = false;
   bool _isClosingByDrag = false;
 
+  late ScrollController _scrollController;
+  Timer? _carouselTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _startCarouselTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SelectedCompanyCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.viewModel.selectedCompany?.id != oldWidget.viewModel.selectedCompany?.id) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+      _startCarouselTimer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _carouselTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startCarouselTimer() {
+    _carouselTimer?.cancel();
+    _carouselTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      final selectedCompany = widget.viewModel.selectedCompany;
+      if (!mounted || selectedCompany == null) return;
+      
+      final currentDealsCount = widget.viewModel.dealsForCompany(selectedCompany.id).length;
+      if (currentDealsCount <= 1 || !_scrollController.hasClients || _isDraggingHandle || _isClosingByDrag) return;
+      
+      final currentScroll = _scrollController.offset;
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final step = 170.w + 12.w; // Card width + separator spacing
+
+      // If we're near the end, reset back to the start smoothly
+      if (currentScroll >= maxScroll - 10) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.fastOutSlowIn,
+        );
+      } else {
+        _scrollController.animateTo(
+          currentScroll + step,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
   void _handleDragStart(DragStartDetails details) {
     _isDraggingHandle = true;
   }
@@ -908,130 +970,56 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                     ),
                   )
                 else
-                  ListView.separated(
-                    itemCount: companyDeals.length,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                    itemBuilder: (context, index) {
-                      final deal = companyDeals[index];
-                      return _DealListTile(
-                        deal: deal,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => DealDetailsView(deal: deal),
-                            ),
-                          );
-                        },
+                  Consumer<UserProfileViewModel>(
+                    builder: (context, profileVm, _) {
+                      return SizedBox(
+                        height: MediaQuery.of(context).orientation == Orientation.portrait ? 230.h : 270.h,
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: companyDeals.length,
+                          separatorBuilder: (context, index) => SizedBox(width: 12.w),
+                          itemBuilder: (context, index) {
+                            final deal = companyDeals[index];
+                            final isFav = profileVm.isDealFavorite(deal.id);
+                            return SizedBox(
+                              width: 170.w, // Fixed natural width constraint (prevents card from expanding weirdly)
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 4.h), // Removed horizontal padding, replaced by separator
+                                child: DealCard(
+                                  deal: deal,
+                                  isFavorite: isFav,
+                                  showCategory: true,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DealDetailsView(deal: deal),
+                                      ),
+                                    );
+                                  },
+                                  onFavoriteToggle: () async {
+                                    final success = await profileVm.toggleFavoriteForDeal(deal.id);
+                                    if (!success && context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('تعذّر تحديث المفضّلة، حاول مرة أخرى'),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       );
                     },
                   ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DealListTile extends StatelessWidget {
-  final DealModel deal;
-  final VoidCallback onTap;
-
-  const _DealListTile({required this.deal, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final discount = deal.discountValue.isNotEmpty
-        ? deal.discountValue
-        : deal.dealValue;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14.r),
-      child: Container(
-        padding: EdgeInsets.all(10.w),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: Colors.white10),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10.r),
-              child: SizedBox(
-                width: 72.w,
-                height: 72.w,
-                child: deal.imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: deal.imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) =>
-                            Container(color: Colors.white10),
-                        errorWidget: (_, __, ___) => Container(
-                          color: Colors.white10,
-                          child: const Icon(
-                            Icons.local_offer,
-                            color: Colors.white30,
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: Colors.white10,
-                        child: const Icon(
-                          Icons.local_offer,
-                          color: Colors.white30,
-                        ),
-                      ),
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    deal.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 5.h),
-                  if (discount.isNotEmpty)
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.w,
-                        vertical: 3.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.22),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        discount,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.orangeAccent.shade100,
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            SizedBox(width: 6.w),
-            Icon(Icons.arrow_forward_ios, color: Colors.white38, size: 14.w),
-          ],
         ),
       ),
     );

@@ -40,42 +40,62 @@ class _AdsSliderState extends State<AdsSlider> {
     if (_isLoading) return const SizedBox.shrink();
     if (_ads.isEmpty) return const SizedBox.shrink();
 
-    return CarouselSlider.builder(
-      itemCount: _ads.length,
-      options: CarouselOptions(
-        // Use the same aspect ratio as the uploaded ad images (2032x512)
-        // so the image is not cropped. Let the slider compute height
-        // from available width. Make each slide occupy the full
-        // available width inside its horizontal padding.
-        aspectRatio: 2032 / 512,
-        autoPlay: true,
-        autoPlayInterval: const Duration(seconds: 6),
-        enlargeCenterPage: false,
-        viewportFraction: 1.0,
-      ),
-      itemBuilder: (context, index, realIndex) {
-        final ad = _ads[index];
-        return GestureDetector(
-          onTap: () async {
-            final deal = await _supabaseService.getDealById(ad.dealId);
-            if (deal != null && context.mounted) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => DealDetailsView(deal: deal)),
-              );
-            }
-          },
+    // Compute a fixed height for the slider from the available width and
+    // the ad aspect ratio so the widget always occupies the same vertical
+    // space. This ensures the ad appears visually centered between the
+    // content above and below it regardless of surrounding layout.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = widget.fullBleed ? 0.w : 12.w; // total (6.w each side)
+    final availableWidth = screenWidth - horizontalPadding;
+    final adAspect = 2032 / 512;
+    final sliderHeight = availableWidth / adAspect;
+
+    return SizedBox(
+      height: sliderHeight,
+      width: double.infinity,
+      child: CarouselSlider.builder(
+        itemCount: _ads.length,
+        options: CarouselOptions(
+          // Use the same aspect ratio as the uploaded ad images (2032x512)
+          // so the image is not cropped. Let the slider compute height
+          // from available width. Make each slide occupy the full
+          // available width inside its horizontal padding.
+          aspectRatio: adAspect,
+          autoPlay: true,
+          autoPlayInterval: const Duration(seconds: 6),
+          enlargeCenterPage: false,
+          viewportFraction: 1.0,
+        ),
+        itemBuilder: (context, index, realIndex) {
+          final ad = _ads[index];
+          return GestureDetector(
+            onTap: () async {
+              final deal = await _supabaseService.getDealById(ad.dealId);
+              if (deal != null && context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => DealDetailsView(deal: deal)),
+                );
+              }
+            },
             child: Container(
+              // keep the same horizontal inset used previously; the slider
+              // overall has a fixed height so the image will be centered
+              // vertically in the layout.
               margin: widget.fullBleed
                   ? EdgeInsets.zero
                   : EdgeInsets.symmetric(horizontal: 6.w),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(widget.fullBleed ? 0 : 10.r),
+                // Use a centered shadow (offset 0,0) so the visual weight is
+                // equal above and below the ad. Previously the shadow used a
+                // downward offset which made the ad appear shifted downwards
+                // and created unequal empty space above/below.
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 6.w,
-                    offset: Offset(0, 3.h),
+                    offset: Offset(0, 0),
                   ),
                 ],
               ),
@@ -83,7 +103,7 @@ class _AdsSliderState extends State<AdsSlider> {
                 borderRadius: BorderRadius.circular(widget.fullBleed ? 0 : 10.r),
                 child: AspectRatio(
                   // Preserve uploaded ad aspect ratio so the image won't be cropped
-                  aspectRatio: 2032 / 512,
+                  aspectRatio: adAspect,
                   child: CachedNetworkImage(
                     imageUrl: ad.imageLink,
                     // Use cover inside an AspectRatio matching the image so no cropping occurs
@@ -105,8 +125,9 @@ class _AdsSliderState extends State<AdsSlider> {
                 ),
               ),
             ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

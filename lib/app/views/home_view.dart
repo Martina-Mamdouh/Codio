@@ -258,8 +258,13 @@ class HomeView extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   // Ads slider inserted before student deals (full-bleed)
-                  AdsSlider(fullBleed: true),
+                  // Slightly increase the space above the ad so it visually
+                  // matches the spacing below the ad.
                   SizedBox(height: 8.h),
+                  AdsSlider(fullBleed: true),
+                  // Slightly reduce the gap below the ad so the visual
+                  // spacing above and below the ad appears more equal.
+                  SizedBox(height: 2.h),
                   DealSection(
                     title: 'عروض الطلاب',
                     deals: viewModel.studentDeals,

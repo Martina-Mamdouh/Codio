@@ -526,7 +526,9 @@ class _MapIconButton extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white70,
+            // Make the map control labels black so they remain readable
+            // against varying map backgrounds instead of blending in.
+            color: Colors.black,
             fontSize: 11.sp,
             fontWeight: FontWeight.w600,
           ),

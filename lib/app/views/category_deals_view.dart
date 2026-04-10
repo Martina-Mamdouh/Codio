@@ -69,11 +69,12 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
                   child: CustomScrollView(
                     physics: const BouncingScrollPhysics(),
                     slivers: [
-                      // Ads slider placed under the title
+                      // Ads slider placed under the title (full-bleed)
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                          child: AdsSlider(),
+                          // keep full-bleed horizontally but add vertical breathing space
+                          padding: EdgeInsets.symmetric(vertical: 8.h),
+                          child: AdsSlider(fullBleed: true),
                         ),
                       ),
                       SliverPadding(

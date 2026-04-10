@@ -257,11 +257,8 @@ class HomeView extends StatelessWidget {
                     },
                   ),
                   SizedBox(height: 8.h),
-                  // Ads slider inserted before student deals
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: AdsSlider(),
-                  ),
+                  // Ads slider inserted before student deals (full-bleed)
+                  AdsSlider(fullBleed: true),
                   SizedBox(height: 8.h),
                   DealSection(
                     title: 'عروض الطلاب',

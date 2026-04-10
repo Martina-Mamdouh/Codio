@@ -8,7 +8,8 @@ import '../../../core/theme/app_theme.dart';
 import '../deal_details_view.dart';
 
 class AdsSlider extends StatefulWidget {
-  const AdsSlider({super.key});
+  final bool fullBleed;
+  const AdsSlider({super.key, this.fullBleed = false});
 
   @override
   State<AdsSlider> createState() => _AdsSliderState();
@@ -65,9 +66,11 @@ class _AdsSliderState extends State<AdsSlider> {
             }
           },
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 6.w),
+              margin: widget.fullBleed
+                  ? EdgeInsets.zero
+                  : EdgeInsets.symmetric(horizontal: 6.w),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.r),
+                borderRadius: BorderRadius.circular(widget.fullBleed ? 0 : 10.r),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.2),
@@ -77,7 +80,7 @@ class _AdsSliderState extends State<AdsSlider> {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(10.r),
+                borderRadius: BorderRadius.circular(widget.fullBleed ? 0 : 10.r),
                 child: AspectRatio(
                   // Preserve uploaded ad aspect ratio so the image won't be cropped
                   aspectRatio: 2032 / 512,

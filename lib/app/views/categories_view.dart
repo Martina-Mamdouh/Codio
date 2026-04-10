@@ -94,7 +94,7 @@ class _CategoriesViewState extends State<CategoriesView> {
                   slivers: [
                     SliverPadding(
                       padding: EdgeInsets.only(
-                        top: 24.h,
+                        top: 12.h, // Reduced top spacing to match HomeView
                         // ✅ Increased bottom padding to clear the floating nav bar
                         bottom: AppTheme.bottomNavGap,
                         left: 16.w,
@@ -103,8 +103,8 @@ class _CategoriesViewState extends State<CategoriesView> {
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: 16.w,
-                          mainAxisSpacing: 16.h,
+                          crossAxisSpacing: 12.w,
+                          mainAxisSpacing: 12.h,
                           childAspectRatio: 3.5,
                         ),
                         delegate: SliverChildBuilderDelegate((context, index) {

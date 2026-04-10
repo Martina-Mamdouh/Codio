@@ -92,15 +92,15 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
                       padding: EdgeInsets.only(
                         left: 16.w,
                         right: 16.w,
-                        top: 24.h,
+                        top: 12.h, // Reduced top spacing to match Home/Categories/Companies
                         // ✅ Increased bottom padding to account for floating nav bar
                         bottom: AppTheme.bottomNavGap,
                       ),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 12.h,
+                          crossAxisSpacing: 12.w,
                           childAspectRatio:
                               MediaQuery.of(context).orientation ==
                                   Orientation.portrait

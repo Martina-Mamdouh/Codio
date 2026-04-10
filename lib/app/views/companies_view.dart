@@ -119,7 +119,7 @@ class _CompaniesViewState extends State<CompaniesView> {
                         padding: EdgeInsets.only(
                         left: 16.w,
                         right: 16.w,
-                        top: 24.h,
+                        top: 12.h, // Reduced top spacing to match HomeView
                         // ✅ Increased bottom padding to account for floating nav bar
                         bottom: AppTheme.bottomNavGap,
                       ),
@@ -131,8 +131,8 @@ class _CompaniesViewState extends State<CompaniesView> {
                               : (MediaQuery.of(context).size.width < 900
                                     ? 3
                                     : 4),
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 12.h,
+                          crossAxisSpacing: 12.w,
                           childAspectRatio:
                               MediaQuery.of(context).orientation ==
                                   Orientation.portrait

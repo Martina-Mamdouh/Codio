@@ -161,7 +161,7 @@ class HomeView extends StatelessWidget {
                   ),
 
                   // Rest of the content following the header
-                  SizedBox(height: 48.h), // Space for search bar overlap
+                  SizedBox(height: 12.h), // Further reduced space for search bar overlap
 
                   HomeBannerSlider(banners: viewModel.banners),
                   SizedBox(height: 16.h),
@@ -179,7 +179,7 @@ class HomeView extends StatelessWidget {
                       },
                     ),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 4.h), // Further reduced gap between Discover card and next section
 
 
                   // Nearby Slider Section ✅
@@ -200,10 +200,10 @@ class HomeView extends StatelessWidget {
                         );
                       },
                     ),
-                    SizedBox(height: 16.h),
+                    SizedBox(height: 4.h), // Reduced and consistent spacing
                   ],
 
-                  SizedBox(height: 6.h),
+                  SizedBox(height: 4.h), // Consistent small gap when nearby section is absent
                   
                   // Nearby Banner button moved here ✅
 

@@ -188,9 +188,13 @@ class _MapViewState extends State<MapView> {
                       ],
                     ),
                     // Control buttons
+                    // Move the controls lower when a top-banner (e.g. location
+                    // error or "determining location") is visible so the first
+                    // button isn't overlapped and remains tappable.
+                    // Compute dynamic top offset using ScreenUtil to match layout units.
                     Positioned(
-                      top: 12,
-                      right: 12,
+                      top: (vm.locationError != null || vm.isLocationLoading) ? 72.h : 12.h,
+                      right: 12.w,
                       child: Column(
                         children: [
                           _MapIconButton(

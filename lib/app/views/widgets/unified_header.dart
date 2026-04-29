@@ -23,37 +23,45 @@ class UnifiedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Total height calculation:
-    // Yellow background: 140.h
-    // Search bar is positioned at top: 110.h (overlapping the edge)
-    // Search bar height approx: 45.h + padding
-    // We need to ensure the container below respects this overlap.
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
 
+    final bool isTablet = width >= 800;
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
     final bool isCompactHeight = ResponsiveUtils.isCompactHeight(context);
-    final double backgroundHeight = isLandscape ? 140.h : 128.h;
+
+    /// ✅ Bigger header ONLY on tablet
+    final double backgroundHeight = isTablet
+        ? (isLandscape ? 220.h : 200.h)
+        : (isLandscape ? 140.h : 128.h);
+
     final double effectiveBackgroundHeight =
-        isCompactHeight ? backgroundHeight * 0.92 : backgroundHeight;
-    final double totalHeight =
-        effectiveBackgroundHeight + 30.h; // Account for search bar straddle
+    isCompactHeight ? backgroundHeight * 0.92 : backgroundHeight;
+
+    /// ✅ More controlled overlap
+    final double searchOverlap = isTablet ? 60.h : 30.h;
+
+    final double totalHeight = effectiveBackgroundHeight + searchOverlap;
 
     return SizedBox(
       height: totalHeight,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Yellow Background
+          /// Yellow Background
           Container(
             width: double.infinity,
             height: effectiveBackgroundHeight,
             decoration: const BoxDecoration(
               color: Color(0xFFE5FF17),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(18)),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(18),
+              ),
             ),
           ),
 
-          // Content (Title, Subtitle, Back Button)
+          /// Content (Title + Subtitle)
           Positioned(
             top: 0,
             left: 0,
@@ -61,9 +69,12 @@ class UnifiedHeader extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 24.w : 16.w,
+                  vertical: 10.h,
+                ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Column(
@@ -75,37 +86,48 @@ class UnifiedHeader extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: isLandscape ? 20.sp : 24.sp,
+                              fontSize: isTablet
+                                  ? 26.sp
+                                  : (isLandscape ? 20.sp : 24.sp),
                               fontWeight: FontWeight.w900,
                               height: 1.1,
                             ),
                           ),
-                          SizedBox(height: 4.h),
+
+                          SizedBox(height: 8.h),
+
+                          /// ✅ Subtitle fully inside background
                           Text(
                             subtitle,
-                            maxLines: 1,
+                            maxLines: isTablet ? 2 : 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.black.withValues(alpha: 0.7),
-                              fontSize: isLandscape ? 11.sp : 13.sp,
+                              fontSize: isTablet
+                                  ? 15.sp
+                                  : (isLandscape ? 11.sp : 13.sp),
                               fontWeight: FontWeight.w600,
-                              height: 1.1,
+                              height: 1.3,
                             ),
                           ),
                         ],
                       ),
                     ),
+
                     if (showBackButton)
                       IconButton(
                         icon: Icon(
                           Icons.arrow_forward_ios_rounded,
                           color: Colors.black,
-                          size: isLandscape ? 20.sp : 24.sp,
-                          weight: 700,
+                          size: isTablet
+                              ? 22.sp
+                              : (isLandscape ? 20.sp : 24.sp),
                         ),
-                        onPressed: onBackTap ?? () => Navigator.pop(context),
+                        onPressed:
+                        onBackTap ?? () => Navigator.pop(context),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.black.withValues(alpha: 0.05),
+                          backgroundColor:
+                          Colors.black.withValues(alpha: 0.05),
                           padding: EdgeInsets.all(8.w),
                         ),
                       ),
@@ -115,26 +137,25 @@ class UnifiedHeader extends StatelessWidget {
             ),
           ),
 
-          // Search Bar
+          /// ✅ Search Bar (LOWERED on tablet)
           Positioned(
-            top:
-                effectiveBackgroundHeight -
-                (isLandscape ? 20.h : 25.h), // Positioned to straddle
+            top: isTablet
+                ? effectiveBackgroundHeight - (searchOverlap * 0.45)
+                : effectiveBackgroundHeight - (searchOverlap * 0.7),
             left: 0,
             right: 0,
             child: Align(
               alignment: Alignment.center,
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxWidth: ResponsiveUtils.maxContentWidth(context) * 0.92,
+                  maxWidth:
+                  ResponsiveUtils.maxContentWidth(context) * 0.9,
                 ),
                 child: Container(
-                  width:
-                      MediaQuery.of(context).size.width *
-                      (isLandscape ? 0.92 : 0.88),
+                  width: width * (isTablet ? 0.7 : 0.88),
                   padding: EdgeInsets.symmetric(
                     horizontal: 14.w,
-                    vertical: isLandscape ? 6.h : 8.h,
+                    vertical: isTablet ? 12.h : 8.h,
                   ),
                   decoration: BoxDecoration(
                     color: AppTheme.kLightBackground,
@@ -153,7 +174,7 @@ class UnifiedHeader extends StatelessWidget {
                       Icon(
                         Icons.search,
                         color: AppTheme.kElectricLime,
-                        size: isLandscape ? 20.sp : 24.sp,
+                        size: isTablet ? 22.sp : 24.sp,
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
@@ -161,13 +182,13 @@ class UnifiedHeader extends StatelessWidget {
                           onChanged: onSearchChanged,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: isLandscape ? 14.sp : 15.sp,
+                            fontSize: isTablet ? 16.sp : 15.sp,
                           ),
                           decoration: InputDecoration(
                             hintText: searchHint,
                             hintStyle: TextStyle(
                               color: Colors.grey[400],
-                              fontSize: isLandscape ? 14.sp : 15.sp,
+                              fontSize: isTablet ? 16.sp : 15.sp,
                             ),
                             border: InputBorder.none,
                             isDense: true,

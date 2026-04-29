@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import '../main_layout.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:responsive_builder/responsive_builder.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/companies_viewmodel.dart';
 import '../viewmodels/map_view_model.dart';
 import 'company_profile_view.dart';
 import 'widgets/company_card.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
-import 'widgets/unified_header.dart'; // Import UnifiedHeader
+import 'widgets/unified_header.dart';
 
 class CompaniesView extends StatefulWidget {
   const CompaniesView({super.key});
@@ -23,9 +22,11 @@ class _CompaniesViewState extends State<CompaniesView> {
 
   @override
   Widget build(BuildContext context) {
-    // Trigger load securely if needed, or rely on main_app/init
-    // Using simple Consumer approach assuming parent provider exists
-    // Lazy loading handled by MainLayout
+    final width = MediaQuery.of(context).size.width;
+    final isTablet = width >= 800;
+
+    /// 🔥 MUST MATCH HEADER HEIGHT (prevents overlap completely)
+    final double headerSafeSpace = isTablet ? 40.h : 0;
 
     return Column(
       children: [
@@ -35,7 +36,9 @@ class _CompaniesViewState extends State<CompaniesView> {
           searchHint: 'ابحث عن شركة...',
           showBackButton: true,
           onBackTap: () {
-            context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
+            context
+                .findAncestorStateOfType<MainLayoutState>()
+                ?.switchToTab(0);
           },
           onSearchChanged: (val) {
             setState(() {
@@ -43,145 +46,125 @@ class _CompaniesViewState extends State<CompaniesView> {
             });
           },
         ),
+
         Expanded(
-          child: Consumer2<CompaniesViewModel, UserProfileViewModel>(
-            builder: (context, vm, profileVm, child) {
-              if (vm.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.kElectricLime,
-                  ),
-                );
-              }
-
-              if (vm.errorMessage != null) {
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red, size: 40.w),
-                      SizedBox(height: 12.h),
-                      Text(
-                        vm.errorMessage!,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14.sp,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 16.h),
-                      ElevatedButton(
-                        onPressed: vm.loadCompanies,
-                        child: const Text('إعادة المحاولة'),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              if (vm.companies.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا توجد شركات حالياً',
-                    style: TextStyle(color: Colors.white70, fontSize: 16.sp),
-                  ),
-                );
-              }
-
-              final filteredCompanies = vm.companies.where((c) {
-                return c.name.toLowerCase().contains(
-                  _searchQuery.toLowerCase(),
-                );
-              }).toList();
-
-              if (filteredCompanies.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا توجد نتائج بحث',
-                    style: TextStyle(color: Colors.white70, fontSize: 16.sp),
-                  ),
-                );
-              }
-
-               final width = MediaQuery.of(context).size.width;
-               final deviceType = getDeviceType(MediaQuery.of(context).size);
-               final orientation = MediaQuery.of(context).orientation;
-               
-               // Calculate cross axis count based on device type and orientation
-               int crossAxisCount;
-               if (deviceType == DeviceScreenType.tablet && orientation == Orientation.landscape) {
-                 crossAxisCount = 2; // 2 columns for landscape tablets (keep consistent to avoid overflow)
-               } else if (deviceType == DeviceScreenType.tablet) {
-                 crossAxisCount = 2; // 2 columns for portrait tablets
-               } else {
-                 crossAxisCount = width < 340 ? 1 : 2;
-               }
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                  await Future.wait([
-                    vm.loadCompanies(),
-                    context.read<MapViewModel>().refresh(),
-                  ]);
-                },
-                color: AppTheme.kElectricLime,
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
-                  slivers: [
-                    SliverPadding(
-                        padding: EdgeInsets.only(
-                        left: 16.w,
-                        right: 16.w,
-                        top: 12.h, // Reduced top spacing to match HomeView
-                        // ✅ Increased bottom padding to account for floating nav bar
-                        bottom: AppTheme.bottomNavGap,
-                      ),
-                      sliver: SliverGrid(
-                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                           crossAxisCount: crossAxisCount,
-                           mainAxisSpacing: 12.h,
-                           crossAxisSpacing: 12.w,
-                           childAspectRatio: deviceType == DeviceScreenType.tablet
-                               ? 0.73  // Same as portrait for tablets (both orientations)
-                               : (orientation == Orientation.portrait ? 0.73 : 1.1),
-                         ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final company = filteredCompanies[index];
-                          final isFollowed = profileVm.followedCompanies.any(
-                            (c) => c.id == company.id,
-                          );
-
-                          return CompanyCard(
-                            company: company,
-                            isFollowed: isFollowed,
-                            isFollowLoading: false,
-                            onToggleFollow: () async {
-                              await profileVm.toggleCompanyFollow(
-                                company.id,
-                                company: company,
-                              );
-                            },
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CompanyProfileView(
-                                    companyId: company.id,
-                                    company: company,
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }, childCount: filteredCompanies.length),
-                      ),
-                    ),
-                  ],
+          child: Stack(
+            children: [
+              /// 🔥 THIS is the real fix (prevents overlap completely)
+              Padding(
+                padding: EdgeInsets.only(
+                  top: headerSafeSpace,
                 ),
-              );
-            },
+                child: Consumer2<CompaniesViewModel, UserProfileViewModel>(
+                  builder: (context, vm, profileVm, child) {
+                    if (vm.isLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.kElectricLime,
+                        ),
+                      );
+                    }
+
+                    if (vm.errorMessage != null) {
+                      return Center(
+                        child: Text(vm.errorMessage!),
+                      );
+                    }
+
+                    final filteredCompanies = vm.companies.where((c) {
+                      return c.name
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase());
+                    }).toList();
+
+                    int crossAxisCount;
+                    double childAspectRatio;
+
+                    if (isTablet) {
+                      crossAxisCount = width >= 1200 ? 4 : 3;
+                      childAspectRatio = 0.9;
+                    } else {
+                      crossAxisCount = width < 340 ? 1 : 2;
+                      childAspectRatio = 0.73;
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await Future.wait([
+                          vm.loadCompanies(),
+                          context.read<MapViewModel>().refresh(),
+                        ]);
+                      },
+                      color: AppTheme.kElectricLime,
+                      child: CustomScrollView(
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        slivers: [
+                          SliverPadding(
+                            padding: EdgeInsets.only(
+                              left: isTablet ? 24.w : 16.w,
+                              right: isTablet ? 24.w : 16.w,
+                              top: isTablet ? 20.h : 12.h,
+                              bottom: AppTheme.bottomNavGap,
+                            ),
+                            sliver: SliverGrid(
+                              gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                mainAxisSpacing:
+                                isTablet ? 16.h : 12.h,
+                                crossAxisSpacing:
+                                isTablet ? 16.w : 12.w,
+                                childAspectRatio: childAspectRatio,
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                  final company =
+                                  filteredCompanies[index];
+
+                                  final isFollowed =
+                                  profileVm.followedCompanies.any(
+                                        (c) => c.id == company.id,
+                                  );
+
+                                  return CompanyCard(
+                                    company: company,
+                                    isFollowed: isFollowed,
+                                    isFollowLoading: false,
+                                    onToggleFollow: () async {
+                                      await profileVm
+                                          .toggleCompanyFollow(
+                                        company.id,
+                                        company: company,
+                                      );
+                                    },
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              CompanyProfileView(
+                                                companyId: company.id,
+                                                company: company,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                                childCount:
+                                filteredCompanies.length,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ],

@@ -7,13 +7,14 @@ import '../../core/utils/responsive_utils.dart';
 import 'company_profile_view.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
-import 'widgets/unified_header.dart'; // Import UnifiedHeader
+import 'widgets/unified_header.dart';
 
 class FollowedCompaniesView extends StatefulWidget {
   const FollowedCompaniesView({super.key});
 
   @override
-  State<FollowedCompaniesView> createState() => _FollowedCompaniesViewState();
+  State<FollowedCompaniesView> createState() =>
+      _FollowedCompaniesViewState();
 }
 
 class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
@@ -21,6 +22,12 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final isTablet = width >= 800;
+
+    /// 🔥 MUST match header floating space (tablet only)
+    final double headerSafeSpace = isTablet ? 40.h : 0;
+
     return Column(
       children: [
         UnifiedHeader(
@@ -29,7 +36,9 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
           searchHint: 'ابحث في المتابعة...',
           showBackButton: true,
           onBackTap: () {
-            context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
+            context
+                .findAncestorStateOfType<MainLayoutState>()
+                ?.switchToTab(0);
           },
           onSearchChanged: (val) {
             setState(() {
@@ -37,107 +46,128 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
             });
           },
         ),
+
         Expanded(
-          child: Consumer<UserProfileViewModel>(
-            builder: (context, profileVm, child) {
-              // Show loading ONLY if initial load and empty (to avoid empty state flash)
-              if (profileVm.isLoadingProfile &&
-                  profileVm.followedCompanies.isEmpty) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.kElectricLime,
-                  ),
-                );
-              }
-
-              // If truly empty
-              if (profileVm.followedCompanies.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا يوجد شركات متابعة بعد',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                );
-              }
-
-              final companies = profileVm.followedCompanies;
-              final filteredCompanies = companies.where((c) {
-                return c.name.toLowerCase().contains(
-                  _searchQuery.toLowerCase(),
-                );
-              }).toList();
-
-              if (filteredCompanies.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا توجد نتائج بحث',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                );
-              }
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                  await profileVm.loadProfileData();
-                },
-                color: AppTheme.kElectricLime,
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
-                  slivers: [
-                    SliverPadding(
-                      padding: EdgeInsets.only(
-                        left: 16.w,
-                        right: 16.w,
-                        top: 12.h, // Reduced top spacing to match Home/Categories/Companies
-                        // ✅ Increased bottom padding to account for floating nav bar
-                        bottom: AppTheme.bottomNavGap,
-                      ),
-                      sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: ResponsiveUtils.isTablet(context)
-                              ? 260
-                              : 220,
-                          mainAxisSpacing: 12.h,
-                          crossAxisSpacing: 12.w,
-                          childAspectRatio:
-                              MediaQuery.of(context).orientation ==
-                                  Orientation.portrait
-                              ? 0.68
-                              : 1.1,
-                        ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final company = filteredCompanies[index];
-                          return CompanyCard(
-                            company: company,
-                            isFollowed: true,
-                            isFollowLoading: false,
-                            onToggleFollow: () async {
-                              await profileVm.toggleCompanyFollow(
-                                company.id,
-                                company: company,
-                              );
-                            },
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CompanyProfileView(
-                                    companyId: company.id,
-                                    company: company,
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        }, childCount: filteredCompanies.length),
-                      ),
-                    ),
-                  ],
+          child: Stack(
+            children: [
+              /// 🔥 This fixes scroll going under header/search
+              Padding(
+                padding: EdgeInsets.only(
+                  top: headerSafeSpace,
                 ),
-              );
-            },
+                child: Consumer<UserProfileViewModel>(
+                  builder: (context, profileVm, child) {
+                    if (profileVm.isLoadingProfile &&
+                        profileVm.followedCompanies.isEmpty) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.kElectricLime,
+                        ),
+                      );
+                    }
+
+                    if (profileVm.followedCompanies.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'لا يوجد شركات متابعة بعد',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      );
+                    }
+
+                    final companies = profileVm.followedCompanies;
+
+                    final filteredCompanies = companies.where((c) {
+                      return c.name
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase());
+                    }).toList();
+
+                    if (filteredCompanies.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'لا توجد نتائج بحث',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: profileVm.loadProfileData,
+                      color: AppTheme.kElectricLime,
+                      child: CustomScrollView(
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        slivers: [
+                          SliverPadding(
+                            padding: EdgeInsets.only(
+                              left: isTablet ? 24.w : 16.w,
+                              right: isTablet ? 24.w : 16.w,
+
+                              /// 🔥 prevents overlap feel
+                              top: isTablet ? 20.h : 12.h,
+
+                              bottom: AppTheme.bottomNavGap,
+                            ),
+                            sliver: SliverGrid(
+                              gridDelegate:
+                              SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent:
+                                isTablet ? 260 : 220,
+                                mainAxisSpacing:
+                                isTablet ? 16.h : 12.h,
+                                crossAxisSpacing:
+                                isTablet ? 16.w : 12.w,
+                                childAspectRatio:
+                                MediaQuery.of(context)
+                                    .orientation ==
+                                    Orientation.portrait
+                                    ? 0.68
+                                    : 1.1,
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                  final company =
+                                  filteredCompanies[index];
+
+                                  return CompanyCard(
+                                    company: company,
+                                    isFollowed: true,
+                                    isFollowLoading: false,
+                                    onToggleFollow: () async {
+                                      await profileVm
+                                          .toggleCompanyFollow(
+                                        company.id,
+                                        company: company,
+                                      );
+                                    },
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              CompanyProfileView(
+                                                companyId: company.id,
+                                                company: company,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                                childCount:
+                                filteredCompanies.length,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ],

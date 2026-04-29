@@ -5,7 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 
 class YellowScaffold extends StatelessWidget {
   final String title;
-  final Widget? titleWidget; // Custom title widget (e.g. for badges)
+  final Widget? titleWidget;
   final Widget body;
   final bool showBackButton;
   final VoidCallback? onBackTap;
@@ -21,24 +21,34 @@ class YellowScaffold extends StatelessWidget {
     this.actions,
   });
 
+  bool _isTablet(BuildContext context) {
+    return MediaQuery.of(context).size.width >= 600;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+
     final isCompactHeight = ResponsiveUtils.isCompactHeight(context);
+
+    final isTablet = _isTablet(context);
+
     final baseHeight = isLandscape ? 140.h : 128.h;
-    final headerHeight = isCompactHeight ? baseHeight * 0.92 : baseHeight;
+
+    // 👇 ONLY CHANGE: bigger header on tablet
+    final headerHeight = isTablet
+        ? baseHeight * 1.35
+        : (isCompactHeight ? baseHeight * 0.92 : baseHeight);
 
     return Scaffold(
-      backgroundColor: AppTheme.kDarkBackground, // Global Dark Background
+      backgroundColor: AppTheme.kDarkBackground,
       body: Column(
         children: [
-          // Yellow Header (Curved Bottom)
           SizedBox(
             height: headerHeight,
             child: Stack(
               children: [
-                // Yellow Background
                 Container(
                   width: double.infinity,
                   height: double.infinity,
@@ -49,7 +59,7 @@ class YellowScaffold extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Content (Title, Actions, Back Button) — pinned to top
+
                 Positioned(
                   top: 0,
                   left: 0,
@@ -57,19 +67,21 @@ class YellowScaffold extends StatelessWidget {
                   child: SafeArea(
                     bottom: false,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: isTablet ? 16.h : 8.h, // nicer spacing on tablet
+                      ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
-                            child:
-                                titleWidget ??
+                            child: titleWidget ??
                                 Text(
                                   title,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 24.sp,
+                                    fontSize: isTablet ? 30.sp : 24.sp,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.black,
                                     height: 1.1,
@@ -80,18 +92,15 @@ class YellowScaffold extends StatelessWidget {
                           if (actions != null) ...actions!,
 
                           if (showBackButton) ...[
-                            SizedBox(
-                              width: 8.w,
-                            ), // Spacing before back text/icon if needed
+                            SizedBox(width: 8.w),
                             IconButton(
                               icon: Icon(
                                 Icons.arrow_forward_ios_rounded,
                                 color: Colors.black,
-                                size: 28.sp,
+                                size: isTablet ? 32.sp : 28.sp,
                               ),
-                              onPressed:
-                                  onBackTap ??
-                                  () {
+                              onPressed: onBackTap ??
+                                      () {
                                     if (Navigator.canPop(context)) {
                                       Navigator.pop(context);
                                     } else {
@@ -109,7 +118,6 @@ class YellowScaffold extends StatelessWidget {
             ),
           ),
 
-          // Body Content (Directly on Dark Background)
           Expanded(
             child: Align(
               alignment: Alignment.topCenter,

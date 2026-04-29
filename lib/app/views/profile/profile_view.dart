@@ -56,6 +56,11 @@ class _ProfileViewState extends State<ProfileView> {
     }
   }
 
+  bool get _isTablet {
+    final width = MediaQuery.of(context).size.width;
+    return width >= 600;
+  }
+
   @override
   Widget build(BuildContext context) {
     final authVm = context.watch<AuthViewModel>();
@@ -69,13 +74,16 @@ class _ProfileViewState extends State<ProfileView> {
         context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
       },
       actions: [],
-      body: user == null
-          ? _buildGuestView(context)
-          : _buildLoggedInView(context, user, profileVm, authVm),
+      body: Padding(
+        // 👇 THIS is the fix: makes header feel taller ONLY on tablet
+        padding: EdgeInsets.only(top: _isTablet ? 24.h : 0),
+        child: user == null
+            ? _buildGuestView(context)
+            : _buildLoggedInView(context, user, profileVm, authVm),
+      ),
     );
   }
 
-  // لو المستخدم مش مسجّل
   Widget _buildGuestView(BuildContext context) {
     return Center(
       child: Column(
@@ -88,7 +96,6 @@ class _ProfileViewState extends State<ProfileView> {
             style: TextStyle(
               color: Colors.white70,
               fontSize: 16.sp,
-              //  // Inherited
             ),
           ),
           SizedBox(height: 32.h),
@@ -117,7 +124,6 @@ class _ProfileViewState extends State<ProfileView> {
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
-                  //  // Inherited
                 ),
               ),
             ),
@@ -127,14 +133,12 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  // لو المستخدم مسجّل
   Widget _buildLoggedInView(
-    BuildContext context,
-    UserModel user,
-    UserProfileViewModel profileVm,
-    AuthViewModel authVm,
-  ) {
-    // Use standard bottom gap so screens align with Companies view
+      BuildContext context,
+      UserModel user,
+      UserProfileViewModel profileVm,
+      AuthViewModel authVm,
+      ) {
     return RefreshIndicator(
       onRefresh: () async {
         await profileVm.loadProfileData();
@@ -152,7 +156,6 @@ class _ProfileViewState extends State<ProfileView> {
           _buildHeader(user),
           SizedBox(height: 24.h),
 
-          // أزرار القائمة
           Card(
             color: AppTheme.kLightBackground,
             shape: RoundedRectangleBorder(
@@ -162,14 +165,10 @@ class _ProfileViewState extends State<ProfileView> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.favorite, color: Colors.pinkAccent),
-                  title: const Text(
-                    'العروض المفضّلة',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: Colors.white54,
-                  ),
+                  title: const Text('العروض المفضّلة',
+                      style: TextStyle(color: Colors.white)),
+                  trailing: const Icon(Icons.chevron_right,
+                      color: Colors.white54),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -182,18 +181,15 @@ class _ProfileViewState extends State<ProfileView> {
                 const Divider(height: 1, color: Colors.white12),
                 ListTile(
                   leading: const Icon(Icons.settings, color: Colors.blueAccent),
-                  title: const Text(
-                    'الإعدادات',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                    color: Colors.white54,
-                  ),
+                  title: const Text('الإعدادات',
+                      style: TextStyle(color: Colors.white)),
+                  trailing: const Icon(Icons.chevron_right,
+                      color: Colors.white54),
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const SettingsView()),
+                      MaterialPageRoute(
+                          builder: (_) => const SettingsView()),
                     );
                   },
                 ),
@@ -203,7 +199,6 @@ class _ProfileViewState extends State<ProfileView> {
 
           SizedBox(height: 24.h),
 
-          // قسم التواصل الاجتماعي
           _buildSocialLinksCard(),
 
           SizedBox(height: 24.h),
@@ -236,7 +231,6 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildSocialLinksCard() {
-    // تعريف كل منصة: key في Supabase | label | icon | color
     final platforms = [
       _SocialLink(
         key: 'whatsapp_url',
@@ -276,11 +270,6 @@ class _ProfileViewState extends State<ProfileView> {
       ),
     ];
 
-    // لو عايزة تشوفي كل الزراير حتى لو اللينك فاضي
-    final activeLinks = platforms;
-
-    if (activeLinks.isEmpty) return const SizedBox.shrink();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -300,9 +289,9 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           child: Column(
             children: [
-              for (int i = 0; i < activeLinks.length; i++) ...[
-                _buildSocialTile(activeLinks[i]),
-                if (i < activeLinks.length - 1)
+              for (int i = 0; i < platforms.length; i++) ...[
+                _buildSocialTile(platforms[i]),
+                if (i < platforms.length - 1)
                   const Divider(height: 1, color: Colors.white12),
               ],
             ],
@@ -314,33 +303,28 @@ class _ProfileViewState extends State<ProfileView> {
 
   Widget _buildSocialTile(_SocialLink link) {
     final url = _socialLinks[link.key] ?? '';
+
     return ListTile(
       leading: Container(
         width: 38.w,
         height: 38.w,
         decoration: BoxDecoration(
-          color: link.color.withValues(alpha: 0.12),
+          color: link.color.withOpacity(0.12),
           borderRadius: BorderRadius.circular(10.r),
         ),
         child: Center(
           child: FaIcon(link.icon, color: link.color, size: 20.sp),
         ),
       ),
-      title: Text(
-        link.label,
-        style: TextStyle(color: Colors.white, fontSize: 14.sp),
-      ),
-      trailing: Icon(Icons.open_in_new, color: Colors.white38, size: 18.sp),
+      title: Text(link.label,
+          style: TextStyle(color: Colors.white, fontSize: 14.sp)),
+      trailing:
+      Icon(Icons.open_in_new, color: Colors.white38, size: 18.sp),
       onTap: () async {
         final uri = Uri.tryParse(url);
         if (uri != null && await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('تعذّر فتح الرابط')));
-          }
+          await launchUrl(uri,
+              mode: LaunchMode.externalApplication);
         }
       },
     );
@@ -351,19 +335,20 @@ class _ProfileViewState extends State<ProfileView> {
       children: [
         CircleAvatar(
           radius: 32.w,
-          backgroundColor: AppTheme.kElectricLime.withValues(alpha: 0.2),
+          backgroundColor:
+          AppTheme.kElectricLime.withOpacity(0.2),
           backgroundImage: user.avatarUrl != null
               ? NetworkImage(user.avatarUrl!)
               : null,
           child: user.avatarUrl == null
               ? Text(
-                  _buildInitials(user.fullName),
-                  style: TextStyle(
-                    color: AppTheme.kElectricLime,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20.sp,
-                  ),
-                )
+            _buildInitials(user.fullName),
+            style: TextStyle(
+              color: AppTheme.kElectricLime,
+              fontWeight: FontWeight.bold,
+              fontSize: 20.sp,
+            ),
+          )
               : null,
         ),
         SizedBox(width: 16.w),
@@ -371,43 +356,15 @@ class _ProfileViewState extends State<ProfileView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                user.fullName,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(user.fullName,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold)),
               SizedBox(height: 4.h),
-              Text(
-                user.email,
-                style: TextStyle(color: Colors.white54, fontSize: 14.sp),
-              ),
-              if (user.profession.isNotEmpty) ...[
-                SizedBox(height: 4.h),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.work_outline,
-                      size: 14.w,
-                      color: AppTheme.kElectricLime,
-                    ),
-                    SizedBox(width: 4.w),
-                    Expanded(
-                      child: Text(
-                        user.profession,
-                        style: TextStyle(
-                          color: AppTheme.kElectricLime,
-                          fontSize: 13.sp,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              Text(user.email,
+                  style: TextStyle(
+                      color: Colors.white54, fontSize: 14.sp)),
             ],
           ),
         ),
@@ -424,7 +381,6 @@ class _ProfileViewState extends State<ProfileView> {
   }
 }
 
-// Helper data class for social links
 class _SocialLink {
   final String key;
   final String label;

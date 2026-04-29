@@ -3,7 +3,6 @@ import '../main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:responsive_builder/responsive_builder.dart';
 import '../../core/models/category_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/categories_viewmodel.dart';

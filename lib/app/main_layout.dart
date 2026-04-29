@@ -72,6 +72,7 @@ class MainLayoutState extends State<MainLayout> {
     const HomeView(),
     const CategoriesView(),
     const CompaniesView(),
+    const FollowedCompaniesView(),
     const ProfileView(),
   ];
 
@@ -251,6 +252,7 @@ class MainLayoutState extends State<MainLayout> {
                 destinations: const [
                   NavigationRailDestination(icon: Icon(Icons.home), label: Text('الرئيسية')),
                   NavigationRailDestination(icon: Icon(Icons.grid_view), label: Text('التصنيفات')),
+                  NavigationRailDestination(icon: Icon(FontAwesomeIcons.solidStar), label: Text('متابَعة')),
                   NavigationRailDestination(icon: Icon(Icons.store), label: Text('الشركات')),
                   NavigationRailDestination(icon: Icon(Icons.person), label: Text('حسابي')),
                 ],

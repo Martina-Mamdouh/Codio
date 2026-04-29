@@ -927,10 +927,12 @@ class _DealDetailsViewState extends State<DealDetailsView> {
   Widget _buildImageCarousel(DealDetailsViewModel viewModel) {
     final images = _allImages;
     if (images.isEmpty) {
-      return Container(
-        height: 250.h,
-        color: Colors.grey[800],
-        child: const Icon(Icons.image_not_supported, color: Colors.white54),
+      return AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Container(
+          color: Colors.grey[800],
+          child: const Icon(Icons.image_not_supported, color: Colors.white54),
+        ),
       );
     }
 
@@ -941,8 +943,8 @@ class _DealDetailsViewState extends State<DealDetailsView> {
           bottomLeft: Radius.circular(20.r),
           bottomRight: Radius.circular(20.r),
         ),
-        child: SizedBox(
-          height: 250.h,
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
           child: Stack(
             children: [
               PageView.builder(
@@ -956,11 +958,9 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                     onTap: () => viewModel.incrementImageClick(widget.deal.id),
                     child: CachedNetworkImage(
                       imageUrl: images[index],
-                      height: 250.h,
                       width: double.infinity,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
-                        height: 250.h,
                         color: Colors.grey[800],
                         child: const Center(
                           child: CircularProgressIndicator(
@@ -969,7 +969,6 @@ class _DealDetailsViewState extends State<DealDetailsView> {
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
-                        height: 250.h,
                         color: Colors.grey[800],
                         child: const Icon(Icons.error, color: Colors.white54),
                       ),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../main_layout.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/responsive_utils.dart';
 import '../viewmodels/companies_viewmodel.dart';
 import '../viewmodels/map_view_model.dart';
 import 'company_profile_view.dart';
@@ -103,8 +103,19 @@ class _CompaniesViewState extends State<CompaniesView> {
                 );
               }
 
-              final width = MediaQuery.of(context).size.width;
-              final crossAxisCount = width < 340 ? 1 : 2;
+               final width = MediaQuery.of(context).size.width;
+               final deviceType = getDeviceType(MediaQuery.of(context).size);
+               final orientation = MediaQuery.of(context).orientation;
+               
+               // Calculate cross axis count based on device type and orientation
+               int crossAxisCount;
+               if (deviceType == DeviceScreenType.tablet && orientation == Orientation.landscape) {
+                 crossAxisCount = 2; // 2 columns for landscape tablets (keep consistent to avoid overflow)
+               } else if (deviceType == DeviceScreenType.tablet) {
+                 crossAxisCount = 2; // 2 columns for portrait tablets
+               } else {
+                 crossAxisCount = width < 340 ? 1 : 2;
+               }
 
               return RefreshIndicator(
                 onRefresh: () async {
@@ -128,16 +139,14 @@ class _CompaniesViewState extends State<CompaniesView> {
                         bottom: AppTheme.bottomNavGap,
                       ),
                       sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          mainAxisSpacing: 12.h,
-                          crossAxisSpacing: 12.w,
-                          childAspectRatio:
-                              MediaQuery.of(context).orientation ==
-                                  Orientation.portrait
-                              ? 0.73
-                              : 1.1,
-                        ),
+                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                           crossAxisCount: crossAxisCount,
+                           mainAxisSpacing: 12.h,
+                           crossAxisSpacing: 12.w,
+                           childAspectRatio: deviceType == DeviceScreenType.tablet
+                               ? 0.73  // Same as portrait for tablets (both orientations)
+                               : (orientation == Orientation.portrait ? 0.73 : 1.1),
+                         ),
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final company = filteredCompanies[index];
                           final isFollowed = profileVm.followedCompanies.any(

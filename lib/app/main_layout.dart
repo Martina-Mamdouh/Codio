@@ -226,24 +226,53 @@ class MainLayoutState extends State<MainLayout> {
   }
 
   Widget _buildTabletLayout() {
+    final orientation = MediaQuery.of(context).orientation;
+    final isLandscape = orientation == Orientation.landscape;
+
+    // Fixed nav widths to ensure content gets predictable space
+    final double navWidth = isLandscape ? 72.0 : 110.0;
+
     return Scaffold(
       backgroundColor: AppTheme.kDarkBackground,
-      body: Row(
-        children: [
-          NavigationRail(
-            backgroundColor: AppTheme.kLightBackground,
-            selectedIndex: _currentIndex,
-            onDestinationSelected: _onTabChanged,
-            labelType: NavigationRailLabelType.all,
-            destinations: const [
-              NavigationRailDestination(icon: Icon(Icons.home), label: Text('الرئيسية')),
-              NavigationRailDestination(icon: Icon(Icons.grid_view), label: Text('التصنيفات')),
-              NavigationRailDestination(icon: Icon(Icons.store), label: Text('الشركات')),
-              NavigationRailDestination(icon: Icon(Icons.person), label: Text('حسابي')),
-            ],
-          ),
-          Expanded(child: IndexedStack(index: _currentIndex, children: _tabletScreens)),
-        ],
+      body: SizedBox.expand(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Navigation rail with controlled width to avoid taking excessive space
+            SizedBox(
+              width: navWidth,
+              child: NavigationRail(
+                backgroundColor: AppTheme.kLightBackground,
+                selectedIndex: _currentIndex,
+                onDestinationSelected: _onTabChanged,
+                labelType: isLandscape ? NavigationRailLabelType.selected : NavigationRailLabelType.all,
+                extended: false,
+                groupAlignment: 0.0,
+                destinations: const [
+                  NavigationRailDestination(icon: Icon(Icons.home), label: Text('الرئيسية')),
+                  NavigationRailDestination(icon: Icon(Icons.grid_view), label: Text('التصنيفات')),
+                  NavigationRailDestination(icon: Icon(Icons.store), label: Text('الشركات')),
+                  NavigationRailDestination(icon: Icon(Icons.person), label: Text('حسابي')),
+                ],
+              ),
+            ),
+
+            // Divider to visually separate navigation and content
+            Container(width: 1, color: AppTheme.kDivider),
+
+            // Main content area - use full remaining space
+            Expanded(
+              child: Container(
+                color: AppTheme.kDarkBackground,
+                // Let inner pages manage their own scrolling; avoid wrapping Scaffolds
+                child: IndexedStack(
+                  index: _currentIndex,
+                  children: _tabletScreens,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

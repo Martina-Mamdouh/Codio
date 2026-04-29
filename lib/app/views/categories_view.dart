@@ -3,9 +3,9 @@ import '../main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 import '../../core/models/category_model.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/responsive_utils.dart';
 import '../viewmodels/categories_viewmodel.dart';
 import 'category_deals_view.dart';
 import 'widgets/unified_header.dart'; // Import the new header
@@ -95,9 +95,18 @@ class _CategoriesViewState extends State<CategoriesView> {
                       ),
                       sliver: SliverGrid(
                         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: ResponsiveUtils.isTablet(context)
-                              ? 250
-                              : 210,
+                          maxCrossAxisExtent: () {
+                            final deviceType = getDeviceType(MediaQuery.of(context).size);
+                            final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+                            
+                            if (deviceType == DeviceScreenType.tablet && isLandscape) {
+                              return 200.0; // Tablet landscape: smaller items for better fit
+                            } else if (deviceType == DeviceScreenType.tablet) {
+                              return 200.0; // Tablet portrait: consistent sizing
+                            } else {
+                              return 210.0; // Mobile: keep original
+                            }
+                          }(),
                           crossAxisSpacing: 12.w,
                           mainAxisSpacing: 12.h,
                           childAspectRatio: 3.5,

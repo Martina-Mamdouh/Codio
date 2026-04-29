@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../viewmodels/home_view_model.dart';
@@ -35,13 +36,13 @@ class HomeView extends StatelessWidget {
             );
           }
 
-          return RefreshIndicator(
-            onRefresh: viewModel.fetchAllData,
-            color: AppTheme.kElectricLime,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
+           return RefreshIndicator(
+             onRefresh: viewModel.fetchAllData,
+             color: AppTheme.kElectricLime,
+             child: SingleChildScrollView(
+               physics: const BouncingScrollPhysics(),
+               child: Column(
+                 children: [
                   SizedBox(
                     height:
                         (MediaQuery.of(context).orientation ==
@@ -297,12 +298,17 @@ class HomeView extends StatelessWidget {
                     },
                   ),
                   
-                  // ✅ Added extra space at the end of the scroll to clear the floating nav bar
-                  SizedBox(height: 120.h),
-                ],
-              ),
-            ),
-          );
+                   // ✅ Added extra space at the end of the scroll to clear the floating nav bar
+                   SizedBox(
+                     height: getDeviceType(MediaQuery.of(context).size) == DeviceScreenType.tablet &&
+                             MediaQuery.of(context).orientation == Orientation.landscape
+                         ? 60.h  // Less space needed for tablet landscape with side nav
+                         : 120.h,  // Full space for mobile with bottom nav
+                   ),
+                 ],
+               ),
+             ),
+           );
         },
       ),
     );

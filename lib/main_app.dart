@@ -17,6 +17,7 @@ import 'core/services/analytics_service.dart';
 import 'app/views/splach_screen.dart';
 import 'core/services/onesignal_service.dart';
 import 'core/services/version_service.dart';
+import 'core/services/orientation_service.dart';
 import 'core/theme/app_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -69,16 +70,54 @@ Future<void> main() async {
   // Use bundled Cairo font — prevents flash of default font on startup
   GoogleFonts.config.allowRuntimeFetching = false;
 
-  runApp(const CodioApp());
+  // Decide an appropriate ScreenUtil design size to avoid excessive upscaling on
+  // tablets. We compute the logical window size and use a larger design size
+  // for tablets so .w/.h/.sp scaling stays reasonable.
+  final window = WidgetsBinding.instance.window;
+  final physical = window.physicalSize;
+  final pixelRatio = window.devicePixelRatio;
+  final logical = physical / pixelRatio;
+  final bool isTablet = logical.shortestSide >= 600;
+  final Size designSize = isTablet ? const Size(800, 1280) : const Size(375, 844);
+
+  runApp(CodioApp(designSize: designSize));
 }
 
-class CodioApp extends StatelessWidget {
-  const CodioApp({super.key});
+class CodioApp extends StatefulWidget {
+  final Size designSize;
+
+  const CodioApp({super.key, required this.designSize});
+
+  @override
+  State<CodioApp> createState() => _CodioAppState();
+}
+
+class _CodioAppState extends State<CodioApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Set initial orientation based on device type
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setOrientationBasedOnDevice();
+    });
+  }
+
+  void _setOrientationBasedOnDevice() async {
+    // Get device info from MediaQuery after first frame
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.shortestSide > 600;
+    
+    if (isTablet) {
+      await OrientationService.allowLandscape();
+    } else {
+      await OrientationService.lockToPortrait();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(375, 844),
+      designSize: widget.designSize,
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {

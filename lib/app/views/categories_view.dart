@@ -19,14 +19,18 @@ class CategoriesView extends StatefulWidget {
 
 class _CategoriesViewState extends State<CategoriesView> {
   String _searchQuery = '';
-  @override
-  void initState() {
-    super.initState();
-    // Lazy loading handled by MainLayout
-  }
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final isTablet = width >= 800;
+
+    /// 🔥 IMPORTANT: must match header overlap area (tablet only)
+    final double headerSafeSpace = isTablet ? 40.h : 0;
+
     return Column(
       children: [
         UnifiedHeader(
@@ -35,7 +39,9 @@ class _CategoriesViewState extends State<CategoriesView> {
           searchHint: 'ابحث عن تصنيف...',
           showBackButton: true,
           onBackTap: () {
-            context.findAncestorStateOfType<MainLayoutState>()?.switchToTab(0);
+            context
+                .findAncestorStateOfType<MainLayoutState>()
+                ?.switchToTab(0);
           },
           onSearchChanged: (val) {
             setState(() {
@@ -43,84 +49,98 @@ class _CategoriesViewState extends State<CategoriesView> {
             });
           },
         ),
+
         Expanded(
-          child: Consumer<CategoriesViewModel>(
-            builder: (context, vm, child) {
-              if (vm.isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.kElectricLime,
-                  ),
-                );
-              }
-              if (vm.categories.isEmpty) {
-                return const Center(
-                  child: Text(
-                    'لا توجد فئات',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                );
-              }
+          child: Stack(
+            children: [
 
-              final filtered = vm.categories.where((c) {
-                return c.name.toLowerCase().contains(
-                  _searchQuery.toLowerCase(),
-                );
-              }).toList();
-
-              if (filtered.isEmpty) {
-                return Center(
-                  child: Text(
-                    'لا توجد نتائج بحث',
-                    style: TextStyle(color: Colors.white70, fontSize: 16.sp),
-                  ),
-                );
-              }
-
-              return RefreshIndicator(
-                onRefresh: vm.loadCategories,
-                color: AppTheme.kElectricLime,
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
-                  slivers: [
-                    SliverPadding(
-                      padding: EdgeInsets.only(
-                        top: 12.h, // Reduced top spacing to match HomeView
-                        // ✅ Increased bottom padding to clear the floating nav bar
-                        bottom: AppTheme.bottomNavGap,
-                        left: 16.w,
-                        right: 16.w,
-                      ),
-                      sliver: SliverGrid(
-                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: () {
-                            final deviceType = getDeviceType(MediaQuery.of(context).size);
-                            final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-                            
-                            if (deviceType == DeviceScreenType.tablet && isLandscape) {
-                              return 200.0; // Tablet landscape: smaller items for better fit
-                            } else if (deviceType == DeviceScreenType.tablet) {
-                              return 200.0; // Tablet portrait: consistent sizing
-                            } else {
-                              return 210.0; // Mobile: keep original
-                            }
-                          }(),
-                          crossAxisSpacing: 12.w,
-                          mainAxisSpacing: 12.h,
-                          childAspectRatio: 3.5,
-                        ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final category = filtered[index];
-                          return _CategoryCard(category: category);
-                        }, childCount: filtered.length),
-                      ),
-                    ),
-                  ],
+              /// 🔥 THIS fixes the overlap completely
+              Padding(
+                padding: EdgeInsets.only(
+                  top: headerSafeSpace,
                 ),
-              );
-            },
+                child: Consumer<CategoriesViewModel>(
+                  builder: (context, vm, child) {
+                    if (vm.isLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.kElectricLime,
+                        ),
+                      );
+                    }
+
+                    if (vm.categories.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'لا توجد فئات',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      );
+                    }
+
+                    final filtered = vm.categories.where((c) {
+                      return c.name
+                          .toLowerCase()
+                          .contains(_searchQuery.toLowerCase());
+                    }).toList();
+
+                    if (filtered.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'لا توجد نتائج بحث',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16.sp,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      onRefresh: vm.loadCategories,
+                      color: AppTheme.kElectricLime,
+                      child: CustomScrollView(
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        slivers: [
+                          SliverPadding(
+                            padding: EdgeInsets.only(
+                              left: isTablet ? 24.w : 16.w,
+                              right: isTablet ? 24.w : 16.w,
+
+                              /// 🔥 prevents scroll touching header
+                              top: isTablet ? 20.h : 12.h,
+
+                              bottom: AppTheme.bottomNavGap,
+                            ),
+                            sliver: SliverGrid(
+                              gridDelegate:
+                              SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: isTablet ? 200 : 210,
+                                crossAxisSpacing:
+                                isTablet ? 16.w : 12.w,
+                                mainAxisSpacing:
+                                isTablet ? 16.h : 12.h,
+                                childAspectRatio: 3.5,
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                  final category = filtered[index];
+                                  return _CategoryCard(
+                                      category: category);
+                                },
+                                childCount: filtered.length,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ],

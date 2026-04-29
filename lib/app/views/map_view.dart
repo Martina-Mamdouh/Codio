@@ -839,17 +839,10 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                 SizedBox(height: 16.h),
 
                 // ─── Action Buttons: Call (left) + Show Directions (right) ───
-                Wrap(
-                  spacing: 10.w,
-                  runSpacing: 10.h,
+                Row(
                   children: [
                     // Show Directions button (appears RIGHT in RTL)
-                    SizedBox(
-                      width: (hasPhone
-                          ? MediaQuery.sizeOf(context).width - 14.w * 2 - 52.w - 10.w
-                          : MediaQuery.sizeOf(context).width - 14.w * 2)
-                          .clamp(140.0, 520.0)
-                          .toDouble(),
+                    Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () async {
                           // Prefer the first branch if available, otherwise use main company location
@@ -911,30 +904,33 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                         ),
                       ),
                     ),
+                    SizedBox(width: 10.w),
                     // Call button (fixed size to match directions button height)
-                    if (hasPhone)
-                      SizedBox(
+                    SizedBox(
                       width: 52.w,
                       height: 48.h,
                       child: ElevatedButton(
-                        onPressed: hasPhone
-                            ? () {
-                                final uri = Uri(
-                                  scheme: 'tel',
-                                  path: company.phone!.trim(),
-                                );
-                                launchUrl(
-                                  uri,
-                                  mode: LaunchMode.externalApplication,
-                                );
-                              }
-                            : null,
+                        onPressed: () {
+                          if (hasPhone) {
+                            final uri = Uri(
+                              scheme: 'tel',
+                              path: company.phone!.trim(),
+                            );
+                            launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('لا يوجد رقم هاتف مسجل لهذا المتجر')),
+                              );
+                            }
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           backgroundColor: Colors.white.withValues(alpha: 0.08),
-                          disabledBackgroundColor: Colors.white.withValues(
-                            alpha: 0.04,
-                          ),
                           foregroundColor: hasPhone
                               ? AppTheme.kElectricLime
                               : Colors.white30,

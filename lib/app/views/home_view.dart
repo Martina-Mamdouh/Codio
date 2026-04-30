@@ -153,8 +153,7 @@ class HomeView extends StatelessWidget {
 
                         // Search Bar
                         Positioned(
-                          top: headerHeight - (isTablet ? 20.h : 25.h),
-                          left: 0,
+                          top: headerHeight - (isTablet ? 35.h : 25.h),                          left: 0,
                           right: 0,
                           child: Center(child: _buildSearchBar(context)),
                         ),
@@ -163,7 +162,7 @@ class HomeView extends StatelessWidget {
                   ),
 
                   // ✅ FIX 2: Extra spacing after search (tablet only)
-                  SizedBox(height: isTablet ? 24.h : 12.h),
+                  SizedBox(height: isTablet ? 36.h : 12.h),
 
                   HomeBannerSlider(banners: viewModel.banners),
                   SizedBox(height: 16.h),
@@ -257,7 +256,7 @@ class HomeView extends StatelessWidget {
                   ),
 
                   // ✅ FIX 3: Better spacing before Ads (tablet only)
-                  SizedBox(height: isTablet ? 24.h : 8.h),
+                  SizedBox(height: isTablet ? 40.h : 8.h), // 🔥 more breathing room
 
                   AdsSlider(fullBleed: true),
 

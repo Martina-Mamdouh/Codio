@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/models/ad_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../deal_details_view.dart';
 
@@ -17,6 +18,7 @@ class AdsSlider extends StatefulWidget {
 
 class _AdsSliderState extends State<AdsSlider> {
   final SupabaseService _supabaseService = SupabaseService();
+  final AnalyticsService _analyticsService = AnalyticsService();
   List<AdModel> _ads = [];
   bool _isLoading = true;
 
@@ -33,6 +35,10 @@ class _AdsSliderState extends State<AdsSlider> {
       _ads = ads.where((a) => a.isActive).toList();
       _isLoading = false;
     });
+
+    if (_ads.isNotEmpty) {
+      _analyticsService.trackAdImpression(_ads[0].id, position: 0);
+    }
   }
 
   @override
@@ -65,11 +71,16 @@ class _AdsSliderState extends State<AdsSlider> {
           autoPlayInterval: const Duration(seconds: 6),
           enlargeCenterPage: false,
           viewportFraction: 1.0,
+          onPageChanged: (index, reason) {
+            _analyticsService.trackAdImpression(_ads[index].id, position: index);
+          },
         ),
         itemBuilder: (context, index, realIndex) {
           final ad = _ads[index];
           return GestureDetector(
             onTap: () async {
+              _analyticsService.trackAdClick(ad.id, position: index);
+              
               final deal = await _supabaseService.getDealById(ad.dealId);
               if (deal != null && context.mounted) {
                 Navigator.push(

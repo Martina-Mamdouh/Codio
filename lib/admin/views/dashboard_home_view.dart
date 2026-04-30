@@ -21,6 +21,7 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
   bool _showAllTopDeals = false;
   bool _showAllCompanyPerformance = false;
   bool _showAllBanners = false;
+  bool _showAllAds = false;
   bool _showAllRecentDeals = false;
 
   @override
@@ -107,6 +108,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
             const SizedBox(height: 32),
 
             _buildBannerManagementTable(context, dashboardVM),
+            const SizedBox(height: 32),
+
+            _buildAdManagementTable(context, dashboardVM),
             const SizedBox(height: 32),
 
             // Recent Deals
@@ -983,6 +987,191 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
                         isExpanded: _showAllBanners,
                         onToggle: () =>
                             setState(() => _showAllBanners = !_showAllBanners),
+                      ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdManagementTable(
+    BuildContext context,
+    DashboardViewModel vm,
+  ) {
+    final displayAds = _showAllAds
+        ? vm.adPerformance
+        : vm.adPerformance.take(5).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.campaign_rounded,
+              color: AppTheme.kElectricLime,
+              size: 28,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'تحليل أداء الإعلانات',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppTheme.kLightText,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppTheme.kLightBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.kSubtleText.withAlpha(26)),
+          ),
+          child: vm.isLoading
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48.0),
+                    child: CircularProgressIndicator(
+                      color: AppTheme.kElectricLime,
+                    ),
+                  ),
+                )
+              : vm.adPerformance.isEmpty
+              ? _buildEmptyState('لا توجد بيانات للإعلانات حالياً')
+              : Column(
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor: WidgetStateProperty.all(
+                          AppTheme.kDarkBackground.withAlpha(51),
+                        ),
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              'الإعلان (ID)',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'المشاهدات',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'النقرات',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'CTR %',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: displayAds.map((ad) {
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Text(
+                                  '#${ad['ad_id']}',
+                                  style: const TextStyle(
+                                    color: AppTheme.kLightText,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      ad['impressions']?.toString() ?? '0',
+                                      style: const TextStyle(
+                                        color: Colors.blueAccent,
+                                      ),
+                                    ),
+                                    if (ad['unique_viewers'] != null && ad['unique_viewers'] > 0)
+                                      Text(
+                                        '(${ad['unique_viewers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              DataCell(
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      ad['clicks']?.toString() ?? '0',
+                                      style: const TextStyle(
+                                        color: Colors.orangeAccent,
+                                      ),
+                                    ),
+                                    if (ad['unique_clickers'] != null && ad['unique_clickers'] > 0)
+                                      Text(
+                                        '(${ad['unique_clickers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              DataCell(
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withAlpha(51),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '${ad['ctr_percentage'] ?? 0}%',
+                                    style: const TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    if (vm.adPerformance.length > 5)
+                      _buildShowMoreButton(
+                        isExpanded: _showAllAds,
+                        onToggle: () =>
+                            setState(() => _showAllAds = !_showAllAds),
                       ),
                   ],
                 ),

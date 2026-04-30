@@ -8,6 +8,7 @@ class DashboardViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> topDeals = [];
   List<Map<String, dynamic>> companyPerformance = [];
   List<Map<String, dynamic>> bannerPerformance = [];
+  List<Map<String, dynamic>> adPerformance = [];
   List<Map<String, dynamic>> socialBreakdown = [];
 
   // Aggregate stats
@@ -32,6 +33,7 @@ class DashboardViewModel extends ChangeNotifier {
         _analyticsService.getBannerPerformance(),
         _analyticsService.getSocialPlatformBreakdown(),
         _analyticsService.getUniqueAnalytics(),
+        _analyticsService.getAdPerformance(),
       ]);
 
       final rawTopDeals = results[0];
@@ -39,6 +41,7 @@ class DashboardViewModel extends ChangeNotifier {
       socialBreakdown = results[3];
       final uniqueStats = results[4];
       final rawBannerPerformance = results[2];
+      final rawAdPerformance = results[5];
 
       // Merge unique stats dynamically to avoid breaking existing DB schemas via dropped views
       topDeals = rawTopDeals.map((rawDeal) {
@@ -122,6 +125,33 @@ class DashboardViewModel extends ChangeNotifier {
         return banner;
       }).toList();
 
+      adPerformance = rawAdPerformance.map((rawAd) {
+        final ad = Map<String, dynamic>.from(rawAd);
+        final adId = ad['ad_id'];
+        if (adId != null) {
+          final viewStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'ad' &&
+                s['entity_id'] == adId &&
+                s['event_type'] == 'ad_impression',
+          );
+          ad['unique_viewers'] = viewStats.isNotEmpty
+              ? viewStats.first['unique_users']
+              : 0;
+
+          final clickStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'ad' &&
+                s['entity_id'] == adId &&
+                s['event_type'] == 'ad_click',
+          );
+          ad['unique_clickers'] = clickStats.isNotEmpty
+              ? clickStats.first['unique_users']
+              : 0;
+        }
+        return ad;
+      }).toList();
+
       // Calculate simple totals from performance if needed
       totalViews = companyPerformance.fold(
         0,
@@ -143,7 +173,12 @@ class DashboardViewModel extends ChangeNotifier {
         (sum, item) => sum + (item['clicks'] as int? ?? 0),
       );
 
-      totalClicks = companyClicks + bannerClicks;
+      int adClicks = adPerformance.fold(
+        0,
+        (sum, item) => sum + (item['clicks'] as int? ?? 0),
+      );
+
+      totalClicks = companyClicks + bannerClicks + adClicks;
 
       totalMapClicks = companyPerformance.fold(
         0,
@@ -163,3 +198,4 @@ class DashboardViewModel extends ChangeNotifier {
     }
   }
 }
+

@@ -494,6 +494,49 @@ class AnalyticsService {
     }
   }
 
+  // ==================== AD TRACKING & ANALYTICS ====================
+
+  /// Track ad impression
+  Future<void> trackAdImpression(int adId, {int? position}) async {
+    await trackEvent(
+      eventType: 'ad_impression',
+      entityType: 'ad',
+      entityId: adId,
+      metadata: position != null ? {'position': position} : null,
+    );
+  }
+
+  /// Track ad click
+  Future<void> trackAdClick(
+    int adId, {
+    int? position,
+    String? targetUrl,
+  }) async {
+    await trackEvent(
+      eventType: 'ad_click',
+      entityType: 'ad',
+      entityId: adId,
+      metadata: {
+        if (position != null) 'position': position,
+        if (targetUrl != null) 'target_url': targetUrl,
+      },
+    );
+  }
+
+  /// Get ad performance stats (for dashboard)
+  Future<List<Map<String, dynamic>>> getAdPerformance() async {
+    try {
+      final response = await _supabase.from('ad_analytics').select();
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error fetching ad analytics: $e');
+      }
+      return [];
+    }
+  }
+
   /// Get social platform click breakdown (for dashboard)
   Future<List<Map<String, dynamic>>> getSocialPlatformBreakdown() async {
     try {

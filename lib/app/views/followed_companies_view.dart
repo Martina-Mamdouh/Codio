@@ -92,6 +92,17 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
                       );
                     }
 
+                    int crossAxisCount;
+                    double childAspectRatio;
+
+                    if (isTablet) {
+                      crossAxisCount = width >= 1200 ? 4 : 3;
+                      childAspectRatio = 0.9;
+                    } else {
+                      crossAxisCount = width < 340 ? 1 : 2;
+                      childAspectRatio = 0.73;
+                    }
+
                     return RefreshIndicator(
                       onRefresh: profileVm.loadProfileData,
                       color: AppTheme.kElectricLime,
@@ -112,19 +123,13 @@ class _FollowedCompaniesViewState extends State<FollowedCompaniesView> {
                             ),
                             sliver: SliverGrid(
                               gridDelegate:
-                              SliverGridDelegateWithMaxCrossAxisExtent(
-                                maxCrossAxisExtent:
-                                isTablet ? 260 : 220,
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
                                 mainAxisSpacing:
                                 isTablet ? 16.h : 12.h,
                                 crossAxisSpacing:
                                 isTablet ? 16.w : 12.w,
-                                childAspectRatio:
-                                MediaQuery.of(context)
-                                    .orientation ==
-                                    Orientation.portrait
-                                    ? 0.68
-                                    : 1.1,
+                                childAspectRatio: childAspectRatio,
                               ),
                               delegate: SliverChildBuilderDelegate(
                                     (context, index) {

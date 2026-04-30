@@ -557,7 +557,7 @@ class SupabaseService {
     try {
       final data = await _client
           .from('companies')
-          .select('*, deals(count), categories(name), company_branches(*)')
+          .select('*, deals(count), company_branches(*)')
           .eq('id', companyId)
           .maybeSingle();
 
@@ -572,13 +572,18 @@ class SupabaseService {
             : 0;
       }
 
-      if (json['categories'] != null) {
-        if (json['categories'] is List &&
-            (json['categories'] as List).isNotEmpty) {
-          json['category_name'] = (json['categories'] as List).first['name'];
-        } else if (json['categories'] is Map) {
-          json['category_name'] = json['categories']['name'];
-        }
+      final primaryId = json['primary_category_id'] as int?;
+      if (primaryId != null) {
+        try {
+          final catData = await _client
+              .from('categories')
+              .select('name')
+              .eq('id', primaryId)
+              .maybeSingle();
+          if (catData != null) {
+            json['category_name'] = catData['name'];
+          }
+        } catch (_) {}
       }
 
       return CompanyModel.fromJson(json);
@@ -925,12 +930,20 @@ class SupabaseService {
           .select('''
             companies!inner(
               *,
-              deals(count),
-              categories(name)
+              deals(count)
             )
           ''')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
+
+      final categoriesData = await _client
+          .from('categories')
+          .select('id, name');
+
+      final categoryMap = {
+        for (var item in categoriesData as List)
+          item['id'] as int: item['name'] as String,
+      };
 
       return (data as List).map((row) {
         final companyJson = row['companies'] as Map<String, dynamic>;
@@ -946,11 +959,9 @@ class SupabaseService {
           }
         }
 
-        if (companyJson['categories'] != null) {
-          final catData = companyJson['categories'];
-          if (catData is Map) {
-            companyJson['category_name'] = catData['name'];
-          }
+        final primaryId = companyJson['primary_category_id'] as int?;
+        if (primaryId != null && categoryMap.containsKey(primaryId)) {
+          companyJson['category_name'] = categoryMap[primaryId];
         }
 
         return CompanyModel.fromJson(companyJson);

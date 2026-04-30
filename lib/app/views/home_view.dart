@@ -25,6 +25,7 @@ class HomeView extends StatelessWidget {
     final isTablet = deviceType == DeviceScreenType.tablet;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppTheme.kDarkBackground,
       body: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {

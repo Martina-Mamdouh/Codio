@@ -164,6 +164,7 @@ class MainLayoutState extends State<MainLayout> {
 
   Widget _buildMobileLayout() {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppTheme.kDarkBackground,
       extendBody: true, 
       body: IndexedStack(index: _currentIndex, children: _mobileScreens),

@@ -130,125 +130,126 @@ class CompanyCard extends StatelessWidget {
             ),
 
             // المعلومات تحت الصورة
-            Padding(
-              padding: EdgeInsets.only(
-                left: 12.w,
-                right: 12.w,
-                top: isLandscape ? 4.h : 6.h,
-                bottom: 4.h,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // اسم الشركة
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      end: isLandscape ? 45.w : 60.w,
-                    ),
-                    child: Text(
-                      company.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isLandscape ? 11.sp : 13.sp,
-                        fontWeight: FontWeight.bold,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(
-                    height: isLandscape ? 2.h : 4.h,
-                  ), // Space after logo area
-                  // الفئة
-                  if (company.categoryName != null &&
-                      company.categoryName!.isNotEmpty)
-                    Text(
-                      company.categoryName!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: isLandscape ? 9.sp : 11.sp,
-                      ),
-                    ),
-
-                  if (!isLandscape) SizedBox(height: 4.h),
-
-                  // المتابعين والعروض (Compact row in landscape?)
-                  if (isLandscape)
-                    // In landscape, combine info to save space
-                    Row(
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 12.w,
+                  right: 12.w,
+                  top: isLandscape ? 4.h : 6.h,
+                  bottom: 10.h,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // الجزء العلوي: اسم الشركة والفئة
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.people_outline,
-                          size: 12.w,
-                          color: Colors.white54,
-                        ),
-                        SizedBox(width: 4.w),
-                        Text(
-                          '$followers',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10.sp,
+                        Padding(
+                          padding: EdgeInsetsDirectional.only(
+                            end: isLandscape ? 45.w : 60.w,
                           ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Icon(Icons.star, size: 12.w, color: Colors.amber),
-                        SizedBox(width: 4.w),
-                        Text(
-                          rating.toStringAsFixed(1),
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10.sp,
-                          ),
-                        ),
-                      ],
-                    )
-                  else ...[
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.people_outline,
-                          size: 14.w,
-                          color: Colors.white54,
-                        ),
-                        SizedBox(width: 6.w),
-                        Expanded(
                           child: Text(
-                            '$followers متابع',
+                            company.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12.sp,
+                              color: Colors.white,
+                              fontSize: isLandscape ? 11.sp : 13.sp,
+                              fontWeight: FontWeight.bold,
+                              height: 1.2,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 4.h),
-                    Row(
-                      children: [
-                        Icon(Icons.star, size: 14.w, color: Colors.amber),
-                        SizedBox(width: 6.w),
-                        Expanded(
-                          child: Text(
-                            '${rating.toStringAsFixed(1)} ($reviewsCount)',
+                        SizedBox(
+                          height: isLandscape ? 2.h : 4.h,
+                        ),
+                        if (company.categoryName != null &&
+                            company.categoryName!.isNotEmpty)
+                          Text(
+                            company.categoryName!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12.sp,
+                              color: Colors.white60,
+                              fontSize: isLandscape ? 9.sp : 11.sp,
                             ),
                           ),
-                        ),
                       ],
                     ),
+
+                    // الجزء السفلي: الإحصائيات
+                    if (isLandscape)
+                      Row(
+                        children: [
+                          Icon(Icons.people_outline, size: 12.w, color: Colors.white54),
+                          SizedBox(width: 4.w),
+                          Text('$followers', style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
+                          SizedBox(width: 8.w),
+                          Icon(Icons.local_offer_outlined, size: 12.w, color: Colors.white54),
+                          SizedBox(width: 4.w),
+                          Text('${company.dealCount ?? 0}', style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
+                          SizedBox(width: 8.w),
+                          Icon(Icons.star, size: 12.w, color: Colors.amber),
+                          SizedBox(width: 4.w),
+                          Text(rating.toStringAsFixed(1), style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
+                        ],
+                      )
+                    else 
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.people_outline, size: 14.w, color: Colors.white54),
+                              SizedBox(width: 6.w),
+                              Expanded(
+                                child: Text(
+                                  '$followers متابع',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              Icon(Icons.local_offer_outlined, size: 14.w, color: Colors.white54),
+                              SizedBox(width: 6.w),
+                              Expanded(
+                                child: Text(
+                                  '${company.dealCount ?? 0} عرض',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              Icon(Icons.star, size: 14.w, color: Colors.amber),
+                              SizedBox(width: 6.w),
+                              Expanded(
+                                child: Text(
+                                  '${rating.toStringAsFixed(1)} ($reviewsCount)',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                   ],
-                ],
+                ),
               ),
             ),
           ],

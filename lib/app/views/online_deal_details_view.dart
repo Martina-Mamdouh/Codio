@@ -110,14 +110,14 @@ class _OnlineDealDetailsViewState extends State<OnlineDealDetailsView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        _buildSectionTitle('معلومات التاجر'),
+                        _buildMerchantInfo(context, viewModel),
+
                         _buildSectionTitle('محتويات العرض'),
                         _buildDealContents(context, viewModel),
                         
                         _buildSectionTitle('الشروط والأحكام'),
                         _buildTerms(),
-                        
-                        _buildSectionTitle('معلومات التاجر'),
-                        _buildMerchantInfo(context, viewModel),
                         
                         SizedBox(height: 100.h),
                         SafeArea(top: false, child: SizedBox.shrink()),

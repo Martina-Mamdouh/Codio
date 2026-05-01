@@ -11,34 +11,17 @@ import '../viewmodels/auth_viewmodel.dart';
 import '../viewmodels/deal_details_view_model.dart';
 import 'company_profile_view.dart';
 import 'auth/login_screen.dart';
-import 'online_deal_details_view.dart';
 
-class DealDetailsView extends StatelessWidget {
+class OnlineDealDetailsView extends StatefulWidget {
   final DealModel deal;
 
-  const DealDetailsView({super.key, required this.deal});
+  const OnlineDealDetailsView({super.key, required this.deal});
 
   @override
-  Widget build(BuildContext context) {
-    // التوجيه الذكي: إذا كان العرض غير مخصص للخريطة، نفتح التصميم القديم الشامل
-    if (!deal.showInMap) {
-      return OnlineDealDetailsView(deal: deal);
-    } else {
-      return MapDealDetailsView(deal: deal);
-    }
-  }
+  State<OnlineDealDetailsView> createState() => _OnlineDealDetailsViewState();
 }
 
-class MapDealDetailsView extends StatefulWidget {
-  final DealModel deal;
-
-  const MapDealDetailsView({super.key, required this.deal});
-
-  @override
-  State<MapDealDetailsView> createState() => _MapDealDetailsViewState();
-}
-
-class _MapDealDetailsViewState extends State<MapDealDetailsView> {
+class _OnlineDealDetailsViewState extends State<OnlineDealDetailsView> {
   late final PageController _pageController;
   Timer? _autoSlideTimer;
   int _currentPage = 0;
@@ -81,19 +64,6 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
     );
   }
 
-  Future<void> _openGoogleMaps(double lat, double lng) async {
-    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تعذر فتح خرائط جوجل')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -105,77 +75,74 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
       },
       child: Consumer<DealDetailsViewModel>(
         builder: (context, viewModel, _) {
-          return DefaultTabController(
-            length: 4,
-            child: Scaffold(
-              backgroundColor: AppTheme.kDarkBackground,
-              body: RefreshIndicator(
-                onRefresh: () => viewModel.loadCompanyData(
-                  widget.deal.companyId,
-                  widget.deal.id,
-                ),
-                color: AppTheme.kElectricLime,
-                child: NestedScrollView(
-                  headerSliverBuilder: (context, innerBoxIsScrolled) {
-                    return [
-                      // Transparent standard AppBar
-                      SliverAppBar(
-                        backgroundColor: AppTheme.kDarkBackground,
-                        elevation: 0,
-                        floating: true,
-                        pinned: false,
-                        leading: IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ),
-                      // Image Carousel
-                      SliverToBoxAdapter(
-                        child: _buildImageCarousel(viewModel),
-                      ),
-                      // Header Info (Title, Rating, Expiry)
-                      SliverToBoxAdapter(
-                        child: _buildHeaderInfo(context, viewModel),
-                      ),
-                      // Sticky TabBar
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: _SliverAppBarDelegate(
-                          TabBar(
-                            isScrollable: true,
-                            tabAlignment: TabAlignment.start,
-                            indicatorColor: AppTheme.kElectricLime,
-                            labelColor: AppTheme.kElectricLime,
-                            unselectedLabelColor: Colors.grey,
-                            indicatorWeight: 3,
-                            labelStyle: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 14.sp),
-                            unselectedLabelStyle: TextStyle(
-                                fontWeight: FontWeight.normal, fontSize: 14.sp),
-                            tabs: const [
-                              Tab(text: 'محتويات العرض'),
-                              Tab(text: 'الفروع'),
-                              Tab(text: 'الشروط والأحكام'),
-                              Tab(text: 'معلومات التاجر'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ];
-                  },
-                  body: TabBarView(
-                    children: [
-                      _buildDealContentsTab(context, viewModel),
-                      _buildBranchesTab(context, viewModel),
-                      _buildTermsTab(context),
-                      _buildMerchantInfoTab(context, viewModel),
-                    ],
+          return Scaffold(
+            backgroundColor: AppTheme.kDarkBackground,
+            body: RefreshIndicator(
+              onRefresh: () => viewModel.loadCompanyData(
+                widget.deal.companyId,
+                widget.deal.id,
+              ),
+              color: AppTheme.kElectricLime,
+              child: CustomScrollView(
+                slivers: [
+                  // Transparent standard AppBar
+                  SliverAppBar(
+                    backgroundColor: AppTheme.kDarkBackground,
+                    elevation: 0,
+                    floating: true,
+                    pinned: false,
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
                   ),
-                ),
+                  // Image Carousel
+                  SliverToBoxAdapter(
+                    child: _buildImageCarousel(viewModel),
+                  ),
+                  // Header Info (Title, Rating, Expiry)
+                  SliverToBoxAdapter(
+                    child: _buildHeaderInfo(context, viewModel),
+                  ),
+                  
+                  // Content (All tabs combined sequentially)
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildSectionTitle('محتويات العرض'),
+                        _buildDealContents(context, viewModel),
+                        
+                        _buildSectionTitle('الشروط والأحكام'),
+                        _buildTerms(),
+                        
+                        _buildSectionTitle('معلومات التاجر'),
+                        _buildMerchantInfo(context, viewModel),
+                        
+                        SizedBox(height: 100.h),
+                        SafeArea(top: false, child: SizedBox.shrink()),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+  
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 8.h),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: AppTheme.kElectricLime,
+          fontSize: 18.sp,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -323,12 +290,12 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
     );
   }
 
-  Widget _buildDealContentsTab(BuildContext context, DealDetailsViewModel viewModel) {
+  Widget _buildDealContents(BuildContext context, DealDetailsViewModel viewModel) {
     final showCode = widget.deal.dealType == 'code' || widget.deal.dealType == 'both';
     final showLink = widget.deal.dealType == 'link' || widget.deal.dealType == 'both';
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -342,8 +309,6 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
                 color: AppTheme.kElectricLime.withValues(alpha: 0.5),
                 width: 2,
               ),
-              // Optional: Add dashed effect custom painter later if strictly needed,
-              // for now the bright border fits the "coupon" vibe in dark mode perfectly.
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,7 +453,7 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
           
           SizedBox(height: 24.h),
 
-          // Shared Stats / Success block (Original Visual)
+          // Shared Stats / Success block
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
@@ -639,189 +604,34 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
               ],
             ),
           ),
-          SizedBox(height: 40.h),
         ],
       ),
     );
   }
 
-  Widget _buildBranchesTab(BuildContext context, DealDetailsViewModel viewModel) {
-    if (viewModel.isLoadingCompany) {
-      return Center(
-        child: CircularProgressIndicator(color: AppTheme.kElectricLime),
-      );
-    }
-
-    final groupedBranches = viewModel.getBranchesGroupedByCity(widget.deal);
-
-    if (groupedBranches.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.storefront_outlined, size: 64.w, color: Colors.white24),
-            SizedBox(height: 16.h),
-            Text(
-              'لا توجد فروع مسجلة لهذا التاجر حالياً',
+  Widget _buildTerms() {
+    if (widget.deal.termsConditions.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        child: Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C1C1E),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Center(
+            child: Text(
+              'لا توجد شروط وأحكام خاصة بهذا العرض',
               style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
             ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: EdgeInsets.all(16.w),
-      itemCount: groupedBranches.length,
-      itemBuilder: (context, index) {
-        final cityName = groupedBranches.keys.elementAt(index);
-        final cityBranches = groupedBranches[cityName]!;
-
-        return Theme(
-          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-          child: Container(
-            margin: EdgeInsets.only(bottom: 12.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2C2C2E),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: ExpansionTile(
-              initiallyExpanded: true,
-              iconColor: AppTheme.kElectricLime,
-              collapsedIconColor: Colors.white54,
-              title: Row(
-                children: [
-                  Icon(Icons.location_city, color: AppTheme.kElectricLime, size: 20.w),
-                  SizedBox(width: 8.w),
-                  Text(
-                    cityName,
-                    style: TextStyle(
-                      color: AppTheme.kElectricLime,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              children: cityBranches.map((loc) {
-                final double lat = (loc['lat'] as num?)?.toDouble() ?? 0.0;
-                final double lng = (loc['lng'] as num?)?.toDouble() ?? 0.0;
-                final bool hasCoords = lat != 0 && lng != 0;
-
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1C1C1E),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: loc['isMain'] == true 
-                          ? AppTheme.kElectricLime.withAlpha(77)
-                          : Colors.white10,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            loc['isMain'] == true ? Icons.home_work : Icons.location_on, 
-                            color: AppTheme.kElectricLime, 
-                            size: 20.w
-                          ),
-                          SizedBox(width: 8.w),
-                          Expanded(
-                            child: Text(
-                              loc['name'],
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          if (hasCoords)
-                            IconButton(
-                              icon: const Icon(Icons.directions, color: AppTheme.kElectricLime),
-                              tooltip: 'الاتجاهات',
-                              onPressed: () => _openGoogleMaps(lat, lng),
-                            ),
-                        ],
-                      ),
-                      if (loc['address'] != null && loc['address'].isNotEmpty) ...[
-                        SizedBox(height: 4.h),
-                        Text(
-                          loc['address'],
-                          style: TextStyle(color: Colors.grey[400], fontSize: 13.sp),
-                        ),
-                      ],
-                      if (loc['phone'] != null && loc['phone'].isNotEmpty) ...[
-                        SizedBox(height: 8.h),
-                        Row(
-                          children: [
-                            Icon(Icons.phone, color: Colors.grey, size: 16.w),
-                            SizedBox(width: 6.w),
-                            Text(
-                              loc['phone'],
-                              style: TextStyle(color: Colors.grey[300], fontSize: 13.sp),
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (hasCoords) ...[
-                        SizedBox(height: 12.h),
-                        InkWell(
-                          onTap: () => _openGoogleMaps(lat, lng),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 12.w),
-                            decoration: BoxDecoration(
-                              color: AppTheme.kElectricLime.withAlpha(25),
-                              borderRadius: BorderRadius.circular(8.r),
-                              border: Border.all(color: AppTheme.kElectricLime.withAlpha(51)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.map, size: 16, color: AppTheme.kElectricLime),
-                                SizedBox(width: 8.w),
-                                Text(
-                                  'فتح في خرائط جوجل',
-                                  style: TextStyle(
-                                    color: AppTheme.kElectricLime,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTermsTab(BuildContext context) {
-    if (widget.deal.termsConditions.isEmpty) {
-      return Center(
-        child: Text(
-          'لا توجد شروط وأحكام خاصة بهذا العرض',
-          style: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
         ),
       );
     }
     
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
@@ -850,11 +660,11 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
     );
   }
 
-  Widget _buildMerchantInfoTab(BuildContext context, DealDetailsViewModel viewModel) {
+  Widget _buildMerchantInfo(BuildContext context, DealDetailsViewModel viewModel) {
     final companyLogo = widget.deal.companyLogo;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: GestureDetector(
         onTap: () {
           Navigator.push(
@@ -876,7 +686,7 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
               Container(
                 width: 60.w,
                 height: 60.w,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppTheme.kElectricLime,
                   shape: BoxShape.circle,
                 ),
@@ -1166,37 +976,5 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
         ),
       ),
     );
-  }
-}
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
-
-  final TabBar _tabBar;
-
-  @override
-  double get minExtent => _tabBar.preferredSize.height + 1.h; // +1 for the bottom border
-  @override
-  double get maxExtent => _tabBar.preferredSize.height + 1.h;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: AppTheme.kDarkBackground,
-      child: Column(
-        children: [
-          _tabBar,
-          Container(
-            height: 1.h,
-            color: Colors.white10, // Bottom border for TabBar
-          )
-        ],
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
   }
 }

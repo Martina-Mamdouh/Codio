@@ -256,11 +256,13 @@ class HomeView extends StatelessWidget {
                   ),
 
                   // ✅ FIX 3: Better spacing before Ads (tablet only)
-                  SizedBox(height: isTablet ? 40.h : 8.h), // 🔥 more breathing room
+                  // لكي تتساوى المسافة (16) مع المسافة السفلية التي تحتوي على (4) + (12 من بادينج القسم)
+                  SizedBox(height: isTablet ? 40.h : 16.h),
 
                   AdsSlider(fullBleed: true),
 
-                  SizedBox(height: isTablet ? 16.h : 2.h),
+                  // 4.h + 12.h (DealSection header vertical padding) = 16.h total visual space
+                  SizedBox(height: isTablet ? 16.h : 4.h),
 
                   DealSection(
                     title: 'عروض الطلاب',

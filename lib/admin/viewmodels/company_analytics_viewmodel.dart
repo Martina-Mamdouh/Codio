@@ -26,6 +26,9 @@ class CompanyAnalyticsViewModel extends ChangeNotifier {
   // Company stats
   Map<String, dynamic> companyStats = {};
 
+  // Deals analytics
+  List<Map<String, dynamic>> dealsAnalytics = [];
+
   /// Human-readable label for selected filter
   String get filterLabel {
     switch (selectedFilter) {
@@ -63,7 +66,13 @@ class CompanyAnalyticsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      companyStats = await _analyticsService.getCompanyFilteredStats(companyId, from: _fromDate);
+      final results = await Future.wait([
+        _analyticsService.getCompanyFilteredStats(companyId, from: _fromDate),
+        _analyticsService.getCompanyDealsFilteredStats(companyId, from: _fromDate),
+      ]);
+
+      companyStats = results[0] as Map<String, dynamic>;
+      dealsAnalytics = List<Map<String, dynamic>>.from(results[1] as List);
     } catch (e) {
       errorMessage = 'حدث خطأ في تحميل البيانات';
       debugPrint('❌ CompanyAnalyticsViewModel error: $e');
@@ -80,10 +89,13 @@ class CompanyAnalyticsViewModel extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
     try {
-      companyStats = await _analyticsService.getCompanyFilteredStats(
-        companyId,
-        from: _fromDate,
-      );
+      final results = await Future.wait([
+        _analyticsService.getCompanyFilteredStats(companyId, from: _fromDate),
+        _analyticsService.getCompanyDealsFilteredStats(companyId, from: _fromDate),
+      ]);
+
+      companyStats = results[0] as Map<String, dynamic>;
+      dealsAnalytics = List<Map<String, dynamic>>.from(results[1] as List);
     } catch (e) {
       debugPrint('❌ Error changing filter: $e');
     } finally {

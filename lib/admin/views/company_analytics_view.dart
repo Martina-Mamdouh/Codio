@@ -68,6 +68,8 @@ class _CompanyAnalyticsBody extends StatelessWidget {
                         children: [
                           _buildSummaryCards(context, vm),
                           const SizedBox(height: 40),
+                          _buildDealsTable(context, vm),
+                          const SizedBox(height: 40),
                         ],
                       ),
                     ),
@@ -327,6 +329,187 @@ class _CompanyAnalyticsBody extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // ── Deals Table ───────────────────────────────────────────────────────────
+  Widget _buildDealsTable(BuildContext context, CompanyAnalyticsViewModel vm) {
+    // Case 1: Company has no deals at all
+    if (vm.dealsAnalytics.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppTheme.kLightBackground,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.center,
+        child: const Text(
+          'هذه الشركة ليس لديها أي عروض مسجلة حالياً.',
+          style: TextStyle(color: Colors.white70),
+        ),
+      );
+    }
+
+    // Case 2: Deals exist but all stats are zeros in this period
+    final bool allZeros = vm.dealsAnalytics.every((deal) {
+      final views = deal['views'] ?? 0;
+      final copies = deal['code_copies'] ?? 0;
+      final links = deal['link_opens'] ?? 0;
+      final happy = deal['emoji_happy_count'] ?? 0;
+      final neutral = deal['emoji_neutral_count'] ?? 0;
+      final sad = deal['emoji_sad_count'] ?? 0;
+      return views == 0 && copies == 0 && links == 0 && happy == 0 && neutral == 0 && sad == 0;
+    });
+
+    if (allZeros) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppTheme.kLightBackground,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.center,
+        child: const Text(
+          'لا توجد بيانات للعروض في هذه الفترة.',
+          style: TextStyle(color: Colors.white70),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'إحصائيات العروض',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppTheme.kLightBackground,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              headingRowColor: WidgetStateProperty.all(
+                AppTheme.kElectricLime.withAlpha(25),
+              ),
+              dataRowColor: WidgetStateProperty.resolveWith<Color?>(
+                (Set<WidgetState> states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return AppTheme.kElectricLime.withAlpha(20);
+                  }
+                  return AppTheme.kLightBackground;
+                },
+              ),
+              columns: const [
+                DataColumn(
+                  label: Text(
+                    'العرض',
+                    style: TextStyle(
+                      color: AppTheme.kElectricLime,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'المشاهدات (كل/فريد)',
+                    style: TextStyle(
+                      color: AppTheme.kElectricLime,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'نسخ الكود (كل/فريد)',
+                    style: TextStyle(
+                      color: AppTheme.kElectricLime,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'فتح الرابط (كل/فريد)',
+                    style: TextStyle(
+                      color: AppTheme.kElectricLime,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'تفاعل (😊/😐/😞)',
+                    style: TextStyle(
+                      color: AppTheme.kElectricLime,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+              rows: vm.dealsAnalytics.map((deal) {
+                final String title = deal['title'] ?? 'بدون عنوان';
+
+                final views = deal['views'] ?? 0;
+                final uniqViews = deal['unique_viewers'] ?? 0;
+
+                final copies = deal['code_copies'] ?? 0;
+                final uniqCopies = deal['unique_copiers'] ?? 0;
+
+                final links = deal['link_opens'] ?? 0;
+                final uniqLinks = deal['unique_link_openers'] ?? 0;
+
+                final happy = deal['emoji_happy_count'] ?? 0;
+                final neutral = deal['emoji_neutral_count'] ?? 0;
+                final sad = deal['emoji_sad_count'] ?? 0;
+
+                return DataRow(
+                  cells: [
+                    DataCell(
+                      SizedBox(
+                        width: 150,
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    DataCell(Text(
+                      '$views / $uniqViews',
+                      style: const TextStyle(color: Colors.white70),
+                    )),
+                    DataCell(Text(
+                      '$copies / $uniqCopies',
+                      style: const TextStyle(color: Colors.white70),
+                    )),
+                    DataCell(Text(
+                      '$links / $uniqLinks',
+                      style: const TextStyle(color: Colors.white70),
+                    )),
+                    DataCell(Text(
+                      '$happy / $neutral / $sad',
+                      style: const TextStyle(color: Colors.white70),
+                    )),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

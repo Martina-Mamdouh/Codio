@@ -652,71 +652,28 @@ class AnalyticsService {
     }
   }
 
-  /// Get deals analytics for a specific company from top_deals_by_views.
-  /// Includes unique user counts merged from unique_analytics_view.
-  Future<List<Map<String, dynamic>>> getCompanyDealsAnalytics(
-    int companyId,
-  ) async {
+  /// Get filtered stats for all deals of a specific company via RPC.
+  /// Returns a list of maps containing views, copies, links, and emoji counts
+  /// for each deal, filtered by [from] date.
+  Future<List<Map<String, dynamic>>> getCompanyDealsFilteredStats(
+    int companyId, {
+    DateTime? from,
+  }) async {
     try {
-      // Step 1: Get deal IDs for this company from the raw deals table
-      // (top_deals_by_views does not expose company_id)
-      final dealsIdRows = List<Map<String, dynamic>>.from(
-        await _supabase
-            .from('deals')
-            .select('id')
-            .eq('company_id', companyId),
+      final response = await _supabase.rpc(
+        'get_company_deals_filtered_stats',
+        params: {
+          'p_company_id': companyId,
+          'p_from_date': from?.toUtc().toIso8601String(),
+        },
       );
 
-      if (dealsIdRows.isEmpty) return [];
-      final dealIds = dealsIdRows.map((d) => d['id']).toList();
+      if (response == null) return [];
 
-      // Step 2: Get analytics rows for those deal IDs from the view
-      final dealsRaw = List<Map<String, dynamic>>.from(
-        await _supabase
-            .from('top_deals_by_views')
-            .select()
-            .inFilter('deal_id', dealIds),
-      );
-
-      if (dealsRaw.isEmpty) return [];
-
-      // Step 3: Fetch unique analytics for these deals
-      final uniqueRaw = List<Map<String, dynamic>>.from(
-        await _supabase
-            .from('unique_analytics_view')
-            .select()
-            .eq('entity_type', 'deal')
-            .inFilter('entity_id', dealIds),
-      );
-
-      // Step 4: Merge unique counts into deals
-      return dealsRaw.map((rawDeal) {
-        final deal = Map<String, dynamic>.from(rawDeal);
-        final dealId = deal['deal_id'] ?? deal['id'];
-
-        deal['unique_viewers'] = uniqueRaw
-            .where((s) =>
-                s['entity_id'] == dealId && s['event_type'] == 'deal_view')
-            .map((s) => s['unique_users'] as int? ?? 0)
-            .fold(0, (a, b) => a + b);
-
-        deal['unique_copiers'] = uniqueRaw
-            .where((s) =>
-                s['entity_id'] == dealId && s['event_type'] == 'code_copy')
-            .map((s) => s['unique_users'] as int? ?? 0)
-            .fold(0, (a, b) => a + b);
-
-        deal['unique_link_openers'] = uniqueRaw
-            .where((s) =>
-                s['entity_id'] == dealId && s['event_type'] == 'link_open')
-            .map((s) => s['unique_users'] as int? ?? 0)
-            .fold(0, (a, b) => a + b);
-
-        return deal;
-      }).toList();
+      return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error fetching company deals analytics: $e');
+        print('❌ Error fetching company deals filtered stats: $e');
       }
       return [];
     }

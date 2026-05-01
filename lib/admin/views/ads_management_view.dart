@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/ads_management_viewmodel.dart';
+import 'ad_analytics_view.dart';
 import 'widgets/ad_editor_form.dart';
 
 class AdsManagementView extends StatelessWidget {
@@ -195,6 +196,22 @@ class _AdsTableState extends State<_AdsTable> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    IconButton(
+                      icon: const Icon(Icons.analytics_outlined, color: AppTheme.kElectricLime),
+                      tooltip: 'إحصائيات الإعلان',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AdAnalyticsView(
+                              adId: ad.id,
+                              adImageLink: ad.imageLink,
+                              isActive: ad.isActive,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.blueAccent),
                       onPressed: () => vmRead.selectAdForEdit(ad),

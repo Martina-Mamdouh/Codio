@@ -537,6 +537,43 @@ class AnalyticsService {
     }
   }
 
+  /// Get filtered stats for a specific ad from raw analytics_events via RPC.
+  /// Returns totals + unique user counts for impressions and clicks
+  /// filtered by [from] date.
+  Future<Map<String, dynamic>> getAdFilteredStats(
+    int adId, {
+    DateTime? from,
+  }) async {
+    try {
+      final response = await _supabase.rpc(
+        'get_ad_filtered_stats',
+        params: {
+          'p_ad_id': adId,
+          'p_from_date': from?.toUtc().toIso8601String(),
+        },
+      );
+
+      final data = Map<String, dynamic>.from(response as Map);
+
+      return {
+        'impressions': data['impressions'] ?? 0,
+        'unique_impressions': data['unique_impressions'] ?? 0,
+        'clicks': data['clicks'] ?? 0,
+        'unique_clicks': data['unique_clicks'] ?? 0,
+      };
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error fetching ad filtered stats: $e');
+      }
+      return {
+        'impressions': 0,
+        'unique_impressions': 0,
+        'clicks': 0,
+        'unique_clicks': 0,
+      };
+    }
+  }
+
   /// Get social platform click breakdown (for dashboard)
   Future<List<Map<String, dynamic>>> getSocialPlatformBreakdown() async {
     try {

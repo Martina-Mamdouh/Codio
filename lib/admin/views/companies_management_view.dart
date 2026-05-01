@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/models/company_model.dart';
 import '../viewmodels/companies_management_viewmodel.dart';
 import 'widgets/company_editor_form.dart'; // تأكد من المسار الصحيح
+import 'company_analytics_view.dart';
 
 class CompaniesManagementView extends StatelessWidget {
   const CompaniesManagementView({super.key});
@@ -466,6 +467,27 @@ class _CompaniesTableState extends State<CompaniesTable> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // زر الإحصائيات
+                    IconButton(
+                      icon: const Icon(
+                        Icons.bar_chart_rounded,
+                        size: 20,
+                        color: AppTheme.kElectricLime,
+                      ),
+                      tooltip: 'إحصائيات الشركة',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CompanyAnalyticsView(
+                              companyId: company.id,
+                              companyName: company.name,
+                              companyLogoUrl: company.logoUrl,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     IconButton(
                       icon: const FaIcon(
                         FontAwesomeIcons.penToSquare,

@@ -566,4 +566,168 @@ class AnalyticsService {
       }
     }
   }
+
+  /// Get filtered stats for a specific company from raw analytics_events.
+  /// Returns totals + unique user counts for page views, map clicks, phone clicks,
+  /// social clicks, and website clicks — all filtered by [from] date.
+  /// Uses device_id as fallback for unique tracking when user_id is null (guest).
+  Future<Map<String, dynamic>> getCompanyFilteredStats(
+    int companyId, {
+    DateTime? from,
+  }) async {
+    try {
+      var query = _supabase
+          .from('analytics_events')
+          .select('event_type, user_id, metadata')
+          .eq('entity_type', 'company')
+          .eq('entity_id', companyId);
+
+      if (from != null) {
+        // Convert to UTC so it matches the DB's timestamptz column
+        query = query.gte('created_at', from.toUtc().toIso8601String());
+      }
+
+      final rows = List<Map<String, dynamic>>.from(await query);
+
+      // Aggregate locally — avoids needing a DB stored procedure
+      int pageViews = 0;
+      int mapClicks = 0;
+      int phoneClicks = 0;
+      int socialClicks = 0;
+      int websiteClicks = 0;
+
+      final Set<String> uniqueViewers = {};
+      final Set<String> uniqueMapClickers = {};
+      final Set<String> uniquePhoneClickers = {};
+      final Set<String> uniqueSocialClickers = {};
+
+      for (final row in rows) {
+        final type = row['event_type'] as String? ?? '';
+        final userId = row['user_id'] as String?;
+        // Fallback to device_id if user is a guest
+        final meta = row['metadata'] as Map<String, dynamic>?;
+        final deviceId = meta?['device_id'] as String?;
+        final uniqueKey = userId ?? deviceId;
+
+        switch (type) {
+          case 'company_view':
+            pageViews++;
+            if (uniqueKey != null) uniqueViewers.add(uniqueKey);
+            break;
+          case 'map_click':
+            mapClicks++;
+            if (uniqueKey != null) uniqueMapClickers.add(uniqueKey);
+            break;
+          case 'phone_click':
+            phoneClicks++;
+            if (uniqueKey != null) uniquePhoneClickers.add(uniqueKey);
+            break;
+          case 'social_click':
+            socialClicks++;
+            if (uniqueKey != null) uniqueSocialClickers.add(uniqueKey);
+            break;
+          case 'website_click':
+            websiteClicks++;
+            break;
+        }
+      }
+
+      return {
+        'page_views': pageViews,
+        'unique_viewers': uniqueViewers.length,
+        'map_clicks': mapClicks,
+        'unique_map_clickers': uniqueMapClickers.length,
+        'phone_clicks': phoneClicks,
+        'unique_phone_clickers': uniquePhoneClickers.length,
+        'social_clicks': socialClicks,
+        'unique_social_clickers': uniqueSocialClickers.length,
+        'website_clicks': websiteClicks,
+      };
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error fetching company filtered stats: $e');
+      }
+      return {
+        'page_views': 0,
+        'unique_viewers': 0,
+        'map_clicks': 0,
+        'unique_map_clickers': 0,
+        'phone_clicks': 0,
+        'unique_phone_clickers': 0,
+        'social_clicks': 0,
+        'unique_social_clickers': 0,
+        'website_clicks': 0,
+      };
+    }
+  }
+
+  /// Get deals analytics for a specific company from top_deals_by_views.
+  /// Includes unique user counts merged from unique_analytics_view.
+  Future<List<Map<String, dynamic>>> getCompanyDealsAnalytics(
+    int companyId,
+  ) async {
+    try {
+      // Step 1: Get deal IDs for this company from the raw deals table
+      // (top_deals_by_views does not expose company_id)
+      final dealsIdRows = List<Map<String, dynamic>>.from(
+        await _supabase
+            .from('deals')
+            .select('id')
+            .eq('company_id', companyId),
+      );
+
+      if (dealsIdRows.isEmpty) return [];
+      final dealIds = dealsIdRows.map((d) => d['id']).toList();
+
+      // Step 2: Get analytics rows for those deal IDs from the view
+      final dealsRaw = List<Map<String, dynamic>>.from(
+        await _supabase
+            .from('top_deals_by_views')
+            .select()
+            .inFilter('deal_id', dealIds),
+      );
+
+      if (dealsRaw.isEmpty) return [];
+
+      // Step 3: Fetch unique analytics for these deals
+      final uniqueRaw = List<Map<String, dynamic>>.from(
+        await _supabase
+            .from('unique_analytics_view')
+            .select()
+            .eq('entity_type', 'deal')
+            .inFilter('entity_id', dealIds),
+      );
+
+      // Step 4: Merge unique counts into deals
+      return dealsRaw.map((rawDeal) {
+        final deal = Map<String, dynamic>.from(rawDeal);
+        final dealId = deal['deal_id'] ?? deal['id'];
+
+        deal['unique_viewers'] = uniqueRaw
+            .where((s) =>
+                s['entity_id'] == dealId && s['event_type'] == 'deal_view')
+            .map((s) => s['unique_users'] as int? ?? 0)
+            .fold(0, (a, b) => a + b);
+
+        deal['unique_copiers'] = uniqueRaw
+            .where((s) =>
+                s['entity_id'] == dealId && s['event_type'] == 'code_copy')
+            .map((s) => s['unique_users'] as int? ?? 0)
+            .fold(0, (a, b) => a + b);
+
+        deal['unique_link_openers'] = uniqueRaw
+            .where((s) =>
+                s['entity_id'] == dealId && s['event_type'] == 'link_open')
+            .map((s) => s['unique_users'] as int? ?? 0)
+            .fold(0, (a, b) => a + b);
+
+        return deal;
+      }).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error fetching company deals analytics: $e');
+      }
+      return [];
+    }
+  }
 }

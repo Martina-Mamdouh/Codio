@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/models/company_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/companies_management_viewmodel.dart';
+import '../viewmodels/dashboard_viewmodel.dart';
 import '../viewmodels/deals_management_viewmodel.dart';
 import '../views/widgets/company_editor_form.dart';
 
@@ -20,6 +21,7 @@ class MapManagementView extends StatefulWidget {
 
 class _MapManagementViewState extends State<MapManagementView> {
   _DealTypeFilter _selectedFilter = _DealTypeFilter.both;
+  bool _showMapStats = false;
 
   static const LatLng _fallbackCenter = LatLng(24.7136, 46.6753);
 
@@ -52,6 +54,7 @@ class _MapManagementViewState extends State<MapManagementView> {
     final companiesVm = context.watch<CompaniesManagementViewModel>();
     final companiesVmRead = context.read<CompaniesManagementViewModel>();
     final dealsVm = context.watch<DealsManagementViewModel>();
+    final dashboardVm = context.watch<DashboardViewModel>();
 
     final bool canFilterByDeals = dealsVm.deals.isNotEmpty;
     final filteredCompanyIds = dealsVm.deals
@@ -83,19 +86,53 @@ class _MapManagementViewState extends State<MapManagementView> {
     final List<Marker> mapMarkers = [];
     for (var company in validCompanies) {
       final isSelected = companiesVm.selectedCompany?.id == company.id;
+      final int clickCount = dashboardVm.companyPerformance.firstWhere(
+        (c) => c['id'] == company.id,
+        orElse: () => {'map_click_count': 0},
+      )['map_click_count'] as int? ?? 0;
+
+      Widget buildMarkerIcon(Color color, double size) {
+        return GestureDetector(
+          onTap: () => companiesVmRead.selectCompanyForEdit(company),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_showMapStats)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: AppTheme.kElectricLime, width: 0.5),
+                  ),
+                  child: Text(
+                    '$clickCount',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              Icon(
+                Icons.location_pin,
+                color: color,
+                size: size,
+              ),
+            ],
+          ),
+        );
+      }
+
       if (company.lat != 0 && company.lng != 0) {
         mapMarkers.add(
           Marker(
             point: LatLng(company.lat, company.lng),
-            width: 44,
-            height: 44,
-            child: GestureDetector(
-              onTap: () => companiesVmRead.selectCompanyForEdit(company),
-              child: Icon(
-                Icons.location_pin,
-                color: isSelected ? AppTheme.kElectricLime : Colors.redAccent,
-                size: isSelected ? 42 : 34,
-              ),
+            width: 60,
+            height: 60,
+            child: buildMarkerIcon(
+              isSelected ? AppTheme.kElectricLime : Colors.redAccent,
+              isSelected ? 42 : 34,
             ),
           ),
         );
@@ -106,15 +143,11 @@ class _MapManagementViewState extends State<MapManagementView> {
             mapMarkers.add(
               Marker(
                 point: LatLng(branch.lat, branch.lng),
-                width: 44,
-                height: 44,
-                child: GestureDetector(
-                  onTap: () => companiesVmRead.selectCompanyForEdit(company),
-                  child: Icon(
-                    Icons.location_pin,
-                    color: isSelected ? AppTheme.kElectricLime : Colors.orangeAccent,
-                    size: isSelected ? 38 : 30,
-                  ),
+                width: 60,
+                height: 60,
+                child: buildMarkerIcon(
+                  isSelected ? AppTheme.kElectricLime : Colors.orangeAccent,
+                  isSelected ? 38 : 30,
                 ),
               ),
             );
@@ -145,6 +178,12 @@ class _MapManagementViewState extends State<MapManagementView> {
                       await companiesVmRead.fetchCompanies();
                       if (!context.mounted) return;
                       await context.read<DealsManagementViewModel>().fetchDeals();
+                      if (!context.mounted) return;
+                      await context.read<DashboardViewModel>().loadDashboardData();
+                    },
+                    showMapStats: _showMapStats,
+                    onToggleStats: (val) {
+                      setState(() => _showMapStats = val);
                     },
                   ),
                   const SizedBox(height: 12),
@@ -265,6 +304,8 @@ class _MapManagementHeader extends StatelessWidget {
   final _DealTypeFilter selectedFilter;
   final ValueChanged<_DealTypeFilter> onFilterChanged;
   final Future<void> Function() onRefresh;
+  final bool showMapStats;
+  final ValueChanged<bool> onToggleStats;
 
   const _MapManagementHeader({
     required this.totalCompanies,
@@ -272,6 +313,8 @@ class _MapManagementHeader extends StatelessWidget {
     required this.selectedFilter,
     required this.onFilterChanged,
     required this.onRefresh,
+    required this.showMapStats,
+    required this.onToggleStats,
   });
 
   @override
@@ -316,6 +359,7 @@ class _MapManagementHeader extends StatelessWidget {
         Wrap(
           spacing: 8,
           runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             ChoiceChip(
               label: const Text('Both'),
@@ -331,6 +375,38 @@ class _MapManagementHeader extends StatelessWidget {
               label: const Text('Code'),
               selected: selectedFilter == _DealTypeFilter.code,
               onSelected: (_) => onFilterChanged(_DealTypeFilter.code),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.analytics_outlined,
+                    size: 16,
+                    color: AppTheme.kSubtleText,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'إحصائيات النقرات',
+                    style: TextStyle(
+                      color: AppTheme.kLightText,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Switch(
+                    value: showMapStats,
+                    onChanged: onToggleStats,
+                    activeColor: AppTheme.kElectricLime,
+                  ),
+                ],
+              ),
             ),
           ],
         ),

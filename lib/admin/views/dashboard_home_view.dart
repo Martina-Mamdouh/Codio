@@ -23,6 +23,7 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
   bool _showAllBanners = false;
   bool _showAllAds = false;
   bool _showAllRecentDeals = false;
+  bool _showAllMapAnalytics = false;
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +106,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
             const SizedBox(height: 32),
 
             _buildCompanyPerformanceTable(context, dashboardVM),
+            const SizedBox(height: 32),
+
+            _buildMapAnalyticsTable(context, dashboardVM),
             const SizedBox(height: 32),
 
             _buildBannerManagementTable(context, dashboardVM),
@@ -1501,6 +1505,182 @@ class _DashboardHomeViewState extends State<DashboardHomeView> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMapAnalyticsTable(
+    BuildContext context,
+    DashboardViewModel vm,
+  ) {
+    final topMapCompanies = vm.topMapCompanies;
+    final displayCompanies = _showAllMapAnalytics
+        ? topMapCompanies
+        : topMapCompanies.take(5).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.location_on_rounded,
+              color: Colors.redAccent,
+              size: 28,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'الشركات الأكثر تفاعلاً على الخريطة',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppTheme.kLightText,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppTheme.kLightBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.kSubtleText.withAlpha(26)),
+          ),
+          child: vm.isLoading
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(48.0),
+                    child: CircularProgressIndicator(
+                      color: AppTheme.kElectricLime,
+                    ),
+                  ),
+                )
+              : topMapCompanies.isEmpty
+              ? _buildEmptyState('لا توجد بيانات تفاعل على الخريطة حالياً')
+              : Column(
+                  children: [
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor: WidgetStateProperty.all(
+                          AppTheme.kDarkBackground.withAlpha(51),
+                        ),
+                        columns: const [
+                          DataColumn(
+                            label: Text(
+                              'الشركة',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'نقرات الخريطة',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'نسبة التفاعل من إجمالي النقرات',
+                              style: TextStyle(
+                                color: AppTheme.kElectricLime,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: displayCompanies.map((company) {
+                          final clickCount =
+                              company['map_click_count'] as int? ?? 0;
+                          final totalMapClicks =
+                              vm.totalMapClicks > 0 ? vm.totalMapClicks : 1;
+                          final percentage = clickCount / totalMapClicks;
+
+                          return DataRow(
+                            cells: [
+                              DataCell(
+                                Text(
+                                  company['name'] ?? '',
+                                  style: const TextStyle(
+                                    color: AppTheme.kLightText,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      clickCount.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    if (company['unique_map_clickers'] != null)
+                                      Text(
+                                        '(${company['unique_map_clickers']} أشخاص)',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              DataCell(
+                                SizedBox(
+                                  width: 150,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${(percentage * 100).toStringAsFixed(1)}%',
+                                        style: const TextStyle(
+                                          color: AppTheme.kSubtleText,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: LinearProgressIndicator(
+                                          value: percentage,
+                                          backgroundColor: Colors.white10,
+                                          valueColor: const AlwaysStoppedAnimation<Color>(
+                                            Colors.redAccent,
+                                          ),
+                                          minHeight: 8,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    if (topMapCompanies.length > 5)
+                      _buildShowMoreButton(
+                        isExpanded: _showAllMapAnalytics,
+                        onToggle: () => setState(
+                          () => _showAllMapAnalytics = !_showAllMapAnalytics,
+                        ),
+                      ),
+                  ],
+                ),
+        ),
+      ],
     );
   }
 }

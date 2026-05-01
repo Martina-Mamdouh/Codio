@@ -11,6 +11,16 @@ class DashboardViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> adPerformance = [];
   List<Map<String, dynamic>> socialBreakdown = [];
 
+  List<Map<String, dynamic>> get topMapCompanies {
+    final list = List<Map<String, dynamic>>.from(companyPerformance);
+    list.sort((a, b) {
+      final clicksA = a['map_click_count'] as int? ?? 0;
+      final clicksB = b['map_click_count'] as int? ?? 0;
+      return clicksB.compareTo(clicksA);
+    });
+    return list;
+  }
+
   // Aggregate stats
   int totalViews = 0;
   int totalCopies = 0;
@@ -93,6 +103,16 @@ class DashboardViewModel extends ChangeNotifier {
           );
           company['unique_page_viewers'] = viewStats.isNotEmpty
               ? viewStats.first['unique_users']
+              : 0;
+
+          final mapClickStats = uniqueStats.where(
+            (s) =>
+                s['entity_type'] == 'company' &&
+                s['entity_id'] == companyId &&
+                s['event_type'] == 'map_click',
+          );
+          company['unique_map_clickers'] = mapClickStats.isNotEmpty
+              ? mapClickStats.first['unique_users']
               : 0;
         }
         return company;

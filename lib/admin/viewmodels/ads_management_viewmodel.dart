@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../core/models/ad_model.dart';
+import '../../core/models/category_model.dart';
 import '../../core/models/deal_model.dart';
 import '../../core/services/supabase_service.dart';
 
@@ -8,6 +9,7 @@ class AdsManagementViewModel extends ChangeNotifier {
 
   List<AdModel> _ads = [];
   List<DealModel> _deals = [];
+  List<CategoryModel> _categories = [];
   bool _isLoading = false;
   String? _errorMessage;
   AdModel? _selectedAd;
@@ -15,14 +17,37 @@ class AdsManagementViewModel extends ChangeNotifier {
 
   List<AdModel> get ads => _ads;
   List<DealModel> get deals => _deals;
+  List<CategoryModel> get categories => _categories;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   AdModel? get selectedAd => _selectedAd;
   bool get isEditorVisible => _isEditorVisible;
 
+  /// Max ads per placement slot
+  static const int maxAdsPerPlacement = 5;
+
   AdsManagementViewModel() {
     fetchAds();
     fetchDeals();
+    fetchCategories();
+  }
+
+  /// Count how many active ads exist for a given placement + optional categoryId
+  int countAdsForPlacement(String placement, {int? categoryId}) {
+    return _ads.where((a) {
+      if (placement == 'home') return a.placement == 'home';
+      return a.placement == 'category' && a.categoryId == categoryId;
+    }).length;
+  }
+
+  /// Check if a placement slot is full
+  bool isPlacementFull(String placement, {int? categoryId, int? excludeAdId}) {
+    final count = _ads.where((a) {
+      if (excludeAdId != null && a.id == excludeAdId) return false;
+      if (placement == 'home') return a.placement == 'home';
+      return a.placement == 'category' && a.categoryId == categoryId;
+    }).length;
+    return count >= maxAdsPerPlacement;
   }
 
   void showEditorForNewAd() {
@@ -48,6 +73,15 @@ class AdsManagementViewModel extends ChangeNotifier {
       return _deals.firstWhere((d) => d.id == dealId).title;
     } catch (_) {
       return null;
+    }
+  }
+
+  Future<void> fetchCategories() async {
+    try {
+      _categories = await _supabaseService.getCategories();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error fetching categories: $e');
     }
   }
 

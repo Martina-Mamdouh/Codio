@@ -9,11 +9,15 @@ class AdAnalyticsViewModel extends ChangeNotifier {
   final int adId;
   final String adImageLink;
   final bool isActive;
+  final String placement;
+  final String? categoryName;
 
   AdAnalyticsViewModel({
     required this.adId,
     required this.adImageLink,
     required this.isActive,
+    this.placement = 'home',
+    this.categoryName,
   }) {
     loadData();
   }

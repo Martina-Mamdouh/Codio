@@ -701,7 +701,7 @@ class SupabaseService {
     try {
       final data = await _client
           .from('advertisements')
-          .select('*, deals(title)')
+          .select('*, deals(title), categories(name)')
           .order('id', ascending: false);
       return (data as List).map((item) => AdModel.fromJson(item)).toList();
     } catch (e) {

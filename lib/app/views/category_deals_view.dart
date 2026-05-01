@@ -75,7 +75,11 @@ class _CategoryDealsViewState extends State<CategoryDealsView> {
                         child: Padding(
                           // keep full-bleed horizontally but add vertical breathing space
                           padding: EdgeInsets.symmetric(vertical: 8.h),
-                          child: AdsSlider(fullBleed: true),
+                          child: AdsSlider(
+                            fullBleed: true,
+                            placement: 'category',
+                            categoryId: widget.category.id,
+                          ),
                         ),
                       ),
                       SliverPadding(

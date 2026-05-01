@@ -153,11 +153,20 @@ class _AdsTableState extends State<_AdsTable> {
       columns: const [
         DataColumn(label: Center(child: Text('ID', style: headerStyle))),
         DataColumn(label: Center(child: Text('الصورة', style: headerStyle))),
+        DataColumn(label: Center(child: Text('مكان النشر', style: headerStyle))),
         DataColumn(label: Center(child: Text('العرض المرتبط', style: headerStyle))),
         DataColumn(label: Center(child: Text('الحالة', style: headerStyle))),
         DataColumn(label: Center(child: Text('إجراءات', style: headerStyle))),
       ],
       rows: vm.ads.map((ad) {
+        // Build placement label
+        String placementLabel;
+        if (ad.placement == 'category') {
+          placementLabel = ad.categoryName ?? 'تصنيف #${ad.categoryId}';
+        } else {
+          placementLabel = 'الرئيسية';
+        }
+
         return DataRow(
           cells: [
             DataCell(Center(child: Text('#${ad.id}', style: cellStyle))),
@@ -175,7 +184,44 @@ class _AdsTableState extends State<_AdsTable> {
                 ),
               ),
             ),
-            DataCell(Center(child: Text(ad.dealTitle ?? 'غير معروف', style: cellStyle))),
+            DataCell(
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: ad.placement == 'home'
+                        ? Colors.blue.withAlpha(30)
+                        : Colors.purple.withAlpha(30),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: ad.placement == 'home'
+                          ? Colors.blueAccent.withAlpha(100)
+                          : Colors.purpleAccent.withAlpha(100),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        ad.placement == 'home' ? Icons.home_rounded : Icons.category_rounded,
+                        size: 14,
+                        color: ad.placement == 'home' ? Colors.blueAccent : Colors.purpleAccent,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        placementLabel,
+                        style: TextStyle(
+                          color: ad.placement == 'home' ? Colors.blueAccent : Colors.purpleAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            DataCell(Center(child: Text(ad.dealTitle ?? 'غير مرتبط', style: cellStyle))),
             DataCell(
               Center(
                 child: Container(
@@ -207,6 +253,8 @@ class _AdsTableState extends State<_AdsTable> {
                               adId: ad.id,
                               adImageLink: ad.imageLink,
                               isActive: ad.isActive,
+                              placement: ad.placement,
+                              categoryName: ad.categoryName,
                             ),
                           ),
                         );

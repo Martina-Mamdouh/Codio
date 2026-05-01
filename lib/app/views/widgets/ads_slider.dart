@@ -11,7 +11,17 @@ import '../deal_details_view.dart';
 
 class AdsSlider extends StatefulWidget {
   final bool fullBleed;
-  const AdsSlider({super.key, this.fullBleed = false});
+  /// 'home' for main page ads, 'category' for category-specific ads
+  final String placement;
+  /// Required when placement == 'category'
+  final int? categoryId;
+
+  const AdsSlider({
+    super.key,
+    this.fullBleed = false,
+    this.placement = 'home',
+    this.categoryId,
+  });
 
   @override
   State<AdsSlider> createState() => _AdsSliderState();
@@ -33,7 +43,14 @@ class _AdsSliderState extends State<AdsSlider> {
     setState(() => _isLoading = true);
     final ads = await _supabaseService.getAds();
     setState(() {
-      _ads = ads.where((a) => a.isActive).toList();
+      _ads = ads.where((a) {
+        if (!a.isActive) return false;
+        if (widget.placement == 'home') {
+          return a.placement == 'home';
+        } else {
+          return a.placement == 'category' && a.categoryId == widget.categoryId;
+        }
+      }).toList();
       _isLoading = false;
     });
 
@@ -150,5 +167,3 @@ class _AdsSliderState extends State<AdsSlider> {
     );
   }
 }
-
-

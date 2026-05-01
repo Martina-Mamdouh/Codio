@@ -19,6 +19,8 @@ class _AdEditorFormState extends State<AdEditorForm> {
   bool _isActive = true;
   Uint8List? _selectedImageBytes;
   String? _existingImageUrl;
+  String _placement = 'home'; // 'home' or 'category'
+  int? _selectedCategoryId;
 
   @override
   void initState() {
@@ -29,6 +31,8 @@ class _AdEditorFormState extends State<AdEditorForm> {
       _dealIdController.text = ad.dealId?.toString() ?? '';
       _linkUrlController.text = ad.linkUrl ?? '';
       _existingImageUrl = ad.imageLink;
+      _placement = ad.placement;
+      _selectedCategoryId = ad.categoryId;
     }
   }
 
@@ -62,7 +66,30 @@ class _AdEditorFormState extends State<AdEditorForm> {
         return;
       }
 
+      if (_placement == 'category' && _selectedCategoryId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('الرجاء اختيار التصنيف')),
+        );
+        return;
+      }
+
       final vm = context.read<AdsManagementViewModel>();
+
+      // Check max 5 ads per placement
+      final excludeId = vm.selectedAd?.id;
+      if (vm.isPlacementFull(_placement,
+          categoryId: _selectedCategoryId, excludeAdId: excludeId)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم بلوغ الحد الأقصى (${AdsManagementViewModel.maxAdsPerPlacement} إعلانات) لهذا المكان.',
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+
       final adData = {
         'is_active': _isActive,
         'deal_id': _dealIdController.text.trim().isEmpty
@@ -71,6 +98,8 @@ class _AdEditorFormState extends State<AdEditorForm> {
         'link_url': _linkUrlController.text.trim().isEmpty
             ? null
             : _linkUrlController.text.trim(),
+        'placement': _placement,
+        'category_id': _placement == 'category' ? _selectedCategoryId : null,
       };
 
       if (vm.selectedAd == null) {
@@ -149,6 +178,68 @@ class _AdEditorFormState extends State<AdEditorForm> {
                 ],
               ),
               const SizedBox(height: 16),
+
+              // ── Placement Selector ─────────────────────────────
+              const Text(
+                'مكان النشر *',
+                style: TextStyle(color: AppTheme.kSubtleText, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildPlacementChip(
+                      label: 'الصفحة الرئيسية',
+                      icon: Icons.home_rounded,
+                      value: 'home',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildPlacementChip(
+                      label: 'داخل تصنيف',
+                      icon: Icons.category_rounded,
+                      value: 'category',
+                    ),
+                  ),
+                ],
+              ),
+
+              // Show remaining slots info
+              Builder(builder: (_) {
+                final currentCount = vm.countAdsForPlacement(
+                  _placement,
+                  categoryId: _selectedCategoryId,
+                );
+                final editing = vm.selectedAd != null;
+                // If editing the same placement, don't double count
+                final adjustedCount = (editing &&
+                        vm.selectedAd!.placement == _placement &&
+                        (_placement == 'home' ||
+                            vm.selectedAd!.categoryId == _selectedCategoryId))
+                    ? currentCount - 1
+                    : currentCount;
+                final remaining =
+                    AdsManagementViewModel.maxAdsPerPlacement - adjustedCount;
+
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'المتاح: $remaining من ${AdsManagementViewModel.maxAdsPerPlacement} إعلانات',
+                    style: TextStyle(
+                      color: remaining > 0 ? Colors.grey[400] : Colors.redAccent,
+                      fontSize: 12,
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 16),
+
+              // ── Category Dropdown (only if placement == category) ───
+              if (_placement == 'category') ...[
+                _buildCategoryDropdown(vm),
+                const SizedBox(height: 16),
+              ],
 
               // Deal ID
               _buildTextField(
@@ -262,6 +353,102 @@ class _AdEditorFormState extends State<AdEditorForm> {
           ));
         }),
       ),
+    );
+  }
+
+  // ── Placement Chip ────────────────────────────────────────────────────────
+  Widget _buildPlacementChip({
+    required String label,
+    required IconData icon,
+    required String value,
+  }) {
+    final isSelected = _placement == value;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _placement = value;
+          if (value == 'home') _selectedCategoryId = null;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.kElectricLime.withAlpha(30)
+              : AppTheme.kDarkBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppTheme.kElectricLime : Colors.white12,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon,
+                size: 20,
+                color:
+                    isSelected ? AppTheme.kElectricLime : AppTheme.kSubtleText),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppTheme.kElectricLime : Colors.white70,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Category Dropdown ─────────────────────────────────────────────────────
+  Widget _buildCategoryDropdown(AdsManagementViewModel vm) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'اختر التصنيف *',
+          style: TextStyle(color: AppTheme.kSubtleText, fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.kDarkBackground,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.kSubtleText.withAlpha(51)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<int>(
+              value: _selectedCategoryId,
+              hint: const Text(
+                'اختر التصنيف',
+                style: TextStyle(color: AppTheme.kSubtleText),
+              ),
+              dropdownColor: AppTheme.kDarkBackground,
+              isExpanded: true,
+              icon: const Icon(Icons.arrow_drop_down,
+                  color: AppTheme.kElectricLime),
+              items: vm.categories.map((cat) {
+                return DropdownMenuItem<int>(
+                  value: cat.id,
+                  child: Text(
+                    cat.name,
+                    style: const TextStyle(color: AppTheme.kLightText),
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) {
+                setState(() => _selectedCategoryId = val);
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 

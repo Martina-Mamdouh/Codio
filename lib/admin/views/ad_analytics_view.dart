@@ -10,12 +10,16 @@ class AdAnalyticsView extends StatelessWidget {
   final int adId;
   final String adImageLink;
   final bool isActive;
+  final String placement;
+  final String? categoryName;
 
   const AdAnalyticsView({
     super.key,
     required this.adId,
     required this.adImageLink,
     required this.isActive,
+    this.placement = 'home',
+    this.categoryName,
   });
 
   @override
@@ -25,6 +29,8 @@ class AdAnalyticsView extends StatelessWidget {
         adId: adId,
         adImageLink: adImageLink,
         isActive: isActive,
+        placement: placement,
+        categoryName: categoryName,
       ),
       child: const _AdAnalyticsBody(),
     );
@@ -169,12 +175,34 @@ class _AdAnalyticsBody extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  'تقرير بتاريخ: $reportDate',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 11,
-                  ),
+                // Placement badge
+                Row(
+                  children: [
+                    Icon(
+                      vm.placement == 'home' ? Icons.home_rounded : Icons.category_rounded,
+                      size: 12,
+                      color: vm.placement == 'home' ? Colors.blueAccent : Colors.purpleAccent,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      vm.placement == 'home'
+                          ? 'الصفحة الرئيسية'
+                          : vm.categoryName ?? 'تصنيف',
+                      style: TextStyle(
+                        color: vm.placement == 'home' ? Colors.blueAccent : Colors.purpleAccent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '• $reportDate',
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

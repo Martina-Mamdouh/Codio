@@ -43,10 +43,11 @@ class HomeView extends StatelessWidget {
           final isLandscape =
               MediaQuery.of(context).orientation == Orientation.landscape;
 
-          // ✅ FIX 1: Bigger header for tablet
+          // Match YellowScaffold's header height for visual consistency
+          final baseHeight = isLandscape ? 140.h : 128.h;
           final headerHeight = isTablet
-              ? (isLandscape ? 200.h : 180.h)
-              : (isLandscape ? 160.h : 140.h);
+              ? baseHeight * 1.35
+              : baseHeight;
 
           return RefreshIndicator(
             onRefresh: viewModel.fetchAllData,

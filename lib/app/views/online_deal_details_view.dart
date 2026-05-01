@@ -340,7 +340,7 @@ class _OnlineDealDetailsViewState extends State<OnlineDealDetailsView> {
                   ),
                   SizedBox(height: 6.h),
                   Container(
-                    height: 55.h,
+                    height: MediaQuery.of(context).orientation == Orientation.landscape ? 80.h : 55.h,
                     decoration: BoxDecoration(
                       color: AppTheme.kElectricLime.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12.r),

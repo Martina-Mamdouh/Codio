@@ -22,14 +22,18 @@ class HomeBannerSlider extends StatelessWidget {
     if (banners.isEmpty) {
       return const SizedBox.shrink();
     }
-    final isTablet = MediaQuery.of(context).size.width > 600;
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width > 600;
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+    final isTabletPortrait = isTablet && !isLandscape;
     return CarouselSlider.builder(
       itemCount: banners.length,
       options: CarouselOptions(
-        height: isTablet
-            ? (isLandscape ? 640.h : 680.h) // 🔥 MUCH bigger for tablet
+        height: isTabletPortrait
+            ? 320.h   // key fix: controlled, not huge
+            : isTablet
+            ? (isLandscape ? 640.h : 480.h)
             : (isLandscape ? 160.h : 180.h),
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 5),

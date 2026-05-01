@@ -451,7 +451,7 @@ class _MapDealDetailsViewState extends State<MapDealDetailsView> {
                     },
                     borderRadius: BorderRadius.circular(12.r),
                     child: Container(
-                      height: 55.h,
+                      height: MediaQuery.of(context).orientation == Orientation.landscape ? 80.h : 55.h,
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: AppTheme.kElectricLime,

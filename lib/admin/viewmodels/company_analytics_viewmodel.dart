@@ -26,9 +26,6 @@ class CompanyAnalyticsViewModel extends ChangeNotifier {
   // Company stats
   Map<String, dynamic> companyStats = {};
 
-  // Deals analytics
-  List<Map<String, dynamic>> dealsAnalytics = [];
-
   /// Human-readable label for selected filter
   String get filterLabel {
     switch (selectedFilter) {
@@ -66,14 +63,7 @@ class CompanyAnalyticsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final results = await Future.wait([
-        _analyticsService.getCompanyFilteredStats(companyId, from: _fromDate),
-        _analyticsService.getCompanyDealsAnalytics(companyId),
-      ]);
-
-      companyStats = results[0] as Map<String, dynamic>;
-      dealsAnalytics =
-          List<Map<String, dynamic>>.from(results[1] as List);
+      companyStats = await _analyticsService.getCompanyFilteredStats(companyId, from: _fromDate);
     } catch (e) {
       errorMessage = 'حدث خطأ في تحميل البيانات';
       debugPrint('❌ CompanyAnalyticsViewModel error: $e');

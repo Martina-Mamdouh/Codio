@@ -576,72 +576,26 @@ class AnalyticsService {
     DateTime? from,
   }) async {
     try {
-      var query = _supabase
-          .from('analytics_events')
-          .select('event_type, user_id, metadata')
-          .eq('entity_type', 'company')
-          .eq('entity_id', companyId);
+      final response = await _supabase.rpc(
+        'get_company_filtered_stats',
+        params: {
+          'p_company_id': companyId,
+          'p_from_date': from?.toUtc().toIso8601String(),
+        },
+      );
 
-      if (from != null) {
-        // Convert to UTC so it matches the DB's timestamptz column
-        query = query.gte('created_at', from.toUtc().toIso8601String());
-      }
-
-      final rows = List<Map<String, dynamic>>.from(await query);
-
-      // Aggregate locally — avoids needing a DB stored procedure
-      int pageViews = 0;
-      int mapClicks = 0;
-      int phoneClicks = 0;
-      int socialClicks = 0;
-      int websiteClicks = 0;
-
-      final Set<String> uniqueViewers = {};
-      final Set<String> uniqueMapClickers = {};
-      final Set<String> uniquePhoneClickers = {};
-      final Set<String> uniqueSocialClickers = {};
-
-      for (final row in rows) {
-        final type = row['event_type'] as String? ?? '';
-        final userId = row['user_id'] as String?;
-        // Fallback to device_id if user is a guest
-        final meta = row['metadata'] as Map<String, dynamic>?;
-        final deviceId = meta?['device_id'] as String?;
-        final uniqueKey = userId ?? deviceId;
-
-        switch (type) {
-          case 'company_view':
-            pageViews++;
-            if (uniqueKey != null) uniqueViewers.add(uniqueKey);
-            break;
-          case 'map_click':
-            mapClicks++;
-            if (uniqueKey != null) uniqueMapClickers.add(uniqueKey);
-            break;
-          case 'phone_click':
-            phoneClicks++;
-            if (uniqueKey != null) uniquePhoneClickers.add(uniqueKey);
-            break;
-          case 'social_click':
-            socialClicks++;
-            if (uniqueKey != null) uniqueSocialClickers.add(uniqueKey);
-            break;
-          case 'website_click':
-            websiteClicks++;
-            break;
-        }
-      }
+      final data = Map<String, dynamic>.from(response as Map);
 
       return {
-        'page_views': pageViews,
-        'unique_viewers': uniqueViewers.length,
-        'map_clicks': mapClicks,
-        'unique_map_clickers': uniqueMapClickers.length,
-        'phone_clicks': phoneClicks,
-        'unique_phone_clickers': uniquePhoneClickers.length,
-        'social_clicks': socialClicks,
-        'unique_social_clickers': uniqueSocialClickers.length,
-        'website_clicks': websiteClicks,
+        'page_views': data['page_views'] ?? 0,
+        'unique_viewers': data['unique_viewers'] ?? 0,
+        'map_clicks': data['map_clicks'] ?? 0,
+        'unique_map_clickers': data['unique_map_clickers'] ?? 0,
+        'phone_clicks': data['phone_clicks'] ?? 0,
+        'unique_phone_clickers': data['unique_phone_clickers'] ?? 0,
+        'social_clicks': data['social_clicks'] ?? 0,
+        'unique_social_clickers': data['unique_social_clickers'] ?? 0,
+        'website_clicks': data['website_clicks'] ?? 0,
       };
     } catch (e) {
       if (kDebugMode) {

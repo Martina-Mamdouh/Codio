@@ -14,8 +14,9 @@ class AdEditorForm extends StatefulWidget {
 
 class _AdEditorFormState extends State<AdEditorForm> {
   final _formKey = GlobalKey<FormState>();
+  final _dealIdController = TextEditingController();
+  final _linkUrlController = TextEditingController();
   bool _isActive = true;
-  int? _selectedDealId;
   Uint8List? _selectedImageBytes;
   String? _existingImageUrl;
 
@@ -25,9 +26,17 @@ class _AdEditorFormState extends State<AdEditorForm> {
     final ad = context.read<AdsManagementViewModel>().selectedAd;
     if (ad != null) {
       _isActive = ad.isActive;
-      _selectedDealId = ad.dealId;
+      _dealIdController.text = ad.dealId?.toString() ?? '';
+      _linkUrlController.text = ad.linkUrl ?? '';
       _existingImageUrl = ad.imageLink;
     }
+  }
+
+  @override
+  void dispose() {
+    _dealIdController.dispose();
+    _linkUrlController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickImage() async {
@@ -53,17 +62,15 @@ class _AdEditorFormState extends State<AdEditorForm> {
         return;
       }
 
-      if (_selectedDealId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('الرجاء اختيار عرض')),
-        );
-        return;
-      }
-
       final vm = context.read<AdsManagementViewModel>();
       final adData = {
         'is_active': _isActive,
-        'deal_id': _selectedDealId,
+        'deal_id': _dealIdController.text.trim().isEmpty
+            ? null
+            : int.tryParse(_dealIdController.text.trim()),
+        'link_url': _linkUrlController.text.trim().isEmpty
+            ? null
+            : _linkUrlController.text.trim(),
       };
 
       if (vm.selectedAd == null) {
@@ -143,42 +150,42 @@ class _AdEditorFormState extends State<AdEditorForm> {
               ),
               const SizedBox(height: 16),
 
-              // Deal Selection
-              const Text('العرض المرتبط:',
-                  style: TextStyle(color: AppTheme.kLightText, fontSize: 14)),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<int>(
-                initialValue: _selectedDealId,
-                isExpanded: true,
-                dropdownColor: AppTheme.kLightBackground,
-                decoration: InputDecoration(
-                  hintText: 'اختر العرض',
-                  filled: true,
-                  fillColor: AppTheme.kDarkBackground,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.kElectricLime, width: 2),
-                  ),
-                  hintStyle: const TextStyle(color: AppTheme.kSubtleText, fontSize: 14),
-                ),
-                items: vm.deals.map((deal) {
-                  return DropdownMenuItem<int>(
-                    value: deal.id,
-                    child: Text(deal.title,
-                        style: const TextStyle(color: AppTheme.kLightText, fontSize: 14)),
-                  );
-                }).toList(),
-                onChanged: (val) => setState(() => _selectedDealId = val),
-                validator: (val) => val == null ? 'مطلوب' : null,
+              // Deal ID
+              _buildTextField(
+                controller: _dealIdController,
+                label: 'رقم العرض (Deal ID)',
+                hint: 'أدخل رقم العرض المرتبط (اختياري)',
+                icon: Icons.link,
+                keyboardType: TextInputType.number,
+                required: false,
+                validator: (val) {
+                  if (val != null && val.isNotEmpty) {
+                    final dealId = int.tryParse(val);
+                    if (dealId == null) {
+                      return 'يجب أن يكون رقمًا صحيحًا';
+                    }
+                    if (dealId <= 0) {
+                      return 'يجب أن يكون رقمًا موجبًا';
+                    }
+                  }
+                  return null;
+                },
+              ),
+
+              if (_dealIdController.text.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _buildDealPreview(vm),
+              ],
+              const SizedBox(height: 16),
+
+              // Link URL
+              _buildTextField(
+                controller: _linkUrlController,
+                label: 'رابط خارجي (Link URL)',
+                hint: 'مثال: https://google.com (اختياري)',
+                icon: Icons.language,
+                required: false,
+                keyboardType: TextInputType.url,
               ),
               const SizedBox(height: 16),
 
@@ -254,6 +261,99 @@ class _AdEditorFormState extends State<AdEditorForm> {
             ],
           ));
         }),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+    bool required = true,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label + (required ? ' *' : ' (اختياري)'),
+        hintText: hint,
+        prefixIcon: Icon(icon, color: AppTheme.kElectricLime),
+        filled: true,
+        fillColor: AppTheme.kDarkBackground,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppTheme.kSubtleText.withAlpha(51)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.kElectricLime, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+        ),
+        labelStyle: const TextStyle(color: AppTheme.kSubtleText),
+        hintStyle: TextStyle(color: AppTheme.kSubtleText.withAlpha(128)),
+      ),
+      style: const TextStyle(color: AppTheme.kLightText),
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      validator: validator,
+      onChanged: (val) {
+        if (controller == _dealIdController) {
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  Widget _buildDealPreview(AdsManagementViewModel vm) {
+    final dealId = int.tryParse(_dealIdController.text.trim());
+    if (dealId == null) return const SizedBox.shrink();
+
+    final dealName = vm.getDealNameById(dealId);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.kDarkBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: dealName != null ? AppTheme.kElectricLime : Colors.orange,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            dealName != null ? Icons.check_circle : Icons.warning,
+            color: dealName != null ? AppTheme.kElectricLime : Colors.orange,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              dealName != null
+                  ? 'مرتبط بالعرض: $dealName'
+                  : 'تحذير: العرض غير موجود',
+              style: TextStyle(
+                color: dealName != null ? AppTheme.kLightText : Colors.orange,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

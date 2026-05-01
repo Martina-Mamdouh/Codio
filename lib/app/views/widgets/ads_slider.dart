@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/models/ad_model.dart';
@@ -80,13 +81,20 @@ class _AdsSliderState extends State<AdsSlider> {
           return GestureDetector(
             onTap: () async {
               _analyticsService.trackAdClick(ad.id, position: index);
-              
-              final deal = await _supabaseService.getDealById(ad.dealId);
-              if (deal != null && context.mounted) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => DealDetailsView(deal: deal)),
-                );
+
+              if (ad.linkUrl != null && ad.linkUrl!.trim().isNotEmpty) {
+                final uri = Uri.tryParse(ad.linkUrl!.trim());
+                if (uri != null && await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              } else if (ad.dealId != null) {
+                final deal = await _supabaseService.getDealById(ad.dealId!);
+                if (deal != null && context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => DealDetailsView(deal: deal)),
+                  );
+                }
               }
             },
             child: Container(

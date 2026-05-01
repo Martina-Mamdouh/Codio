@@ -43,6 +43,14 @@ class AdsManagementViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  String? getDealNameById(int dealId) {
+    try {
+      return _deals.firstWhere((d) => d.id == dealId).title;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> fetchDeals() async {
     try {
       _deals = await _supabaseService.getDeals(onlyVisible: false);

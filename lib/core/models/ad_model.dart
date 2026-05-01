@@ -2,14 +2,16 @@ class AdModel {
   final int id;
   final String imageLink;
   final bool isActive;
-  final int dealId;
+  final int? dealId;
+  final String? linkUrl;
   final String? dealTitle; // Optional: For display in admin
 
   AdModel({
     required this.id,
     required this.imageLink,
     required this.isActive,
-    required this.dealId,
+    this.dealId,
+    this.linkUrl,
     this.dealTitle,
   });
 
@@ -18,7 +20,8 @@ class AdModel {
       id: json['id'] as int,
       imageLink: json['image_link'] as String,
       isActive: json['is_active'] as bool,
-      dealId: json['deal_id'] as int,
+      dealId: json['deal_id'] as int?,
+      linkUrl: json['link_url'] as String?,
       dealTitle: json['deals'] != null ? json['deals']['title'] as String? : null,
     );
   }
@@ -28,6 +31,7 @@ class AdModel {
       'image_link': imageLink,
       'is_active': isActive,
       'deal_id': dealId,
+      'link_url': linkUrl,
     };
   }
 }

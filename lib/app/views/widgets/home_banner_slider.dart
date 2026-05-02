@@ -30,16 +30,17 @@ class HomeBannerSlider extends StatelessWidget {
     return CarouselSlider.builder(
       itemCount: banners.length,
       options: CarouselOptions(
-        height: isTabletPortrait
-            ? 320.h   // key fix: controlled, not huge
-            : isTablet
-            ? (isLandscape ? 640.h : 480.h)
-            : (isLandscape ? 160.h : 180.h),
+        // نستخدم aspectRatio بدل height الثابت عشان نحافظ على أبعاد الصورة (ويد سكرين)
+        // وميحصلش قص من الجوانب بسبب BoxFit.cover
+        aspectRatio: isTablet 
+            ? (isLandscape ? 2.5 : 2.2) // 2.2 عشان التابلت بالطول ميبقاش طويل جداً ويقص الجناب
+            : (isLandscape ? 2.5 : 1.9),
+        viewportFraction: isTablet 
+            ? (isLandscape ? 0.55 : 0.85) // 0.85 بيخلي البانر أعرض في التابلت (بالطول)
+            : 0.9,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 5),
         enlargeCenterPage: true,
-        aspectRatio: isTablet ? 16 / 7 : 16 / 9,
-        viewportFraction: isTablet ? 0.65 : 0.9,
         onPageChanged: (index, reason) {
           // Track banner impression
           if (index < banners.length) {

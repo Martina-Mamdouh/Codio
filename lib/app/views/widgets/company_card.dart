@@ -133,120 +133,116 @@ class CompanyCard extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: EdgeInsets.only(
-                  left: 12.w,
-                  right: 12.w,
+                  left: 10.w,
+                  right: 10.w,
                   top: isLandscape ? 4.h : 6.h,
-                  bottom: 10.h,
+                  bottom: 6.h, // قللنا المسافة اللي تحت عشان الـ Overflow
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly, // تتوزع المسافات بالتساوي بدل المساحات الفاضية الكبيرة
                   children: [
                     // الجزء العلوي: اسم الشركة والفئة
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: EdgeInsetsDirectional.only(
-                            end: isLandscape ? 45.w : 60.w,
-                          ),
-                          child: Text(
-                            company.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: isLandscape ? 11.sp : 13.sp,
-                              fontWeight: FontWeight.bold,
-                              height: 1.2,
-                            ),
-                          ),
+                    Padding(
+                      padding: EdgeInsetsDirectional.only(
+                        end: isLandscape ? 45.w : 55.w,
+                      ),
+                      child: Text(
+                        company.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: isLandscape ? 11.sp : 13.sp,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
                         ),
-                        SizedBox(
-                          height: isLandscape ? 2.h : 4.h,
-                        ),
-                        if (company.categoryName != null &&
-                            company.categoryName!.isNotEmpty)
-                          Text(
-                            company.categoryName!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white60,
-                              fontSize: isLandscape ? 9.sp : 11.sp,
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
+                    if (company.categoryName != null &&
+                        company.categoryName!.isNotEmpty)
+                      Text(
+                        company.categoryName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: isLandscape ? 9.sp : 11.sp,
+                          height: 1.1,
+                        ),
+                      ),
 
                     // الجزء السفلي: الإحصائيات
                     if (isLandscape)
-                      Row(
-                        children: [
-                          Icon(Icons.people_outline, size: 12.w, color: Colors.white54),
-                          SizedBox(width: 4.w),
-                          Text('$followers', style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
-                          SizedBox(width: 8.w),
-                          Icon(Icons.local_offer_outlined, size: 12.w, color: Colors.white54),
-                          SizedBox(width: 4.w),
-                          Text('${company.dealCount ?? 0}', style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
-                          SizedBox(width: 8.w),
-                          Icon(Icons.star, size: 12.w, color: Colors.amber),
-                          SizedBox(width: 4.w),
-                          Text(rating.toStringAsFixed(1), style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
-                        ],
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          children: [
+                            Icon(Icons.people_outline, size: 12.w, color: Colors.white54),
+                            SizedBox(width: 4.w),
+                            Text('$followers', style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
+                            SizedBox(width: 8.w),
+                            Icon(Icons.local_offer_outlined, size: 12.w, color: Colors.white54),
+                            SizedBox(width: 4.w),
+                            Text('${company.dealCount ?? 0}', style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
+                            SizedBox(width: 8.w),
+                            Icon(Icons.star, size: 12.w, color: Colors.amber),
+                            SizedBox(width: 4.w),
+                            Text(rating.toStringAsFixed(1), style: TextStyle(color: Colors.white70, fontSize: 10.sp)),
+                          ],
+                        ),
                       )
                     else 
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.people_outline, size: 14.w, color: Colors.white54),
-                              SizedBox(width: 6.w),
-                              Expanded(
-                                child: Text(
-                                  '$followers متابع',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.people_outline, size: 13.w, color: Colors.white54),
+                                SizedBox(width: 6.w),
+                                Expanded(
+                                  child: Text(
+                                    '$followers متابع',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: Colors.white70, fontSize: 11.sp),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 4.h),
-                          Row(
-                            children: [
-                              Icon(Icons.local_offer_outlined, size: 14.w, color: Colors.white54),
-                              SizedBox(width: 6.w),
-                              Expanded(
-                                child: Text(
-                                  '${company.dealCount ?? 0} عرض',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.local_offer_outlined, size: 13.w, color: Colors.white54),
+                                SizedBox(width: 6.w),
+                                Expanded(
+                                  child: Text(
+                                    '${company.dealCount ?? 0} عرض',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: Colors.white70, fontSize: 11.sp),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 4.h),
-                          Row(
-                            children: [
-                              Icon(Icons.star, size: 14.w, color: Colors.amber),
-                              SizedBox(width: 6.w),
-                              Expanded(
-                                child: Text(
-                                  '${rating.toStringAsFixed(1)} ($reviewsCount)',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.white70, fontSize: 12.sp),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.star, size: 13.w, color: Colors.amber),
+                                SizedBox(width: 6.w),
+                                Expanded(
+                                  child: Text(
+                                    '${rating.toStringAsFixed(1)} ($reviewsCount)',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: Colors.white70, fontSize: 11.sp),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                   ],
                 ),

@@ -619,7 +619,7 @@ class AnalyticsService {
           'p_company_id': companyId,
           'p_from_date': from?.toUtc().toIso8601String(),
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = Map<String, dynamic>.from(response as Map);
 
@@ -666,7 +666,7 @@ class AnalyticsService {
           'p_company_id': companyId,
           'p_from_date': from?.toUtc().toIso8601String(),
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response == null) return [];
 

@@ -421,7 +421,7 @@ class _CompanyAnalyticsBody extends StatelessWidget {
                 ),
                 DataColumn(
                   label: Text(
-                    'المشاهدات (كل/فريد)',
+                    'المشاهدات (تكرار / أشخاص)',
                     style: TextStyle(
                       color: AppTheme.kElectricLime,
                       fontWeight: FontWeight.bold,
@@ -430,7 +430,7 @@ class _CompanyAnalyticsBody extends StatelessWidget {
                 ),
                 DataColumn(
                   label: Text(
-                    'نسخ الكود (كل/فريد)',
+                    'نسخ الكود (تكرار / أشخاص)',
                     style: TextStyle(
                       color: AppTheme.kElectricLime,
                       fontWeight: FontWeight.bold,
@@ -439,7 +439,7 @@ class _CompanyAnalyticsBody extends StatelessWidget {
                 ),
                 DataColumn(
                   label: Text(
-                    'فتح الرابط (كل/فريد)',
+                    'فتح الرابط (تكرار / أشخاص)',
                     style: TextStyle(
                       color: AppTheme.kElectricLime,
                       fontWeight: FontWeight.bold,

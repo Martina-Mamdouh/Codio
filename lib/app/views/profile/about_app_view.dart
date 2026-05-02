@@ -89,7 +89,7 @@ class AboutScreen extends StatelessWidget {
 
             //  Copyright
             Text(
-              '© 2025 Codio. جميع الحقوق محفوظة',
+              '© ${DateTime.now().year} Codio. جميع الحقوق محفوظة',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 12.sp,
@@ -155,7 +155,7 @@ class AboutScreen extends StatelessWidget {
 
             // Copyright
             Text(
-              '© 2025 Codio. جميع الحقوق محفوظة',
+              '© ${DateTime.now().year} Codio. جميع الحقوق محفوظة',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 12.sp,

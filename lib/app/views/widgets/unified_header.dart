@@ -119,17 +119,10 @@ class UnifiedHeader extends StatelessWidget {
                         icon: Icon(
                           Icons.arrow_forward_ios_rounded,
                           color: Colors.black,
-                          size: isTablet
-                              ? 22.sp
-                              : (isLandscape ? 20.sp : 24.sp),
+                          size: isTablet ? 32.sp : 28.sp,
                         ),
                         onPressed:
                         onBackTap ?? () => Navigator.pop(context),
-                        style: IconButton.styleFrom(
-                          backgroundColor:
-                          Colors.black.withValues(alpha: 0.05),
-                          padding: EdgeInsets.all(8.w),
-                        ),
                       ),
                   ],
                 ),

@@ -162,14 +162,17 @@ class CompanyCard extends StatelessWidget {
                     ),
                     if (company.categoryName != null &&
                         company.categoryName!.isNotEmpty)
-                      Text(
-                        company.categoryName!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white60,
-                          fontSize: isLandscape ? 9.sp : 11.sp,
-                          height: 1.1,
+                      Padding(
+                        padding: EdgeInsets.only(top: 2.h),
+                        child: Text(
+                          company.categoryName!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white60,
+                            fontSize: isLandscape ? 9.sp : 11.sp,
+                            height: 1.1,
+                          ),
                         ),
                       ),
 

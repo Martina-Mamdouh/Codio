@@ -12,7 +12,6 @@ import 'widgets/home_banner_slider.dart';
 import 'widgets/ads_slider.dart';
 import 'widgets/deal_section.dart';
 import 'widgets/state_widgets.dart';
-import 'widgets/shimmer_loading.dart';
 import 'search_view.dart';
 import 'view_all_deals_screen.dart';
 
@@ -49,6 +48,9 @@ class HomeView extends StatelessWidget {
               ? baseHeight * 1.35
               : baseHeight;
 
+          final isPortraitTablet =
+              isTablet && MediaQuery.of(context).orientation == Orientation.portrait;
+
           return RefreshIndicator(
             onRefresh: viewModel.fetchAllData,
             color: AppTheme.kElectricLime,
@@ -57,14 +59,14 @@ class HomeView extends StatelessWidget {
               child: Column(
                 children: [
                   SizedBox(
-                    height: headerHeight + 30.h,
+                    height: headerHeight + 60.h,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
                         // Background
                         Container(
                           width: double.infinity,
-                          height: headerHeight,
+                          height: headerHeight + 30.h,
                           decoration: const BoxDecoration(
                             color: Color(0xFFE5FF17),
                             borderRadius: BorderRadius.vertical(
@@ -83,7 +85,7 @@ class HomeView extends StatelessWidget {
                             child: Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 16.w,
-                                vertical: isTablet ? 12.h : 8.h,
+                                vertical: isTablet ? 8.h : 8.h,
                               ),
                               child: Row(
                                 children: [
@@ -154,9 +156,17 @@ class HomeView extends StatelessWidget {
 
                         // Search Bar
                         Positioned(
-                          top: headerHeight - (isTablet ? 35.h : 25.h),                          left: 0,
-                          right: 0,
-                          child: Center(child: _buildSearchBar(context)),
+                          top: isPortraitTablet? headerHeight : headerHeight - (isTablet ? 12.h : 25.h),
+                          left: isPortraitTablet ? 8 : 0,
+                          right: isPortraitTablet ? 8 : 0,
+                          child: Center(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: isPortraitTablet ? 500 : double.infinity,
+                              ),
+                              child: _buildSearchBar(context),
+                            ),
+                          ),
                         ),
                       ],
                     ),

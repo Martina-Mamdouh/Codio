@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:responsive_builder/responsive_builder.dart';
+import '../../../core/utils/responsive_utils.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../viewmodels/home_view_model.dart';
@@ -20,8 +20,8 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deviceType = getDeviceType(MediaQuery.of(context).size);
-    final isTablet = deviceType == DeviceScreenType.tablet;
+    final width = MediaQuery.of(context).size.width;
+    final isTablet = width >= 800;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -41,15 +41,18 @@ class HomeView extends StatelessWidget {
 
           final isLandscape =
               MediaQuery.of(context).orientation == Orientation.landscape;
+          final isCompactHeight = ResponsiveUtils.isCompactHeight(context);
 
-          // Match YellowScaffold's header height for visual consistency
-          final baseHeight = isLandscape ? 140.h : 128.h;
-          final headerHeight = isTablet
-              ? baseHeight * 1.35
-              : baseHeight;
+          // Match UnifiedHeader's height calculations exactly
+          final double backgroundHeight = isTablet
+              ? (isLandscape ? 220.h : 200.h)
+              : (isLandscape ? 140.h : 128.h);
 
-          final isPortraitTablet =
-              isTablet && MediaQuery.of(context).orientation == Orientation.portrait;
+          final double effectiveBackgroundHeight =
+              isCompactHeight ? backgroundHeight * 0.92 : backgroundHeight;
+
+          final double searchOverlap = isTablet ? 60.h : 30.h;
+          final double totalHeight = effectiveBackgroundHeight + searchOverlap;
 
           return RefreshIndicator(
             onRefresh: viewModel.fetchAllData,
@@ -59,14 +62,14 @@ class HomeView extends StatelessWidget {
               child: Column(
                 children: [
                   SizedBox(
-                    height: headerHeight + 60.h,
+                    height: totalHeight,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        // Background
+                        // Yellow Background
                         Container(
                           width: double.infinity,
-                          height: headerHeight + 30.h,
+                          height: effectiveBackgroundHeight,
                           decoration: const BoxDecoration(
                             color: Color(0xFFE5FF17),
                             borderRadius: BorderRadius.vertical(
@@ -84,8 +87,8 @@ class HomeView extends StatelessWidget {
                             bottom: false,
                             child: Padding(
                               padding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: isTablet ? 8.h : 8.h,
+                                horizontal: isTablet ? 24.w : 16.w,
+                                vertical: 10.h,
                               ),
                               child: Row(
                                 children: [
@@ -154,17 +157,21 @@ class HomeView extends StatelessWidget {
                           ),
                         ),
 
-                        // Search Bar
+                        // Search Bar - matching UnifiedHeader positioning
                         Positioned(
-                          top: isPortraitTablet? headerHeight : headerHeight - (isTablet ? 12.h : 25.h),
-                          left: isPortraitTablet ? 8 : 0,
-                          right: isPortraitTablet ? 8 : 0,
-                          child: Center(
+                          top: isTablet
+                              ? effectiveBackgroundHeight - (searchOverlap * 0.45)
+                              : effectiveBackgroundHeight - (searchOverlap * 0.7),
+                          left: 0,
+                          right: 0,
+                          child: Align(
+                            alignment: Alignment.center,
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
-                                maxWidth: isPortraitTablet ? 500 : double.infinity,
+                                maxWidth:
+                                ResponsiveUtils.maxContentWidth(context) * 0.9,
                               ),
-                              child: _buildSearchBar(context),
+                              child: _buildSearchBar(context, isTablet),
                             ),
                           ),
                         ),
@@ -172,8 +179,7 @@ class HomeView extends StatelessWidget {
                     ),
                   ),
 
-                  // ✅ FIX 2: Extra spacing after search (tablet only)
-                  SizedBox(height: isTablet ? 36.h : 12.h),
+                  SizedBox(height: isTablet ? 16.h : 12.h),
 
                   HomeBannerSlider(banners: viewModel.banners),
                   SizedBox(height: 16.h),
@@ -321,7 +327,8 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildSearchBar(BuildContext context, bool isTablet) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Hero(
       tag: 'search_bar',
       child: Material(
@@ -335,21 +342,38 @@ class HomeView extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(14.r),
           child: Ink(
-            width: MediaQuery.of(context).size.width * 0.88,
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            width: screenWidth * (isTablet ? 0.7 : 0.88),
+            padding: EdgeInsets.symmetric(
+              horizontal: 14.w,
+              vertical: isTablet ? 12.h : 8.h,
+            ),
             decoration: BoxDecoration(
               color: AppTheme.kLightBackground,
               borderRadius: BorderRadius.circular(14.r),
               border: Border.all(color: Colors.white10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
-                const Icon(Icons.search, color: AppTheme.kElectricLime),
+                Icon(
+                  Icons.search,
+                  color: AppTheme.kElectricLime,
+                  size: isTablet ? 22.sp : 24.sp,
+                ),
                 SizedBox(width: 10.w),
                 Expanded(
                   child: Text(
                     'ابحث عن المتاجر والعروض...',
-                    style: TextStyle(color: Colors.grey[400], fontSize: 15.sp),
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: isTablet ? 16.sp : 15.sp,
+                    ),
                   ),
                 ),
               ],

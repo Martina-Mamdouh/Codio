@@ -22,7 +22,7 @@ class YellowScaffold extends StatelessWidget {
   });
 
   bool _isTablet(BuildContext context) {
-    return MediaQuery.of(context).size.width >= 600;
+    return MediaQuery.of(context).size.width >= 800;
   }
 
   @override
@@ -34,12 +34,13 @@ class YellowScaffold extends StatelessWidget {
 
     final isTablet = _isTablet(context);
 
-    final baseHeight = isLandscape ? 140.h : 128.h;
+    // Match UnifiedHeader's height calculations exactly
+    final double backgroundHeight = isTablet
+        ? (isLandscape ? 220.h : 200.h)
+        : (isLandscape ? 140.h : 128.h);
 
-    // 👇 ONLY CHANGE: bigger header on tablet
-    final headerHeight = isTablet
-        ? baseHeight * 1.35
-        : (isCompactHeight ? baseHeight * 0.92 : baseHeight);
+    final headerHeight =
+        isCompactHeight ? backgroundHeight * 0.92 : backgroundHeight;
 
     return Scaffold(
       backgroundColor: AppTheme.kDarkBackground,

@@ -146,68 +146,74 @@ class _DealCardState extends State<DealCard>
                             ),
                     ),
                   ),
-                  // -------------------- DISCOUNT BADGE --------------------
-                  if (widget.deal.discountValue.isNotEmpty)
-                    PositionedDirectional(
-                      top: AppTheme.spacing8,
-                      start: AppTheme.spacing8,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 6.w,
-                          vertical: 2.h,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.redAccent,
-                              Colors.red.shade700,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          widget.deal.discountValue,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: isLandscape ? 7.sp : 9.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-                  // -------------------- FAVORITE BUTTON --------------------
+                  // -------------------- TOP BAR (DISCOUNT & FAVORITE) --------------------
                   PositionedDirectional(
                     top: AppTheme.spacing8,
+                    start: AppTheme.spacing8,
                     end: AppTheme.spacing8,
-                    child: _FavoriteButton(
-                      isFavorite: widget.isFavorite,
-                      size: isLandscape ? 12.w : 15.w,
-                      onTap: () {
-                        if (authService.currentUser == null) {
-                          AppSnackbar.loginRequired(
-                            context,
-                            onLogin: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const LoginScreen(),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // DISCOUNT BADGE
+                        widget.deal.discountValue.isNotEmpty
+                            ? Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 6.w,
+                                  vertical: 2.h,
                                 ),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.redAccent,
+                                      Colors.red.shade700,
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.red.withValues(alpha: 0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  widget.deal.discountValue,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: isLandscape ? 7.sp : 9.sp,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+
+                        // FAVORITE BUTTON
+                        _FavoriteButton(
+                          isFavorite: widget.isFavorite,
+                          size: isLandscape ? 10.w : 12.w, // Made smaller
+                          onTap: () {
+                            if (authService.currentUser == null) {
+                              AppSnackbar.loginRequired(
+                                context,
+                                onLogin: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const LoginScreen(),
+                                    ),
+                                  );
+                                },
                               );
-                            },
-                          );
-                          return;
-                        }
-                        if (widget.onFavoriteToggle != null) {
-                          widget.onFavoriteToggle!();
-                        }
-                      },
+                              return;
+                            }
+                            if (widget.onFavoriteToggle != null) {
+                              widget.onFavoriteToggle!();
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -389,7 +395,7 @@ class _FavoriteButtonState extends State<_FavoriteButton>
         widget.onTap();
       },
       child: Container(
-        padding: EdgeInsets.all(6.w),
+        padding: EdgeInsets.all(4.w), // Reduced padding for smaller total size
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.5),
           shape: BoxShape.circle,

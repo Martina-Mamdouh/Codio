@@ -26,6 +26,7 @@ class _SearchViewState extends State<SearchView> {
   List<String> _recentSearches = [];
   bool _isLoading = false;
   bool _hasSearched = false;
+  bool _isLoadingPopular = true;
 
   static const String _recentSearchesKey = 'recent_searches';
 
@@ -65,6 +66,10 @@ class _SearchViewState extends State<SearchView> {
       }
     } catch (e) {
       debugPrint('Error loading popular searches: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingPopular = false);
+      }
     }
   }
 
@@ -318,46 +323,61 @@ class _SearchViewState extends State<SearchView> {
             ],
           ),
           SizedBox(height: 16.h),
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 8.h,
-            alignment: WrapAlignment.start,
-            children: _popularSearches.map((search) {
-              return InkWell(
-                onTap: () => _selectSuggestion(search),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 8.w,
-                    vertical: 10.h,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppTheme.kElectricLime.withValues(alpha: 0.2),
-                        AppTheme.kElectricLime.withValues(alpha: 0.05),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
-                      color: AppTheme.kElectricLime.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.trending_up,
-                        size: 18.w,
-                        color: AppTheme.kElectricLime,
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(search, style: const TextStyle(color: Colors.white)),
-                    ],
+          if (_isLoadingPopular)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: const Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppTheme.kElectricLime,
                   ),
                 ),
-              );
-            }).toList(),
-          ),
+              ),
+            )
+          else
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              alignment: WrapAlignment.start,
+              children: _popularSearches.map((search) {
+                return InkWell(
+                  onTap: () => _selectSuggestion(search),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 10.h,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.kElectricLime.withValues(alpha: 0.2),
+                          AppTheme.kElectricLime.withValues(alpha: 0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20.r),
+                      border: Border.all(
+                        color: AppTheme.kElectricLime.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.trending_up,
+                          size: 18.w,
+                          color: AppTheme.kElectricLime,
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(search, style: const TextStyle(color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
         ],
       ),
     );

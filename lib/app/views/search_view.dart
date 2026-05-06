@@ -29,7 +29,7 @@ class _SearchViewState extends State<SearchView> {
 
   static const String _recentSearchesKey = 'recent_searches';
 
-  final List<String> _popularSearches = [
+  List<String> _popularSearches = [
     'سينما',
     'فانتوم',
     'طلباتي',
@@ -39,11 +39,33 @@ class _SearchViewState extends State<SearchView> {
   void initState() {
     super.initState();
     _loadRecentSearches();
+    _loadPopularSearches();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _focusNode.requestFocus();
       }
     });
+  }
+
+  Future<void> _loadPopularSearches() async {
+    try {
+      final settings = await _supabaseService.getAppSettings();
+      final searchesString = settings['popular_searches'];
+      
+      if (searchesString != null && searchesString.trim().isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _popularSearches = searchesString
+                .split(',')
+                .map((s) => s.trim())
+                .where((s) => s.isNotEmpty)
+                .toList();
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading popular searches: $e');
+    }
   }
 
   @override

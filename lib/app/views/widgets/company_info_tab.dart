@@ -318,20 +318,7 @@ class CompanyInfoTab extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // التواصل الاجتماعي (Social Media)
-            if (c.socialLinks != null && c.socialLinks!.isNotEmpty) ...[
-              const Text(
-                'تواصل معنا',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  //  // Inherited
-                ),
-              ),
-              const SizedBox(height: 12),
-              _SocialLinks(socialLinks: c.socialLinks!, viewModel: viewModel),
-            ],
+
 
             // ✅ الفروع مجمعة حسب المدينة
             if ((c.branches ?? []).isNotEmpty) ...[
@@ -621,81 +608,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _SocialLinks extends StatelessWidget {
-  final Map<String, dynamic> socialLinks;
-  final CompanyProfileViewModel viewModel;
 
-  const _SocialLinks({required this.socialLinks, required this.viewModel});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = viewModel.company!;
-    final List<Widget> icons = [];
-
-    // Helper to add social icons with tracking
-    void addIcon(String platform, IconData icon, Color color, String? url) {
-      if (url != null && url.trim().isNotEmpty) {
-        icons.add(
-          InkWell(
-            onTap: () async {
-              viewModel.incrementSocialClicks(platform);
-              final uri = Uri.parse(url.trim());
-              try {
-                if (!await launchUrl(
-                  uri,
-                  mode: LaunchMode.externalApplication,
-                )) {
-                  debugPrint('Could not launch $uri');
-                }
-              } catch (e) {
-                debugPrint('Error launching social: $e');
-              }
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: 45,
-              height: 45,
-              decoration: BoxDecoration(
-                color: AppTheme.kLightBackground,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: Center(child: FaIcon(icon, color: color, size: 22)),
-            ),
-          ),
-        );
-      }
-    }
-
-    // 1. Instagram (From new field)
-    addIcon(
-      'instagram',
-      FontAwesomeIcons.instagram,
-      const Color(0xFFE4405F),
-      c.instagramUrl,
-    );
-
-    // 2. Facebook (From socialLinks map)
-    addIcon(
-      'facebook',
-      FontAwesomeIcons.facebook,
-      const Color(0xFF1877F2),
-      socialLinks['facebook'] as String?,
-    );
-
-    // 3. WhatsApp (From socialLinks map)
-    addIcon(
-      'whatsapp',
-      FontAwesomeIcons.whatsapp,
-      const Color(0xFF25D366),
-      socialLinks['whatsapp'] as String?,
-    );
-
-    if (icons.isEmpty) return const SizedBox();
-
-    return Wrap(spacing: 12, runSpacing: 12, children: icons);
-  }
-}
 
 class _CompactTextBox extends StatelessWidget {
   final String text;

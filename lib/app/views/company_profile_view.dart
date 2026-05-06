@@ -440,9 +440,11 @@ class _CompanyProfileScaffold extends StatelessWidget {
                                         }
                                       },
                                     ),
-                                  ],
-                                ),
-                                SizedBox(height: 8.h),
+                                ],
+                              ),
+                              if ((vm.company!.socialLinks != null && vm.company!.socialLinks!.isNotEmpty) || (vm.company!.instagramUrl != null && vm.company!.instagramUrl!.isNotEmpty))
+                                _SocialLinks(viewModel: vm),
+                              SizedBox(height: 8.h),
                               ],
                             ),
                           ),
@@ -668,3 +670,107 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
     return false;
   }
 }
+
+class _SocialLinks extends StatelessWidget {
+  final CompanyProfileViewModel viewModel;
+
+  const _SocialLinks({required this.viewModel});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = viewModel.company!;
+    final socialLinks = c.socialLinks ?? {};
+    final List<Widget> icons = [];
+
+    // Helper to add social icons with tracking
+    void addIcon(String platform, IconData icon, Color color, String? url) {
+      if (url != null && url.trim().isNotEmpty) {
+        icons.add(
+          InkWell(
+            onTap: () async {
+              viewModel.incrementSocialClicks(platform);
+              final uri = Uri.parse(url.trim());
+              try {
+                if (!await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                )) {
+                  debugPrint('Could not launch $uri');
+                }
+              } catch (e) {
+                debugPrint('Error launching social: $e');
+              }
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 45,
+              height: 45,
+              decoration: BoxDecoration(
+                color: AppTheme.kLightBackground,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Center(child: FaIcon(icon, color: color, size: 22)),
+            ),
+          ),
+        );
+      }
+    }
+
+    // 1. Instagram (From new field)
+    addIcon(
+      'instagram',
+      FontAwesomeIcons.instagram,
+      const Color(0xFFE4405F),
+      c.instagramUrl,
+    );
+
+    // 2. Facebook
+    addIcon(
+      'facebook',
+      FontAwesomeIcons.facebook,
+      const Color(0xFF1877F2),
+      socialLinks['facebook'] as String?,
+    );
+
+    // 3. WhatsApp
+    addIcon(
+      'whatsapp',
+      FontAwesomeIcons.whatsapp,
+      const Color(0xFF25D366),
+      socialLinks['whatsapp'] as String?,
+    );
+
+    // 4. TikTok
+    addIcon(
+      'tiktok',
+      FontAwesomeIcons.tiktok,
+      Colors.white,
+      socialLinks['tiktok'] as String?,
+    );
+
+    // 5. LinkedIn
+    addIcon(
+      'linkedin',
+      FontAwesomeIcons.linkedin,
+      const Color(0xFF0A66C2),
+      socialLinks['linkedin'] as String?,
+    );
+
+    // 6. Telegram
+    addIcon(
+      'telegram',
+      FontAwesomeIcons.telegram,
+      const Color(0xFF0088CC),
+      socialLinks['telegram'] as String?,
+    );
+
+    if (icons.isEmpty) return const SizedBox();
+
+    return Padding(
+      padding: EdgeInsets.only(top: 16.h),
+      child: Wrap(spacing: 12.w, runSpacing: 12.h, alignment: WrapAlignment.center, children: icons),
+    );
+  }
+}
+

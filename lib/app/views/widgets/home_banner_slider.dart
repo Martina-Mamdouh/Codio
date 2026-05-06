@@ -35,7 +35,7 @@ class HomeBannerSlider extends StatelessWidget {
             : (isLandscape ? 2.5 : 1.9),
         viewportFraction: isTablet 
             ? (isLandscape ? 0.55 : 0.85)
-            : 0.92,
+            : 0.96,
         autoPlay: true,
         autoPlayInterval: const Duration(seconds: 5),
         enlargeCenterPage: true,
@@ -100,7 +100,7 @@ class HomeBannerSlider extends StatelessWidget {
           },
           child: Container(
             width: MediaQuery.of(context).size.width,
-            margin: EdgeInsets.symmetric(horizontal: 3.0.w),
+            margin: EdgeInsets.symmetric(horizontal: 4.0.w),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.r),
               boxShadow: [

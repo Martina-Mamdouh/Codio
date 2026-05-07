@@ -12,6 +12,7 @@ import '../../core/models/company_model.dart';
 import '../../core/theme/app_theme.dart';
 import '../viewmodels/map_view_model.dart';
 import '../viewmodels/user_profile_viewmodel.dart';
+import 'company_profile_view.dart';
 import 'deal_details_view.dart';
 import 'widgets/deal_card.dart';
 
@@ -760,8 +761,18 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                 SizedBox(height: 8.h),
 
                 // ─── Company Logo + Name + Category (RTL: logo right, text left) ───
-                Row(
-                  children: [
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CompanyProfileView(companyId: company.id),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    children: [
                     // Logo
                     Container(
                       width: 60.w,
@@ -835,8 +846,9 @@ class _SelectedCompanyCardState extends State<_SelectedCompanyCard> {
                     ),
                   ],
                 ),
+              ),
 
-                SizedBox(height: 16.h),
+              SizedBox(height: 16.h),
 
                 // ─── Action Buttons: Call (left) + Show Directions (right) ───
                 Row(

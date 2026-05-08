@@ -85,7 +85,7 @@ class _FavoriteDealsViewState extends State<FavoriteDealsView> {
             onRefresh: profileVm.loadFavoriteDeals,
             color: AppTheme.kElectricLime,
             child: GridView.builder(
-              padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 80.h),
               itemCount: profileVm.favoriteDeals.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: ResponsiveUtils.adaptiveCount(
